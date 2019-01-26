@@ -30,7 +30,8 @@ export const getLatest: StringFunctionMap = {
     },
     question: source => {
         const regex = /<tbody id="normalthread_(\d+)">/
-        const latest = (regex.exec(source) as RegExpExecArray)[1]
+        const tid = (regex.exec(source) as RegExpExecArray)[1]
+        const latest = `http://www.mcbbs.net/thread-${tid}-1-1.html`
         return latest
     },
     version: source => {
@@ -53,9 +54,9 @@ async function main() {
 
             let text = ''
             if (!last) {
-                text = `Initialized ${type}: ${latest}.`
+                text = `Initialized ${type}.`
             } else if (last !== latest) {
-                text = `Detected new ${type}: ${latest}.`
+                text = `Detected new ${type}.`
             }
             if (text) {
                 console.log(text)

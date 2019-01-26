@@ -19,7 +19,7 @@ describe('getLatest tests', () => {
     it('question() should return the latest question', () => {
         const result = getLatest.question(testData.question)
 
-        assert.strictEqual(result, '839982')
+        assert.strictEqual(result, 'http://www.mcbbs.net/thread-839982-1-1.html')
     })
     it('version() should return the latest version', () => {
         const result = getLatest.version(testData.version)
