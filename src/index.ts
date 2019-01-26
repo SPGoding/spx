@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
-import { getWebCode } from './util'
+import { getWebCode, getRandomInt } from './util'
 import { server as WSServer, connection } from 'websocket'
 
 export type StringStringMap = {
@@ -82,19 +82,23 @@ async function main() {
 
 //#region Alert
 const connections: connection[] = []
+const ipAddress = ip.address('public', 'ipv4')
+const httpPort = 80
+const wsPort = getRandomInt(49152, 65535)
 
 const httpServer = http.createServer(async (_, res) => {
     res.setHeader('Content-Type', "text/html;charset='utf-8'")
     let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
-    html = html.replace(/localhost/g, ip.address('public', 'ipv4'))
+    html = html.replace(/%replace_as_ws_url%/g, `${ipAddress}:${wsPort}`)
     res.end(html)
-}).listen(80)
-console.log(`HTTP server is running at ${ip.address('public', 'ipv4')}:80`)
+}).listen(httpPort)
+console.log(`HTTP server is running at ${ipAddress}:${httpPort}`)
 httpServer.on('error', e => {
     console.error(e.message)
 })
 
-const wsServer = new WSServer({ httpServer: http.createServer().listen(81) })
+const wsServer = new WSServer({ httpServer: http.createServer().listen(wsPort) })
+console.log(`WebSocket server is running at ${ipAddress}:${wsPort}`)
 wsServer.on('request', request => {
     const connection = request.accept()
     connections.push(connection)

@@ -26,3 +26,7 @@ export async function getWebCode(url: string) {
     })
     return promise
 }
+
+export function getRandomInt(min: number, max: number) {
+    return Math.floor(Math.random() * Math.floor(max - min)) + min
+}

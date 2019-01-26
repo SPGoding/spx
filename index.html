@@ -12,7 +12,7 @@
         "use strict"
         const button = document.getElementById('button')
         const output = document.getElementById('output')
-        const webSocket = new WebSocket('ws://localhost:81')
+        const webSocket = new WebSocket('ws://%replace_as_ws_url%')
 
         button.onclick = () => {
             button.value = "Mark As Read"
