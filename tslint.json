@@ -1,0 +1,52 @@
+{
+    "rules": {
+        "semicolon": [
+            true,
+            "never"
+        ],
+        "jsdoc-format": [
+            true,
+            "check-multiline-start"
+        ],
+        "quotemark": [
+            true,
+            "single",
+            "avoid-escape",
+            "avoid-template"
+        ],
+        "trailing-comma": [
+            true,
+            "never"
+        ],
+        "interface-name": [
+            true,
+            "never-prefix"
+        ],
+        "no-magic-numbers": [
+            true,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+        ],
+        "object-literal-key-quotes": [
+            true,
+            "as-needed"
+        ],
+        "indent": [
+            true,
+            "spaces",
+            4
+        ],
+        "prefer-const": true,
+        "eofline": true
+    }
+}

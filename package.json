@@ -1,0 +1,27 @@
+{
+    "name": "spx",
+    "version": "0.0.1",
+    "description": "A powerful tool for SPGoding's personal use.",
+    "main": "./out/index",
+    "author": "SPGoding",
+    "contributors": [],
+    "license": "GPL-3.0-only",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SPGoding/spx.git"
+    },
+    "bugs": {
+        "url": "https://github.com/SPGoding/spx/issues"
+    },
+    "homepage": "https://github.com/SPGoding/spx#readme",
+    "scripts": {
+        "test": "npm test",
+        "watch": "tsc -b -w"
+    },
+    "devDependencies": {
+        "@types/mocha": "^5.2.5",
+        "@types/node": "^10.12.18",
+        "tslint": "^5.12.1",
+        "typescript": "^3.2.2"
+    }
+}
