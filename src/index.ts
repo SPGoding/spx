@@ -26,6 +26,8 @@ const lastResults: StringStringMap = {
     question: '',
     version: ''
 }
+const unread: { type: string, value: IdentityReadable }[] = []
+
 export const getLatest: StringFunctionMap = {
     article: source => {
         const json = JSON.parse(source)
@@ -69,6 +71,7 @@ async function main() {
             if (text) {
                 console.log(text)
                 alert(type, latest)
+                unread.push({ type, value: latest })
             }
         }
     } catch (ex) {
@@ -96,6 +99,18 @@ wsServer.on('request', request => {
     const connection = request.accept()
     connections.push(connection)
     console.log(`${connection.remoteAddress} connected.`)
+    if (unread.length > 0) {
+        for (const i of unread) {
+            connection.sendUTF(JSON.stringify(i))
+        }
+    }
+
+    connection.on('message', data => {
+        if (data.utf8Data === 'read') {
+            unread.splice(0, unread.length)
+            console.log('Mark as read.')
+        }
+    })
 
     connection.on('close', () => {
         console.log(`${connection.remoteAddress} disconnected.`)

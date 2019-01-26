@@ -7,17 +7,20 @@
 
 <body>
     <div id="output"> </div>
-    <input type="button" value="You should click me." id="button" />
+    <input type="button" value="Activate Sound" id="button" />
     <script type="text/javascript">
         "use strict"
         const button = document.getElementById('button')
         const output = document.getElementById('output')
+        const webSocket = new WebSocket('ws://localhost:81')
 
         button.onclick = () => {
-            button.remove()
+            button.value = "Mark As Read"
+            output.innerHTML = ""
+            button.disabled = true
+            webSocket.send('read')
         }
 
-        const webSocket = new WebSocket('ws://localhost:81')
         webSocket.onmessage = event => {
             const json = JSON.parse(event.data)
             let addition = ''
@@ -30,8 +33,8 @@
             }
             const speech = `New ${json.type} detected: ${json.value.readable}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
-
             output.innerHTML = `${addition}<br />${output.innerHTML}`
+            button.disabled = false
         };
     </script>
 </body>
