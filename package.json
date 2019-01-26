@@ -15,13 +15,20 @@
     },
     "homepage": "https://github.com/SPGoding/spx#readme",
     "scripts": {
-        "test": "npm test",
+        "test": "mocha --opts ./mocha.opts",
         "watch": "tsc -b -w"
     },
     "devDependencies": {
         "@types/mocha": "^5.2.5",
         "@types/node": "^10.12.18",
+        "@types/power-assert": "^1.5.0",
+        "ts-node": "^8.0.2",
         "tslint": "^5.12.1",
         "typescript": "^3.2.2"
+    },
+    "dependencies": {
+        "mocha": "^5.2.0",
+        "power-assert": "^1.6.1",
+        "say": "^0.15.0"
     }
 }
