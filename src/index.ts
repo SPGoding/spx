@@ -10,8 +10,10 @@ export type StringStringMap = {
 }
 
 type StringFunctionMap = {
-    [key: string]: (source: string) => string
+    [key: string]: (source: string) => IdentityReadable
 }
+
+type IdentityReadable = { identity: string, readable: string }
 
 //#region Detect
 const urls: StringStringMap = {
@@ -28,23 +30,27 @@ export const getLatest: StringFunctionMap = {
     article: source => {
         const json = JSON.parse(source)
         const url = json.result[0].url
+        const readable = json.result[0].default_tile.title
         const latest = `https://minecraft.net${url}`
-        return latest
+        return { identity: latest, readable }
     },
     question: source => {
-        const regex = /<tbody id="normalthread_(\d+)">/
-        const tid = (regex.exec(source) as RegExpExecArray)[1]
+        const tidRegex = /<tbody id="normalthread_(\d+)">/
+        const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
         const latest = `http://www.mcbbs.net/thread-${tid}-1-1.html`
-        return latest
+        const titleRegex = /class="s xst">(.+?)<\/a>/
+        const readable = (titleRegex.exec(
+            source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
+        return { identity: latest, readable }
     },
     version: source => {
         const json = JSON.parse(source)
-        const latest = json.latest.snapshot
-        return latest
+        const latest: string = json.latest.snapshot
+        return { identity: latest, readable: latest }
     }
 }
 
-setInterval(main, 15000)
+setInterval(main, 10000)
 
 async function main() {
     try {
@@ -52,13 +58,13 @@ async function main() {
             const webCode = await getWebCode(urls[type])
             const latest = getLatest[type](webCode)
             const last = lastResults[type]
-            lastResults[type] = latest
+            lastResults[type] = latest.identity
 
             let text = ''
             if (!last) {
-                text = `Initialized ${type}.`
-            } else if (last !== latest) {
-                text = `Detected new ${type}.`
+                text = `Initialized ${type}: ${latest.identity} - ${latest.readable}.`
+            } else if (last !== latest.identity) {
+                text = `Detected new ${type}: ${latest.identity} - ${latest.readable}.`
             }
             if (text) {
                 console.log(text)
@@ -74,13 +80,16 @@ async function main() {
 //#region Alert
 const connections: connection[] = []
 
-http.createServer(async (_, res) => {
+const httpServer = http.createServer(async (_, res) => {
     res.setHeader('Content-Type', "text/html;charset='utf-8'")
     let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
     html = html.replace(/localhost/g, ip.address('public', 'ipv4'))
     res.end(html)
 }).listen(80)
 console.log(`HTTP server is running at ${ip.address('public', 'ipv4')}:80`)
+httpServer.on('error', e => {
+    console.error(e.message)
+})
 
 const wsServer = new WSServer({ httpServer: http.createServer().listen(81) })
 wsServer.on('request', request => {
@@ -94,7 +103,7 @@ wsServer.on('request', request => {
     })
 })
 
-function alert(type: string, value: string) {
+function alert(type: string, value: IdentityReadable) {
     connections.forEach(connection => {
         connection.sendUTF(JSON.stringify({ type, value }))
     })

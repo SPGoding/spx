@@ -14,16 +14,26 @@ describe('getLatest tests', () => {
     it('article() should return the latest article', () => {
         const result = getLatest.article(testData.article)
 
-        assert.strictEqual(result, 'https://minecraft.net/en-us/article/taking-inventory-dead-bush')
+        assert.deepStrictEqual(result,
+            {
+                identity: 'https://minecraft.net/en-us/article/taking-inventory-dead-bush',
+                readable: 'Taking Inventory: Dead Bush'
+            }
+        )
     })
     it('question() should return the latest question', () => {
         const result = getLatest.question(testData.question)
 
-        assert.strictEqual(result, 'http://www.mcbbs.net/thread-839982-1-1.html')
+        assert.deepStrictEqual(result,
+            {
+                identity: 'http://www.mcbbs.net/thread-839982-1-1.html',
+                readable: '单人-检测到某个或者几个格子内有指定物品则触发指令'
+            }
+        )
     })
     it('version() should return the latest version', () => {
         const result = getLatest.version(testData.version)
 
-        assert.strictEqual(result, '19w04b')
+        assert.deepStrictEqual(result, { identity: '19w04b', readable: '19w04b' })
     })
 })

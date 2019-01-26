@@ -6,14 +6,32 @@
 </head>
 
 <body>
-    <div id="output">
-    </div>
+    <div id="output"> </div>
+    <input type="button" value="You should click me." id="button" />
     <script type="text/javascript">
-        const webSocket = new WebSocket('ws://localhost:81');
+        "use strict"
+        const button = document.getElementById('button')
+        const output = document.getElementById('output')
+
+        button.onclick = () => {
+            button.remove()
+        }
+
+        const webSocket = new WebSocket('ws://localhost:81')
         webSocket.onmessage = event => {
-            const output = document.getElementById('output');
-            const addition = event.data
-            output.innerHTML = `${addition}<br />${output.innerHTML}`;
+            const json = JSON.parse(event.data)
+            let addition = ''
+            if (json.type === 'article') {
+                addition = `New article detected: <a href="${json.value.identity}">${json.value.readable}</a>`
+            } else if (json.type === 'question') {
+                addition = `New question detected: <a href="${json.value.identity}">${json.value.readable}</a>`
+            } else if (json.type === 'version') {
+                addition = `New version detected: ${json.value.identity}`
+            }
+            const speech = `New ${json.type} detected: ${json.value.readable}`
+            speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+
+            output.innerHTML = `${addition}<br />${output.innerHTML}`
         };
     </script>
 </body>
