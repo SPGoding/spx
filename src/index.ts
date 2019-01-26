@@ -1,6 +1,9 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import * as http from 'http'
-import * as https from 'https'
-import * as say from 'say'
+import * as ip from 'ip'
+import { getWebCode } from './util'
+import { server as WSServer, connection } from 'websocket'
 
 export type StringStringMap = {
     [key: string]: string
@@ -10,7 +13,7 @@ type StringFunctionMap = {
     [key: string]: (source: string) => string
 }
 
-const interval = 15000
+//#region Detect
 const urls: StringStringMap = {
     article: 'https://minecraft.net/en-us/api/tiles/channel/not_set,Community%20content/region/None/category/Insider,News/page/1',
     question: 'http://www.mcbbs.net/forum-qanda-1.html',
@@ -41,8 +44,7 @@ export const getLatest: StringFunctionMap = {
     }
 }
 
-setInterval(main, interval)
-
+setInterval(main, 15000)
 
 async function main() {
     try {
@@ -60,36 +62,41 @@ async function main() {
             }
             if (text) {
                 console.log(text)
-                say.speak(text)
+                alert(type, latest)
             }
         }
     } catch (ex) {
         console.error(ex)
     }
 }
+//#endregion
 
-async function getWebCode(url: string) {
-    const isHttps = url.slice(0, 5) === 'https'
-    const promise = new Promise<string>((resolve, reject) => {
-        const cb = (res: http.IncomingMessage) => {
-            var content = ''
+//#region Alert
+const connections: connection[] = []
 
-            res.setEncoding('utf8')
-            res.on('data', chunk => {
-                content += chunk
-            })
-            res.on('end', () => {
-                resolve(content)
-            })
-            res.on('error', e => {
-                reject(e.message)
-            })
-        }
-        if (isHttps) {
-            https.get(url, cb)
-        } else {
-            http.get(url, cb)
-        }
+http.createServer(async (_, res) => {
+    res.setHeader('Content-Type', "text/html;charset='utf-8'")
+    let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
+    html = html.replace(/localhost/g, ip.address('public', 'ipv4'))
+    res.end(html)
+}).listen(80)
+console.log(`HTTP server is running at ${ip.address('public', 'ipv4')}:80`)
+
+const wsServer = new WSServer({ httpServer: http.createServer().listen(81) })
+wsServer.on('request', request => {
+    const connection = request.accept()
+    connections.push(connection)
+    console.log(`${connection.remoteAddress} connected.`)
+
+    connection.on('close', () => {
+        console.log(`${connection.remoteAddress} disconnected.`)
+        connections.splice(connections.indexOf(connection), 1)
     })
-    return promise
+})
+
+function alert(type: string, value: string) {
+    connections.forEach(connection => {
+        connection.sendUTF(JSON.stringify({ type, value }))
+    })
 }
+//#endregion

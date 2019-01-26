@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>spx client</title>
+</head>
+
+<body>
+    <div id="output">
+    </div>
+    <script type="text/javascript">
+        const webSocket = new WebSocket('ws://localhost:81');
+        webSocket.onmessage = event => {
+            const output = document.getElementById('output');
+            const addition = event.data
+            output.innerHTML = `${addition}<br />${output.innerHTML}`;
+        };
+    </script>
+</body>
+
+</html>
