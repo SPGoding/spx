@@ -16,6 +16,7 @@
     "homepage": "https://github.com/SPGoding/spx#readme",
     "scripts": {
         "test": "mocha --opts ./mocha.opts",
+        "compile": "tsc -b",
         "watch": "tsc -b -w",
         "start": "node ./out/index.js"
     },
