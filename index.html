@@ -29,24 +29,36 @@
 
         shutdown.onclick = () => {
             webSocket.send('shutdown')
+            alert('Asked server to shutdown.')
         }
 
         restart.onclick = () => {
             webSocket.send('restart')
+            alert('Asked server to restart.')
         }
 
         webSocket.onmessage = event => {
             const json = JSON.parse(event.data)
             let addition = ''
-            if (json.type === 'article') {
-                addition = `New article detected: <a href="${json.value.identity}">${json.value.readable}</a>`
-            } else if (json.type === 'question') {
-                addition = `New question detected: <a href="${json.value.identity}">${json.value.readable}</a>`
-            } else if (json.type === 'version') {
-                addition = `New version detected: ${json.value.identity}`
-            } else if (json.type === 'cpu') {
-                cpu.innerHTML = json.value.readable
-                return
+            switch (json.type) {
+                case 'article':
+                    addition = `New article detected: <a href="${json.value.identity}">${json.value.readable}</a>`
+                    break
+                case 'question':
+                    addition = `New question detected: <a href="${json.value.identity}">${json.value.readable}</a>`
+                    break
+                case 'version':
+                    addition = `New version detected: ${json.value.identity}`
+                    break
+                case 'cpu':
+                    cpu.innerHTML = json.value.readable
+                    return
+                case 'read':
+                    output.innerHTML = ""
+                    read.disabled = true
+                default:
+                    alert(`Unknown server request: ${event.data}.`)
+                    break
             }
             const speech = `New ${json.type} detected: ${json.value.readable}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))

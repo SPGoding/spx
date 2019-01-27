@@ -124,15 +124,23 @@ wsServer.on('request', request => {
     }
 
     connection.on('message', data => {
-        if (data.utf8Data === 'read') {
-            unread.splice(0, unread.length)
-            console.log('Mark as read.')
-        } else if (data.utf8Data === 'shudown') {
-            console.log('Client asked to shudown.')
-            exec('sudo shutdown -P now')
-        } else if (data.utf8Data === 'restart') {
-            console.log('Client asked to restart.')
-            exec('sudo shutdown -r now')
+        switch (data.utf8Data) {
+            case 'read':
+                unread.splice(0, unread.length)
+                alert('read', { identity: '', readable: '' })
+                console.log('Marked as read.')
+                break
+            case 'shutdown':
+                console.log('Client asked to shutdown.')
+                exec('sudo shutdown -P now')
+                break
+            case 'restart':
+                console.log('Client asked to restart.')
+                exec('sudo shutdown -r now')
+                break
+            default:
+                console.error(`Unknown client request: ${data.utf8Data}.`)
+                break
         }
     })
 
