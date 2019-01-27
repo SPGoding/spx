@@ -6,19 +6,33 @@
 </head>
 
 <body>
-    <div id="output"> </div>
-    <input type="button" value="Activate Sound" id="button" />
+    <div id="output"></div>
+    <input type="button" value="Activate Sound" id="read" /><br />
+    <p id="cpu"></p>
+    <input type="button" value="Shutdown" id="shutdown" />
+    <input type="button" value="Restart" id="restart" /><br />
     <script type="text/javascript">
         "use strict"
-        const button = document.getElementById('button')
+        const read = document.getElementById('read')
         const output = document.getElementById('output')
+        const cpu = document.getElementById('cpu')
+        const shutdown = document.getElementById('shutdown')
+        const restart = document.getElementById('restart')
         const webSocket = new WebSocket('ws://%replace_as_ws_url%')
 
-        button.onclick = () => {
-            button.value = "Mark As Read"
+        read.onclick = () => {
+            read.value = "Mark As Read"
             output.innerHTML = ""
-            button.disabled = true
+            read.disabled = true
             webSocket.send('read')
+        }
+
+        shutdown.onclick = () => {
+            webSocket.send('shutdown')
+        }
+
+        restart.onclick = () => {
+            webSocket.send('restart')
         }
 
         webSocket.onmessage = event => {
@@ -30,11 +44,14 @@
                 addition = `New question detected: <a href="${json.value.identity}">${json.value.readable}</a>`
             } else if (json.type === 'version') {
                 addition = `New version detected: ${json.value.identity}`
+            } else if (json.type === 'cpu') {
+                output.innerHTML = json.value.readable
+                return
             }
             const speech = `New ${json.type} detected: ${json.value.readable}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             output.innerHTML = `${addition}<br />${output.innerHTML}`
-            button.disabled = false
+            read.disabled = false
         };
     </script>
 </body>

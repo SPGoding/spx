@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
+import { exec } from 'child_process'
 import { getWebCode, getRandomInt } from './util'
 import { server as WSServer, connection } from 'websocket'
 
@@ -78,6 +79,20 @@ async function main() {
         console.error(ex)
     }
 }
+
+setInterval(getCpuTemperature, 1000)
+
+async function getCpuTemperature() {
+    try {
+        const value = await fs.promises.readFile(
+            '/sys/class/thermal/thermal_zone0/temp',
+            { encoding: 'utf8' }
+        )
+        alert('cpu', { identity: value, readable: `${parseInt(value) / 1000}℃` })
+    } catch (ex) {
+        console.error(ex)
+    }
+}
 //#endregion
 
 //#region Alert
@@ -113,6 +128,12 @@ wsServer.on('request', request => {
         if (data.utf8Data === 'read') {
             unread.splice(0, unread.length)
             console.log('Mark as read.')
+        } else if (data.utf8Data === 'shudown') {
+            console.log('Client asked to shudown.')
+            exec('shutdown now')
+        } else if (data.utf8Data === 'restart') {
+            console.log('Client asked to restart.')
+            exec('shutdown -r now')
         }
     })
 
