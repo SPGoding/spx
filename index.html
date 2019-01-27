@@ -56,6 +56,7 @@
                 case 'read':
                     output.innerHTML = ""
                     read.disabled = true
+                    return
                 default:
                     alert(`Unknown server request: ${event.data}.`)
                     break
