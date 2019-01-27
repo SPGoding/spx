@@ -129,10 +129,10 @@ wsServer.on('request', request => {
             console.log('Mark as read.')
         } else if (data.utf8Data === 'shudown') {
             console.log('Client asked to shudown.')
-            exec('shutdown -P now')
+            exec('sudo shutdown -P now')
         } else if (data.utf8Data === 'restart') {
             console.log('Client asked to restart.')
-            exec('shutdown -r now')
+            exec('sudo shutdown -r now')
         }
     })
 
