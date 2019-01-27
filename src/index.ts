@@ -97,23 +97,22 @@ async function getCpuTemperature() {
 
 //#region Alert
 const connections: connection[] = []
-const ipAddress = ip.address('public', 'ipv4')
 const httpPort = 80
 const wsPort = getRandomInt(49152, 65535)
 
 const httpServer = http.createServer(async (_, res) => {
     res.setHeader('Content-Type', "text/html;charset='utf-8'")
     let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
-    html = html.replace(/%replace_as_ws_url%/g, `${ipAddress}:${wsPort}`)
+    html = html.replace(/%replace_as_ws_url%/g, `${ip.address('public', 'ipv4')}:${wsPort}`)
     res.end(html)
 }).listen(httpPort)
-console.log(`HTTP server is running at ${ipAddress}:${httpPort}`)
+console.log(`HTTP server is running at ${ip.address('public', 'ipv4')}:${httpPort}`)
 httpServer.on('error', e => {
     console.error(e.message)
 })
 
 const wsServer = new WSServer({ httpServer: http.createServer().listen(wsPort) })
-console.log(`WebSocket server is running at ${ipAddress}:${wsPort}`)
+console.log(`WebSocket server is running at ${ip.address('public', 'ipv4')}:${wsPort}`)
 wsServer.on('request', request => {
     const connection = request.accept()
     connections.push(connection)
@@ -130,7 +129,7 @@ wsServer.on('request', request => {
             console.log('Mark as read.')
         } else if (data.utf8Data === 'shudown') {
             console.log('Client asked to shudown.')
-            exec('shutdown now')
+            exec('shutdown -P now')
         } else if (data.utf8Data === 'restart') {
             console.log('Client asked to restart.')
             exec('shutdown -r now')
