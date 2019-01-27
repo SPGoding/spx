@@ -45,7 +45,7 @@
             } else if (json.type === 'version') {
                 addition = `New version detected: ${json.value.identity}`
             } else if (json.type === 'cpu') {
-                output.innerHTML = json.value.readable
+                cpu.innerHTML = json.value.readable
                 return
             }
             const speech = `New ${json.type} detected: ${json.value.readable}`
