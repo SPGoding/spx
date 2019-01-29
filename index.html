@@ -26,8 +26,12 @@
         read.onclick = () => {
             if (read.value !== 'Mark As Read') {
                 read.value = 'Mark As Read'
+                if (output.innerHTML === '' && textarea.value === '') {
+                    read.disabled = true
+                }
             } else {
-                output.innerHTML = ""
+                output.innerHTML = ''
+                textarea.value = ''
                 read.disabled = true
                 webSocket.send('read')
             }
