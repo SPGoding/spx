@@ -2,19 +2,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
-import { exec } from 'child_process'
-import { getWebCode, getRandomInt } from './util'
+import { exec, execSync } from 'child_process'
+import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result } from './util'
 import { server as WSServer, connection } from 'websocket'
-
-export type StringStringMap = {
-    [key: string]: string
-}
-
-type StringFunctionMap = {
-    [key: string]: (source: string) => IdentityReadable
-}
-
-type IdentityReadable = { identity: string, readable: string }
 
 //#region Detect
 const urls: StringStringMap = {
@@ -27,28 +17,37 @@ const lastResults: StringStringMap = {
     question: '',
     version: ''
 }
-const unread: { type: string, value: IdentityReadable }[] = []
+/**
+ * All notifications that still aren't read by clients.
+ */
+const unread: { type: string, value: Result }[] = []
+
+var versions: string[] = []
 
 export const getLatest: StringFunctionMap = {
     article: source => {
         const json = JSON.parse(source)
         const url = json.result[0].url
         const readable = json.result[0].default_tile.title
-        const latest = `https://minecraft.net${url}`
-        return { identity: latest, readable }
+        const identity = `https://minecraft.net${url}`
+        return { identity, readable }
     },
     question: source => {
         const tidRegex = /<tbody id="normalthread_(\d+)">/
         const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
-        const latest = `http://www.mcbbs.net/thread-${tid}-1-1.html`
+        const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
         const titleRegex = /class="s xst">(.+?)<\/a>/
         const readable = (titleRegex.exec(
             source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
-        return { identity: latest, readable }
+        return { identity, readable }
     },
     version: source => {
-        const json = JSON.parse(source)
+        const json: {
+            latest: { snapshot: string, release: string },
+            versions: [{ id: string, [key: string]: any }]
+        } = JSON.parse(source)
         const latest: string = json.latest.snapshot
+        versions = json.versions.map(v => v.id)
         return { identity: latest, readable: latest }
     }
 }
@@ -71,7 +70,23 @@ async function main() {
             }
             if (text) {
                 console.log(text)
-                alert(type, latest)
+                // Deal with additional information.
+                if (type === 'article') {
+                    const urlsrcPath = path.join(__dirname, '../ref/urlsrc.txt')
+                    const bbcsrcPath = path.join(__dirname, '../ref/bbssrc.txt')
+                    const cwd = path.join(__dirname, '../ref/')
+                    const urlsrc = await getWebCode(latest.identity)
+                    await fs.promises.writeFile(urlsrcPath, urlsrc, { encoding: 'utf8' })
+                    execSync('python mcArticleConvert.py', { encoding: 'utf8', cwd })
+                    latest.addition = await fs.promises.readFile(bbcsrcPath, { encoding: 'utf8' })
+                } else if (type === 'version') {
+                    const versionType = getVersionType(latest.identity)
+                    const beginning = getBeginning(versionType, latest.identity, versions)
+                    const ending = getEnding(versionType)
+                    const addition = { beginning, ending }
+                    latest.addition = addition
+                }
+                notice(type, latest)
                 unread.push({ type, value: latest })
             }
         }
@@ -80,7 +95,9 @@ async function main() {
     }
 }
 
-setInterval(getCpuTemperature, 1000)
+if (fs.existsSync('/sys/class/thermal/thermal_zone0/temp')) {
+    setInterval(getCpuTemperature, 1000)
+}
 
 async function getCpuTemperature() {
     try {
@@ -88,7 +105,7 @@ async function getCpuTemperature() {
             '/sys/class/thermal/thermal_zone0/temp',
             { encoding: 'utf8' }
         )
-        alert('cpu', { identity: value, readable: `${parseInt(value) / 1000}℃` })
+        notice('cpu', { identity: value, readable: `${parseInt(value) / 1000}℃` })
     } catch (ex) {
         console.error(ex)
     }
@@ -127,7 +144,7 @@ wsServer.on('request', request => {
         switch (data.utf8Data) {
             case 'read':
                 unread.splice(0, unread.length)
-                alert('read', { identity: '', readable: '' })
+                notice('read', { identity: '', readable: '' })
                 console.log('Marked as read.')
                 break
             case 'shutdown':
@@ -144,13 +161,17 @@ wsServer.on('request', request => {
         }
     })
 
+    connection.on('error', ex => {
+        console.error(ex.message)
+    })
+
     connection.on('close', () => {
         console.log(`${connection.remoteAddress} disconnected.`)
         connections.splice(connections.indexOf(connection), 1)
     })
 })
 
-function alert(type: string, value: IdentityReadable) {
+function notice(type: string, value: Result) {
     connections.forEach(connection => {
         connection.sendUTF(JSON.stringify({ type, value }))
     })

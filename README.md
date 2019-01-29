@@ -9,3 +9,7 @@ A powerful tool for SPGoding's personal use executed by raspberry pi.
 - Alerts when new Minecraft INSIDER article was posted.
 - Shows the CPU's temperature of the raspberry pi..
 - Provides operations (such as shutdown and restart) to the raspberry pi.
+
+## Special Thanks To
+
+- [RicoloveFeng/mc-article-to-bbscode](https://github.com/RicoloveFeng/mc-article-to-bbscode/) made by [@RicoloveFeng](https://github.com/RicoloveFeng) (also called [@kakagou12](http://www.mcbbs.net/?10240))

@@ -2,7 +2,8 @@ import * as assert from 'power-assert'
 import * as fs from 'fs'
 import * as path from 'path'
 import { describe, it } from 'mocha'
-import { getLatest, StringStringMap } from '../index'
+import { getLatest } from '../index'
+import { StringStringMap } from '../util'
 
 const testData: StringStringMap = {
     article: fs.readFileSync(path.join(__dirname, './data/article.json'), { encoding: 'utf8' }),
