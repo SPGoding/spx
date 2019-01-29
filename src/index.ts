@@ -105,6 +105,9 @@ async function getCpuTemperature() {
             '/sys/class/thermal/thermal_zone0/temp',
             { encoding: 'utf8' }
         )
+        if (parseInt(value) >= 70000) {
+            exec('sudo shutdown -P now')
+        }
         notice('cpu', { identity: value, readable: `${parseInt(value) / 1000}℃` })
     } catch (ex) {
         console.error(ex)
