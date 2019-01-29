@@ -24,10 +24,13 @@
         const webSocket = new WebSocket('ws://%replace_as_ws_url%')
 
         read.onclick = () => {
-            read.value = "Mark As Read"
-            output.innerHTML = ""
-            read.disabled = true
-            webSocket.send('read')
+            if (read.value !== 'Mark As Read') {
+                read.value = 'Mark As Read'
+            } else {
+                output.innerHTML = ""
+                read.disabled = true
+                webSocket.send('read')
+            }
         }
 
         shutdown.onclick = () => {
