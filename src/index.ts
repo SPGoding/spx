@@ -112,12 +112,18 @@ async function getCpuTemperature() {
 }
 //#endregion
 
-//#region Alert
+//#region Notice
 const connections: connection[] = []
 const httpPort = 80
 const wsPort = getRandomInt(49152, 65535)
 
-const httpServer = http.createServer(async (_, res) => {
+const httpServer = http.createServer(async (req, res) => {
+    req.on('error', e => {
+        console.error(e.message)
+    })
+    res.on('error', e => {
+        console.error(e.message)
+    })
     res.setHeader('Content-Type', "text/html;charset='utf-8'")
     let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
     html = html.replace(/%replace_as_ws_url%/g, `${ip.address('public', 'ipv4')}:${wsPort}`)
@@ -132,6 +138,11 @@ const wsServer = new WSServer({ httpServer: http.createServer().listen(wsPort) }
 console.log(`WebSocket server is running at ${ip.address('public', 'ipv4')}:${wsPort}`)
 wsServer.on('request', request => {
     const connection = request.accept()
+
+    connection.on('error', ex => {
+        console.error(ex.message)
+    })
+
     connections.push(connection)
     console.log(`${connection.remoteAddress} connected.`)
     if (unread.length > 0) {
@@ -159,10 +170,6 @@ wsServer.on('request', request => {
                 console.error(`Unknown client request: ${data.utf8Data}.`)
                 break
         }
-    })
-
-    connection.on('error', ex => {
-        console.error(ex.message)
     })
 
     connection.on('close', () => {
