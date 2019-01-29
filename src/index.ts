@@ -77,7 +77,7 @@ async function main() {
                     const cwd = path.join(__dirname, '../ref/')
                     const urlsrc = await getWebCode(latest.identity)
                     await fs.promises.writeFile(urlsrcPath, urlsrc, { encoding: 'utf8' })
-                    execSync('python mcArticleConvert.py', { encoding: 'utf8', cwd })
+                    execSync('python3 mcArticleConvert.py', { encoding: 'utf8', cwd })
                     latest.addition = await fs.promises.readFile(bbcsrcPath, { encoding: 'utf8' })
                 } else if (type === 'version') {
                     const versionType = getVersionType(latest.identity)
