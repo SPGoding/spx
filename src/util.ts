@@ -8,6 +8,10 @@ export type StringStringMap = {
     [key: string]: string
 }
 
+export type StringNumberMap = {
+    [key: string]: number
+}
+
 export type StringFunctionMap = {
     [key: string]: (source: string) => Result
 }

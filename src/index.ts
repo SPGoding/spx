@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
 import { exec, execSync } from 'child_process'
-import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result } from './util'
+import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result, StringNumberMap } from './util'
 import { server as WSServer, connection } from 'websocket'
 
 //#region Detect
@@ -16,6 +16,11 @@ const lastResults: StringStringMap = {
     article: '',
     question: '',
     version: ''
+}
+const errorCount: StringNumberMap = {
+    article: 0,
+    question: 0,
+    version: 0
 }
 /**
  * All notifications that still aren't read by clients.
@@ -34,6 +39,7 @@ export const getLatest: StringFunctionMap = {
             return { identity, readable }
         } catch (ex) {
             console.error(ex)
+            errorCount.article += 1
             return { identity: lastResults.article, readable: '' }
         }
     },
@@ -48,6 +54,7 @@ export const getLatest: StringFunctionMap = {
             return { identity, readable }
         } catch (ex) {
             console.error(ex)
+            errorCount.question += 1
             return { identity: lastResults.question, readable: '' }
         }
     },
@@ -62,6 +69,7 @@ export const getLatest: StringFunctionMap = {
             return { identity: latest, readable: latest }
         } catch (ex) {
             console.error(ex)
+            errorCount.version += 1
             return { identity: lastResults.version, readable: '' }
         }
     }
@@ -72,6 +80,10 @@ setInterval(main, 10000)
 async function main() {
     try {
         for (const type of ['article', 'question', 'version']) {
+            if (errorCount[type] >= 10) {
+                continue
+            }
+
             const webCode = await getWebCode(urls[type])
             const latest = getLatest[type](webCode)
             const last = lastResults[type]
