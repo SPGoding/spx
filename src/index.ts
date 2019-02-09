@@ -80,7 +80,7 @@ setInterval(main, 10000)
 async function main() {
     try {
         for (const type of ['article', 'question', 'version']) {
-            if (errorCount[type] >= 10) {
+            if (errorCount[type] >= 3) {
                 continue
             }
 
