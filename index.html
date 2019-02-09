@@ -23,6 +23,8 @@
         const textarea = document.getElementById('textarea')
         const webSocket = new WebSocket('ws://%replace_as_ws_url%')
 
+        let heartBeat = 300
+
         read.onclick = () => {
             if (read.value !== 'Mark As Read') {
                 read.value = 'Mark As Read'
@@ -61,6 +63,7 @@
                     append = `New version detected: ${json.value.identity}`
                     break
                 case 'cpu':
+                heartBeat = 300
                     cpu.innerHTML = json.value.readable
                     return
                 case 'read':
@@ -82,7 +85,14 @@
             }
             output.innerHTML = `${append}<br />${output.innerHTML}`
             read.disabled = false
-        };
+        }
+
+        setInterval(() => {
+            heartBeat -= 1
+            if (heartBeat < 0) {
+                cpu.innerHTML = 'DISCONNECTED'
+            }
+        }, 10);
     </script>
 </body>
 
