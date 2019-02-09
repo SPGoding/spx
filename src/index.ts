@@ -26,29 +26,44 @@ var versions: string[] = []
 
 export const getLatest: StringFunctionMap = {
     article: source => {
-        const json = JSON.parse(source)
-        const url = json.result[0].url
-        const readable = json.result[0].default_tile.title
-        const identity = `https://minecraft.net${url}`
-        return { identity, readable }
+        try {
+            const json = JSON.parse(source)
+            const url = json.result[0].url
+            const readable = json.result[0].default_tile.title
+            const identity = `https://minecraft.net${url}`
+            return { identity, readable }
+        } catch (ex) {
+            console.error(ex)
+            return { identity: lastResults.article, readable: '' }
+        }
     },
     question: source => {
-        const tidRegex = /<tbody id="normalthread_(\d+)">/
-        const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
-        const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
-        const titleRegex = /class="s xst">(.+?)<\/a>/
-        const readable = (titleRegex.exec(
-            source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
-        return { identity, readable }
+        try {
+            const tidRegex = /<tbody id="normalthread_(\d+)">/
+            const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
+            const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
+            const titleRegex = /class="s xst">(.+?)<\/a>/
+            const readable = (titleRegex.exec(
+                source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
+            return { identity, readable }
+        } catch (ex) {
+            console.error(ex)
+            return { identity: lastResults.question, readable: '' }
+        }
     },
     version: source => {
-        const json: {
-            latest: { snapshot: string, release: string },
-            versions: [{ id: string, [key: string]: any }]
-        } = JSON.parse(source)
-        const latest: string = json.latest.snapshot
-        versions = json.versions.map(v => v.id)
-        return { identity: latest, readable: latest }
+        try {
+            const json: {
+                latest: { snapshot: string, release: string },
+                versions: [{ id: string, [key: string]: any }]
+            } = JSON.parse(source)
+            const latest: string = json.latest.snapshot
+            versions = json.versions.map(v => v.id)
+            return { identity: latest, readable: latest }
+        } catch (ex) {
+            console.error(ex)
+            return { identity: lastResults.version, readable: '' }
+        }
     }
 }
 

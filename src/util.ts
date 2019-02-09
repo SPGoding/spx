@@ -2,7 +2,7 @@ import * as http from 'http'
 import * as https from 'https'
 
 const nextMainRelease = '1.14'
-const featureList = '[url=http://www.mcbbs.net/thread-??????-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
+const featureList = '[url=https://minecraft-zh.gamepedia.com/1.14]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
 export type StringStringMap = {
     [key: string]: string
@@ -24,14 +24,14 @@ export async function getWebCode(url: string) {
         const cb = (res: http.IncomingMessage) => {
             var content = ''
             res.setEncoding('utf8')
+            res.on('error', e => {
+                reject(e.message)
+            })
             res.on('data', chunk => {
                 content += chunk
             })
             res.on('end', () => {
                 resolve(content)
-            })
-            res.on('error', e => {
-                reject(e.message)
             })
         }
         if (isHttps) {
