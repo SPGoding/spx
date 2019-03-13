@@ -2,8 +2,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
-import { exec, execSync } from 'child_process'
-import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result, StringNumberMap } from './util'
+import { exec } from 'child_process'
+import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result, StringNumberMap, convertMCAriticleToBBCode } from './util'
 import { server as WSServer, connection } from 'websocket'
 
 //#region Detect
@@ -99,13 +99,8 @@ async function main() {
                 console.log(text)
                 // Deal with additional information.
                 if (type === 'article') {
-                    const urlsrcPath = path.join(__dirname, '../ref/urlsrc.txt')
-                    const bbcsrcPath = path.join(__dirname, '../ref/bbssrc.txt')
-                    const cwd = path.join(__dirname, '../ref/')
-                    const urlsrc = await getWebCode(latest.identity)
-                    await fs.promises.writeFile(urlsrcPath, urlsrc, { encoding: 'utf8' })
-                    execSync('python3 mcArticleConvert.py', { encoding: 'utf8', cwd })
-                    latest.addition = await fs.promises.readFile(bbcsrcPath, { encoding: 'utf8' })
+                    const src = await getWebCode(latest.identity)
+                    latest.addition = convertMCAriticleToBBCode(src)
                 } else if (type === 'version') {
                     const versionType = getVersionType(latest.identity)
                     const beginning = getBeginning(versionType, latest.identity, versions)

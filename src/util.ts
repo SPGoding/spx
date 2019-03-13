@@ -88,6 +88,10 @@ export function getCounts(versions: string[]): [number, number] {
     return [snapCount, preCount]
 }
 
+export function convertMCAriticleToBBCode(src: string) {
+    return src
+}
+
 export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', version: string, versions: string[]) {
     const [snapCount, preCount] = getCounts(versions)
     switch (type) {
