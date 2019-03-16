@@ -13,7 +13,7 @@ export type StringNumberMap = {
 }
 
 export type StringFunctionMap = {
-    [key: string]: (source: string) => Result
+    [key: string]: (...params: any[]) => Result
 }
 
 export type Result = {
@@ -88,8 +88,51 @@ export function getCounts(versions: string[]): [number, number] {
     return [snapCount, preCount]
 }
 
-export function convertMCAriticleToBBCode(src: string) {
-    return src
+/**
+ * Get the latest article, question or version from web source code.
+ */
+export const getLatest: StringFunctionMap = {
+    article: (source, lastResult, _) => {
+        try {
+            const json = JSON.parse(source)
+            const url = json.article_grid[0].article_url
+            const readable = json.article_grid[0].default_tile.title
+            const identity = `https://minecraft.net${url}`
+            return { identity, readable }
+        } catch (ex) {
+            console.error(ex)
+            return { identity: lastResult, readable: '' }
+        }
+    },
+    question: (source, lastResult, _) => {
+        try {
+            const tidRegex = /<tbody id="normalthread_(\d+)">/
+            const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
+            const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
+            const titleRegex = /class="s xst">(.+?)<\/a>/
+            const readable = (titleRegex.exec(
+                source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
+            return { identity, readable }
+        } catch (ex) {
+            console.error(ex)
+            return { identity: lastResult, readable: '' }
+        }
+    },
+    version: (source, lastResult, versions: string[]) => {
+        try {
+            const json: {
+                latest: { snapshot: string, release: string },
+                versions: [{ id: string, [key: string]: any }]
+            } = JSON.parse(source)
+            const latest: string = json.latest.snapshot
+            versions.splice(0)
+            versions.push(...json.versions.map(v => v.id))
+            return { identity: latest, readable: latest }
+        } catch (ex) {
+            console.error(ex)
+            return { identity: lastResult, readable: '' }
+        }
+    }
 }
 
 export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', version: string, versions: string[]) {

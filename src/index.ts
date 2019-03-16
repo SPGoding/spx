@@ -3,12 +3,13 @@ import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
 import { exec } from 'child_process'
-import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result, StringNumberMap, convertMCAriticleToBBCode } from './util'
+import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result, StringNumberMap, getLatest } from './util'
+import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 
 //#region Detect
 const urls: StringStringMap = {
-    article: 'https://minecraft.net/en-us/api/tiles/channel/not_set,Community%20content/region/None/category/Insider,News/page/1',
+    article: 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/insider,minecraft:article/news&propResPath=/content/minecraft-net/language-masters/en-us/jcr:content/root/generic-container/par/grid&offset=0&count=2000&pageSize=20&tag=ALL&lang=/content/minecraft-net/language-masters/en-us',
     question: 'http://www.mcbbs.net/forum-qanda-1.html',
     version: 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
 }
@@ -17,83 +18,28 @@ const lastResults: StringStringMap = {
     question: '',
     version: ''
 }
-const errorCount: StringNumberMap = {
-    article: 0,
-    question: 0,
-    version: 0
-}
 /**
  * All notifications that still aren't read by clients.
  */
 const unread: { type: string, value: Result }[] = []
 
-var versions: string[] = []
-
-export const getLatest: StringFunctionMap = {
-    article: source => {
-        try {
-            const json = JSON.parse(source)
-            const url = json.result[0].url
-            const readable = json.result[0].default_tile.title
-            const identity = `https://minecraft.net${url}`
-            return { identity, readable }
-        } catch (ex) {
-            console.error(ex)
-            errorCount.article += 1
-            return { identity: lastResults.article, readable: '' }
-        }
-    },
-    question: source => {
-        try {
-            const tidRegex = /<tbody id="normalthread_(\d+)">/
-            const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
-            const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
-            const titleRegex = /class="s xst">(.+?)<\/a>/
-            const readable = (titleRegex.exec(
-                source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
-            return { identity, readable }
-        } catch (ex) {
-            console.error(ex)
-            errorCount.question += 1
-            return { identity: lastResults.question, readable: '' }
-        }
-    },
-    version: source => {
-        try {
-            const json: {
-                latest: { snapshot: string, release: string },
-                versions: [{ id: string, [key: string]: any }]
-            } = JSON.parse(source)
-            const latest: string = json.latest.snapshot
-            versions = json.versions.map(v => v.id)
-            return { identity: latest, readable: latest }
-        } catch (ex) {
-            console.error(ex)
-            errorCount.version += 1
-            return { identity: lastResults.version, readable: '' }
-        }
-    }
-}
+const versions: string[] = []
 
 setInterval(main, 10000)
 
 async function main() {
     try {
         for (const type of ['article', 'question', 'version']) {
-            if (errorCount[type] >= 3) {
-                continue
-            }
-
             const webCode = await getWebCode(urls[type])
-            const latest = getLatest[type](webCode)
+            const latest = getLatest[type](webCode, lastResults[type], versions)
             const last = lastResults[type]
             lastResults[type] = latest.identity
 
             let text = ''
             if (!last) {
-                text = `Initialized ${type}: ${latest.identity} - ${latest.readable}.`
+                text = `Initialized ${type}: ${latest.identity}.`
             } else if (last !== latest.identity) {
-                text = `Detected new ${type}: ${latest.identity} - ${latest.readable}.`
+                text = `Detected new ${type}: ${latest.identity}.`
             }
             if (text) {
                 console.log(text)
