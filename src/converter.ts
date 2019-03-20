@@ -1,5 +1,3 @@
-import { JSDOM } from 'jsdom'
-
 /*
  * @author SPGoding
  */
@@ -9,9 +7,7 @@ const config = {
 }
 
 
-export function convertMCAriticleToBBCode(src: string) {
-    const html = new JSDOM(src).window.document
-
+export function convertMCAriticleToBBCode(html: Document) {
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
@@ -40,10 +36,23 @@ export function getContent(html: Document) {
     const rootDiv = html.getElementsByClassName('article-body')[0] as HTMLElement
     let ans = converters.rescure(rootDiv)
 
+    // Get the server URL if it exists.
+    const serverUrls = ans.match(/(https:\/\/launcher.mojang.com\/.+\/server.jar)/)
+    let serverUrl = ''
+    if (serverUrls) {
+        serverUrl = serverUrls[0]
+    }
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Add spaces between text and '['.
-    ans = ans.replace(/([a-zA-Z0-9\-\.\_])\</, '$1 [')
+    ans = ans.replace(/([a-zA-Z0-9\-\.\_])\[/, '$1 [')
+    // Append the server URL if it exists.
+    if (serverUrl) {
+        ans += `[align=center][table=70%,#EDFBFF]
+[tr][td=2,1][align=center][size=3][color=#D6D604][b]官方服务端下载地址[/b][/color][/size][/align][/td][/tr]
+[tr][td][align=center][url=${serverUrl}]${serverUrl}[/url][/align][/td][/tr]
+[/table][/align]`
+    }
 
     return ans
 }

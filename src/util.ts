@@ -2,7 +2,7 @@ import * as http from 'http'
 import * as https from 'https'
 
 const nextMainRelease = '1.14'
-const featureList = '[url=https://minecraft-zh.gamepedia.com/1.14]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
+const featureList = '[url=https://你的妈妈的]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
 export type StringStringMap = {
     [key: string]: string
@@ -52,6 +52,10 @@ export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * Math.floor(max - min)) + min
 }
 
+/**
+ * Get the version type of specific version.
+ * @param version A version.
+ */
 export function getVersionType(version: string) {
     let versionType: 'snapshot' | 'pre_release' | 'release'
     if (version.match(/^\d\dw\d\d[a-z]$/)) {
@@ -69,7 +73,7 @@ export function getVersionType(version: string) {
 /**
  * @returns [ snapCount, preCount ]
  */
-export function getCounts(versions: string[]): [number, number] {
+export function getCounts(versions: string[], version: string): [number, number] {
     let snapCount = 0
     let preCount = 0
 
@@ -85,11 +89,16 @@ export function getCounts(versions: string[]): [number, number] {
         }
     }
 
+    if (versions[0] !== version) {
+        snapCount += 1
+        preCount += 1
+    }
+
     return [snapCount, preCount]
 }
 
 /**
- * Get the latest article, question or version from web source code.
+ * Returns the latest article, question or version from web source code.
  */
 export const getLatest: StringFunctionMap = {
     article: (source, lastResult, _) => {
@@ -135,8 +144,23 @@ export const getLatest: StringFunctionMap = {
     }
 }
 
+/**
+ * Returns the type of the article.
+ * @returns `News` or `Insider`
+ */
+export function getArticleType(html: Document) {
+    const type = html.getElementsByClassName('article-category__text')[0].textContent as string
+    return type
+}
+
+/**
+ * 
+ * @param type The type of the version.
+ * @param version The version.
+ * @param versions All released versions. Sorted by released time from new ones to old ones.
+ */
 export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', version: string, versions: string[]) {
-    const [snapCount, preCount] = getCounts(versions)
+    const [snapCount, preCount] = getCounts(versions, version)
     switch (type) {
         case 'snapshot':
             return `[postbg]bg3.png[/postbg][align=center][table=80%,#EDFBFF]

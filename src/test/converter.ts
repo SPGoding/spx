@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom'
 const testSrc = fs.readFileSync(path.join(__dirname, './data/article.html'), { encoding: 'utf8' })
 const testHtml = new JSDOM(testSrc).window.document
 
-describe.only('converter Tests', () => {
+describe('converter Tests', () => {
     describe('resolveUrl() Tests', () => {
         it('Should resolve relative url', () => {
             const result = resolveUrl('/foo')
@@ -180,7 +180,7 @@ describe.only('converter Tests', () => {
     })
     describe.only('convertMCAriticleToBBCode() Tests', () => {
         it('Should return whole BBCode', () => {
-            const result = convertMCAriticleToBBCode(testSrc)
+            const result = convertMCAriticleToBBCode(testHtml)
 
             fs.writeFileSync(path.join(__dirname, './data/output.txt'), result)
 

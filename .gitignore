@@ -1,4 +1,3 @@
 **/node_modules/
 **/out/
-ref/urlsrc.txt
-ref/bbcsrc.txt
+src/test/data/output.txt

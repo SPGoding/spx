@@ -3,13 +3,14 @@ import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
 import { exec } from 'child_process'
-import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, StringFunctionMap, Result, StringNumberMap, getLatest } from './util'
+import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, Result, getLatest, getArticleType } from './util'
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
+import { JSDOM } from 'jsdom'
 
 //#region Detect
 const urls: StringStringMap = {
-    article: 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/insider,minecraft:article/news&propResPath=/content/minecraft-net/language-masters/en-us/jcr:content/root/generic-container/par/grid&offset=0&count=2000&pageSize=20&tag=ALL&lang=/content/minecraft-net/language-masters/en-us',
+    article: 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/insider,minecraft:article/news&propResPath=/content/minecraft-net/language-masters/zh-hans/jcr:content/root/generic-container/par/grid&offset=0&count=2000&pageSize=20&tag=ALL&lang=/content/minecraft-net/language-masters/zh-hans',
     question: 'http://www.mcbbs.net/forum-qanda-1.html',
     version: 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
 }
@@ -21,7 +22,7 @@ const lastResults: StringStringMap = {
 /**
  * All notifications that still aren't read by clients.
  */
-const unread: { type: string, value: Result }[] = []
+const notifications: { type: string, value: Result }[] = []
 
 const versions: string[] = []
 
@@ -29,7 +30,7 @@ setInterval(main, 10000)
 
 async function main() {
     try {
-        for (const type of ['article', 'question', 'version']) {
+        for (const type of ['version', 'article', 'question']) {
             const webCode = await getWebCode(urls[type])
             const latest = getLatest[type](webCode, lastResults[type], versions)
             const last = lastResults[type]
@@ -46,16 +47,20 @@ async function main() {
                 // Deal with additional information.
                 if (type === 'article') {
                     const src = await getWebCode(latest.identity)
-                    latest.addition = convertMCAriticleToBBCode(src)
-                } else if (type === 'version') {
-                    const versionType = getVersionType(latest.identity)
-                    const beginning = getBeginning(versionType, latest.identity, versions)
-                    const ending = getEnding(versionType)
-                    const addition = { beginning, ending }
+                    const html = new JSDOM(src).window.document
+                    let addition = convertMCAriticleToBBCode(html)
+                    const articleType = getArticleType(html)
+                    if (articleType === 'News') {
+                        const version = lastResults.version
+                        const versionType = getVersionType(version)
+                        const beginning = getBeginning(versionType, version, versions)
+                        const ending = getEnding(versionType)
+                        addition = beginning + addition + ending
+                    }
                     latest.addition = addition
                 }
                 notice(type, latest)
-                unread.push({ type, value: latest })
+                notifications.push({ type, value: latest })
             }
         }
     } catch (ex) {
@@ -116,8 +121,8 @@ wsServer.on('request', request => {
 
     connections.push(connection)
     console.log(`${connection.remoteAddress} connected.`)
-    if (unread.length > 0) {
-        for (const i of unread) {
+    if (notifications.length > 0) {
+        for (const i of notifications) {
             connection.sendUTF(JSON.stringify(i))
         }
     }
@@ -125,7 +130,7 @@ wsServer.on('request', request => {
     connection.on('message', data => {
         switch (data.utf8Data) {
             case 'read':
-                unread.splice(0, unread.length)
+                notifications.splice(0, notifications.length)
                 notice('read', { identity: '', readable: '' })
                 console.log('Marked as read.')
                 break

@@ -66,14 +66,14 @@ describe('getCounts() tests', () => {
     it('Should return counts for snapshots', () => {
         const versions = ['19w04b', '19w04a', '1.13.2', '1.13.2-pre2']
 
-        const result = getCounts(versions)
+        const result = getCounts(versions, '19w04b')
 
         assert.deepStrictEqual(result, [2, 0])
     })
     it('Should return counts for pre releases', () => {
         const versions = ['1.13.2-pre2', '1.13.2-pre1', '18w40b', '18w40a', '1.13.1']
 
-        const result = getCounts(versions)
+        const result = getCounts(versions, '1.13.2-pre2')
 
         assert.deepStrictEqual(result, [4, 2])
     })

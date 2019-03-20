@@ -75,11 +75,7 @@
             const speech = `New ${json.type} detected: ${json.value.readable}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             if (json.value.addition) {
-                if (typeof json.value.addition === 'string') {
-                    textarea.value = json.value.addition
-                } else {
-                    textarea.value = json.value.addition.beginning + textarea.value + json.value.addition.ending
-                }
+                textarea.value = json.value.addition
             }
             output.innerHTML = `${append}<br />${output.innerHTML}`
             read.disabled = false
