@@ -97,7 +97,7 @@ export const getLatest: StringFunctionMap = {
             const json = JSON.parse(source)
             const url = json.article_grid[0].article_url
             const readable = json.article_grid[0].default_tile.title
-            const identity = `https://minecraft.net${url}`
+            const identity = `https://www.minecraft.net${url}`
             return { identity, readable }
         } catch (ex) {
             console.error(ex)
