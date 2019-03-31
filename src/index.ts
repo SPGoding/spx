@@ -3,14 +3,25 @@ import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
 import { exec } from 'child_process'
-import { getWebCode, getRandomInt, getVersionType, getBeginning, getEnding, StringStringMap, Result, getLatest, getArticleType } from './util'
+import {
+    getWebCode,
+    getRandomInt,
+    getVersionType,
+    getBeginning,
+    getEnding,
+    StringStringMap,
+    Result,
+    getLatest,
+    getArticleType
+} from './util'
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 import { JSDOM } from 'jsdom'
 
-//#region Detect
+//#region Detection
 const urls: StringStringMap = {
-    article: 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/insider,minecraft:article/news&propResPath=/content/minecraft-net/language-masters/zh-hans/jcr:content/root/generic-container/par/grid&offset=0&count=2000&pageSize=20&tag=ALL&lang=/content/minecraft-net/language-masters/zh-hans',
+    article:
+        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/insider,minecraft:article/news&propResPath=/content/minecraft-net/language-masters/zh-hans/jcr:content/root/generic-container/par/grid&offset=0&count=2000&pageSize=20&tag=ALL&lang=/content/minecraft-net/language-masters/zh-hans',
     question: 'http://www.mcbbs.net/forum-qanda-1.html',
     version: 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
 }
@@ -22,7 +33,7 @@ const lastResults: StringStringMap = {
 /**
  * All notifications that still aren't read by clients.
  */
-const notifications: { type: string, value: Result }[] = []
+const notifications: { type: string; value: Result }[] = []
 
 const versions: string[] = []
 
@@ -74,10 +85,7 @@ if (fs.existsSync('/sys/class/thermal/thermal_zone0/temp')) {
 
 async function getCpuTemperature() {
     try {
-        const value = await fs.promises.readFile(
-            '/sys/class/thermal/thermal_zone0/temp',
-            { encoding: 'utf8' }
-        )
+        const value = await fs.promises.readFile('/sys/class/thermal/thermal_zone0/temp', { encoding: 'utf8' })
         if (parseInt(value) >= 70000) {
             exec('sudo shutdown -P now')
         }
@@ -88,23 +96,29 @@ async function getCpuTemperature() {
 }
 //#endregion
 
-//#region Notice
+//#region Notification
 const connections: connection[] = []
 const httpPort = 80
 const wsPort = getRandomInt(49152, 65535)
 
-const httpServer = http.createServer(async (req, res) => {
-    req.on('error', e => {
-        console.error(e.message)
+const httpServer = http
+    .createServer(async (req, res) => {
+        try {
+            req.on('error', e => {
+                console.error(e.message)
+            })
+            res.on('error', e => {
+                console.error(e.message)
+            })
+            res.setHeader('Content-Type', "text/html;charset='utf-8'")
+            let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
+            html = html.replace(/%replace_as_ws_url%/g, `${ip.address('public', 'ipv4')}:${wsPort}`)
+            res.end(html)
+        } catch (e) {
+            console.error(e)
+        }
     })
-    res.on('error', e => {
-        console.error(e.message)
-    })
-    res.setHeader('Content-Type', "text/html;charset='utf-8'")
-    let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
-    html = html.replace(/%replace_as_ws_url%/g, `${ip.address('public', 'ipv4')}:${wsPort}`)
-    res.end(html)
-}).listen(httpPort)
+    .listen(httpPort)
 console.log(`HTTP server is running at ${ip.address('public', 'ipv4')}:${httpPort}`)
 httpServer.on('error', e => {
     console.error(e.message)
