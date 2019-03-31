@@ -86,7 +86,9 @@
         }
 
         webSocket.onclose = () => {
-            cpu.innerHTML = 'Server Closed'
+            const speech = 'Server closed.'
+            speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+            cpu.innerHTML = speech
         }
     </script>
 </body>
