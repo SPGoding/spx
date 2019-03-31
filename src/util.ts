@@ -2,7 +2,7 @@ import * as http from 'http'
 import * as https from 'https'
 
 const nextMainRelease = '1.14'
-const featureList = '[url=https://你的妈妈的]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
+const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
 export type StringStringMap = {
     [key: string]: string
