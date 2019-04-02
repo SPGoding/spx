@@ -4,7 +4,9 @@
     "description": "A powerful tool for SPGoding's personal use.",
     "main": "./out/index",
     "author": "SPGoding",
-    "contributors": [],
+    "contributors": [
+
+    ],
     "license": "GPL-3.0-only",
     "repository": {
         "type": "git",
@@ -27,7 +29,7 @@
         "@types/node": "^10.12.18",
         "@types/power-assert": "^1.5.0",
         "@types/websocket": "0.0.40",
-        "ts-node": "^8.0.2",
+        "ts-node": "^8.0.3",
         "tslint": "^5.12.1",
         "typescript": "^3.2.2"
     },
