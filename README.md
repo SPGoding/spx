@@ -1,5 +1,9 @@
 # spx
 
+[![Build Status](https://travis-ci.com/SPGoding/spx.svg?branch=master)](https://travis-ci.com/SPGoding/spx)
+![GitHub Top Language](https://img.shields.io/github/languages/top/SPGoding/spx.svg)
+![License](https://img.shields.io/github/license/SPGoding/spx.svg)
+
 A powerful tool for SPGoding's personal use.
 
 ## Functions
