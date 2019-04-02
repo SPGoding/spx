@@ -4,7 +4,9 @@
     "description": "A powerful tool for SPGoding's personal use.",
     "main": "./out/index",
     "author": "SPGoding",
-    "contributors": [],
+    "contributors": [
+
+    ],
     "license": "GPL-3.0-only",
     "repository": {
         "type": "git",
@@ -23,7 +25,7 @@
     "devDependencies": {
         "@types/ip": "^1.1.0",
         "@types/jsdom": "^12.2.3",
-        "@types/mocha": "^5.2.5",
+        "@types/mocha": "^5.2.6",
         "@types/node": "^10.12.18",
         "@types/power-assert": "^1.5.0",
         "@types/websocket": "0.0.40",
