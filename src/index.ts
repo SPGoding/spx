@@ -6,13 +6,14 @@ import { exec } from 'child_process'
 import {
     getWebCode,
     getRandomInt,
-    getVersionType,
     getBeginning,
     getEnding,
     StringStringMap,
     Result,
     getLatest,
-    getArticleType
+    getArticleType,
+    ManifestVersion,
+    getVersionType
 } from './util'
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
@@ -35,7 +36,7 @@ const lastResults: StringStringMap = {
  */
 const notifications: { type: string; value: Result }[] = []
 
-const versions: string[] = []
+const versions: ManifestVersion[] = []
 
 setInterval(main, 10000)
 
@@ -63,7 +64,7 @@ async function main() {
                     const articleType = getArticleType(html)
                     if (articleType === 'News') {
                         const version = lastResults.version
-                        const versionType = getVersionType(version)
+                        const versionType = getVersionType(versions, version)
                         const beginning = getBeginning(versionType, version, versions)
                         const ending = getEnding(versionType)
                         addition = beginning + addition + ending
