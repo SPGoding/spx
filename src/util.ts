@@ -61,7 +61,7 @@ export function getVersionType(version: string) {
     if (version.match(/^\d\dw\d\d[a-z]$/)) {
         versionType = 'snapshot'
     }
-    else if (version.indexOf('pre') !== -1) {
+    else if (version.toLowerCase().indexOf('pre') !== -1) {
         versionType = 'pre_release'
     }
     else {
