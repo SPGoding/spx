@@ -4,6 +4,8 @@ import * as https from 'https'
 const nextMainRelease = '1.14'
 const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
+const AFVersions = ['3D Shareware v1.34']
+
 export type StringStringMap = {
     [key: string]: string
 }
@@ -15,6 +17,8 @@ export type StringNumberMap = {
 export type StringFunctionMap = {
     [key: string]: (...params: any[]) => Result
 }
+
+export type ManifestVersion = { id: string, type: 'snapshot' | 'release', [key: string]: any }
 
 export type Result = {
     identity: string,
@@ -52,44 +56,41 @@ export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * Math.floor(max - min)) + min
 }
 
-/**
- * Get the version type of specific version.
- * @param version A version.
- */
-export function getVersionType(version: string) {
-    let versionType: 'snapshot' | 'pre_release' | 'release'
-    if (version.match(/^\d\dw\d\d[a-z]$/)) {
-        versionType = 'snapshot'
+export function getVersionType(versions: ManifestVersion[], version: string): 'snapshot' | 'pre_release' | 'release' {
+    const manifestVersion = versions.filter(ver => ver.id === version)[0]
+
+    if (manifestVersion.type === 'snapshot') {
+        if (manifestVersion.id.toLowerCase().indexOf('pre') !== -1) {
+            return 'pre_release'
+        }
+        return 'snapshot'
+    } else {
+        return 'release'
     }
-    else if (version.indexOf('pre') !== -1) {
-        versionType = 'pre_release'
-    }
-    else {
-        versionType = 'release'
-    }
-    return versionType
 }
 
 /**
  * @returns [ snapCount, preCount ]
  */
-export function getCounts(versions: string[], version: string): [number, number] {
+export function getCounts(versions: ManifestVersion[], version: string): [number, number] {
     let snapCount = 0
     let preCount = 0
 
     for (const ver of versions) {
-        const type = getVersionType(ver)
-        if (type === 'pre_release') {
-            preCount += 1
+        if (AFVersions.indexOf(ver.id) !== -1) {
+            continue
+        }
+        if (ver.type === 'snapshot') {
             snapCount += 1
-        } else if (type === 'snapshot') {
-            snapCount += 1
+            if (ver.id.toLowerCase().indexOf('pre') !== -1) {
+                preCount += 1
+            }
         } else {
             break
         }
     }
 
-    if (versions[0] !== version) {
+    if (versions[0].id !== version) {
         snapCount += 1
         preCount += 1
     }
@@ -127,15 +128,15 @@ export const getLatest: StringFunctionMap = {
             return { identity: lastResult, readable: '' }
         }
     },
-    version: (source, lastResult, versions: string[]) => {
+    version: (source, lastResult, versions: ManifestVersion[]) => {
         try {
             const json: {
                 latest: { snapshot: string, release: string },
-                versions: [{ id: string, [key: string]: any }]
+                versions: ManifestVersion[]
             } = JSON.parse(source)
             const latest: string = json.latest.snapshot
             versions.splice(0)
-            versions.push(...json.versions.map(v => v.id))
+            versions.push(...json.versions)
             return { identity: latest, readable: latest }
         } catch (ex) {
             console.error(ex)
@@ -159,7 +160,7 @@ export function getArticleType(html: Document) {
  * @param version The version.
  * @param versions All released versions. Sorted by released time from new ones to old ones.
  */
-export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', version: string, versions: string[]) {
+export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', version: string, versions: ManifestVersion[]) {
     const [snapCount, preCount] = getCounts(versions, version)
     switch (type) {
         case 'snapshot':
