@@ -86,7 +86,7 @@ if (fs.existsSync('/sys/class/thermal/thermal_zone0/temp')) {
 
 async function getCpuTemperature() {
     try {
-        const value = await fs.promises.readFile('/sys/class/thermal/thermal_zone0/temp', { encoding: 'utf8' })
+        const value = await fs.readFile('/sys/class/thermal/thermal_zone0/temp', { encoding: 'utf8' })
         if (parseInt(value) >= 70000) {
             exec('sudo shutdown -P now')
         }
@@ -112,7 +112,7 @@ const httpServer = http
                 console.error(e.message)
             })
             res.setHeader('Content-Type', "text/html;charset='utf-8'")
-            let html = await fs.promises.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
+            let html = await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
             html = html.replace(/%replace_as_ws_url%/g, `${ip.address('public', 'ipv4')}:${wsPort}`)
             res.end(html)
         } catch (e) {
