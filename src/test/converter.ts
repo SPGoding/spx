@@ -178,7 +178,7 @@ describe('converter Tests', () => {
             )
         })
     })
-    describe('convertMCAriticleToBBCode() Tests', () => {
+    describe.skip('convertMCAriticleToBBCode() Tests', () => {
         it('Should return whole BBCode', () => {
             const result = convertMCAriticleToBBCode(testHtml)
 

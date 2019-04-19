@@ -1,6 +1,3 @@
-import * as http from 'http'
-import * as https from 'https'
-
 const nextMainRelease = '1.14'
 const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
@@ -24,32 +21,6 @@ export type Result = {
     identity: string,
     readable: string,
     addition?: string | { beginning: string, ending: string }
-}
-
-export async function getWebCode(url: string) {
-    const isHttps = url.slice(0, 5) === 'https'
-    const promise = new Promise<string>((resolve, reject) => {
-        const cb = (res: http.IncomingMessage) => {
-            var content = ''
-            res.setEncoding('utf8')
-            res.on('error', e => {
-                reject(e.message)
-            })
-            res.on('data', chunk => {
-                content += chunk
-            })
-            res.on('end', () => {
-                resolve(content)
-            })
-        }
-        if (isHttps) {
-            https.get(url, cb)
-        }
-        else {
-            http.get(url, cb)
-        }
-    })
-    return promise
 }
 
 export function getRandomInt(min: number, max: number) {

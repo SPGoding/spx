@@ -1,10 +1,10 @@
 import * as fs from 'fs-extra'
-import * as path from 'path'
 import * as http from 'http'
 import * as ip from 'ip'
+import * as path from 'path'
+import * as rp from 'request-promise-native'
 import { exec } from 'child_process'
 import {
-    getWebCode,
     getRandomInt,
     getBeginning,
     getEnding,
@@ -43,7 +43,7 @@ setInterval(main, 10000)
 async function main() {
     try {
         for (const type of ['version', 'article', 'question']) {
-            const webCode = await getWebCode(urls[type])
+            const webCode = await rp(urls[type])
             const latest = getLatest[type](webCode, lastResults[type], versions)
             const last = lastResults[type]
             lastResults[type] = latest.identity
@@ -58,7 +58,7 @@ async function main() {
                 console.log(text)
                 // Deal with additional information.
                 if (type === 'article') {
-                    const src = await getWebCode(latest.identity)
+                    const src = await rp(latest.identity)
                     const html = new JSDOM(src).window.document
                     let addition = convertMCAriticleToBBCode(html)
                     const articleType = getArticleType(html)
