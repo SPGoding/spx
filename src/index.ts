@@ -1,9 +1,7 @@
 import * as fs from 'fs-extra'
 import * as http from 'http'
-import * as ip from 'ip'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
-import { exec } from 'child_process'
 import {
     getRandomInt,
     getBeginning,
@@ -31,6 +29,29 @@ const lastResults: StringStringMap = {
     question: '',
     version: ''
 }
+
+const configPath = path.join(__dirname, './config.json')
+const cachePath = path.join(__dirname, './cache.json')
+let ip: string | undefined
+
+    ; (function loadConfiguration() {
+
+        if (fs.existsSync(configPath)) {
+            const config = fs.readJsonSync(configPath)
+            ip = config.ip
+        } else {
+            ip = 'localhost'
+            fs.writeJsonSync(configPath, { ip }, { encoding: 'utf8' })
+        }
+
+        if (fs.existsSync(cachePath)) {
+            const cache = fs.readJsonSync(cachePath)
+            lastResults.article = cache.article
+            lastResults.question = cache.question
+            lastResults.version = cache.version
+        }
+    })()
+
 /**
  * All notifications that still aren't read by clients.
  */
@@ -38,7 +59,7 @@ const notifications: { type: string; value: Result }[] = []
 
 const versions: ManifestVersion[] = []
 
-setInterval(main, 10000)
+setInterval(main, 18000)
 
 async function main() {
     try {
@@ -73,6 +94,7 @@ async function main() {
                 }
                 notice(type, latest)
                 notifications.push({ type, value: latest })
+                await fs.writeJson(cachePath, lastResults, { encoding: 'utf8' })
             }
         }
     } catch (ex) {
@@ -87,9 +109,6 @@ if (fs.existsSync('/sys/class/thermal/thermal_zone0/temp')) {
 async function getCpuTemperature() {
     try {
         const value = await fs.readFile('/sys/class/thermal/thermal_zone0/temp', { encoding: 'utf8' })
-        if (parseInt(value) >= 70000) {
-            exec('sudo shutdown -P now')
-        }
         notice('cpu', { identity: value, readable: `${parseInt(value) / 1000}℃` })
     } catch (ex) {
         console.error(ex)
@@ -113,20 +132,20 @@ const httpServer = http
             })
             res.setHeader('Content-Type', "text/html;charset='utf-8'")
             let html = await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
-            html = html.replace(/%replace_as_ws_url%/g, `${ip.address('public', 'ipv4')}:${wsPort}`)
+            html = html.replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
             res.end(html)
         } catch (e) {
             console.error(e)
         }
     })
     .listen(httpPort)
-console.log(`HTTP server is running at ${ip.address('public', 'ipv4')}:${httpPort}`)
+console.log(`HTTP server is running at ${ip}:${httpPort}`)
 httpServer.on('error', e => {
     console.error(e.message)
 })
 
 const wsServer = new WSServer({ httpServer: http.createServer().listen(wsPort) })
-console.log(`WebSocket server is running at ${ip.address('public', 'ipv4')}:${wsPort}`)
+console.log(`WebSocket server is running at ${ip}:${wsPort}`)
 wsServer.on('request', request => {
     const connection = request.accept()
 
@@ -148,14 +167,6 @@ wsServer.on('request', request => {
                 notifications.splice(0, notifications.length)
                 notice('read', { identity: '', readable: '' })
                 console.log('Marked as read.')
-                break
-            case 'shutdown':
-                console.log('Client asked to shutdown.')
-                exec('sudo shutdown -P now')
-                break
-            case 'restart':
-                console.log('Client asked to restart.')
-                exec('sudo shutdown -r now')
                 break
             default:
                 console.error(`Unknown client request: ${data.utf8Data}.`)
