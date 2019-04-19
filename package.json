@@ -22,7 +22,6 @@
     },
     "devDependencies": {
         "@types/fs-extra": "^5.0.5",
-        "@types/ip": "^1.1.0",
         "@types/jsdom": "^12.2.3",
         "@types/mocha": "^5.2.6",
         "@types/node": "^10.14.4",
@@ -35,9 +34,7 @@
         "typescript": "^3.4.3"
     },
     "dependencies": {
-        "child_process": "^1.0.2",
         "fs-extra": "^7.0.1",
-        "ip": "^1.1.5",
         "jsdom": "^14.0.0",
         "mocha": "^5.2.0",
         "power-assert": "^1.6.1",

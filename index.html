@@ -7,19 +7,15 @@
 </head>
 
 <body>
-    <textarea id="textarea" rows="8" cols="64"></textarea>
+    <textarea id="textarea" rows="24" cols="100"></textarea>
     <div id="output"></div>
     <input type="button" value="Activate Sound" id="read" /><br />
     <p id="cpu"></p>
-    <input type="button" value="Shutdown" id="shutdown" />
-    <input type="button" value="Restart" id="restart" /><br />
     <script type="text/javascript">
         "use strict"
         const read = document.getElementById('read')
         const output = document.getElementById('output')
         const cpu = document.getElementById('cpu')
-        const shutdown = document.getElementById('shutdown')
-        const restart = document.getElementById('restart')
         const textarea = document.getElementById('textarea')
         const wsURL = 'ws://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
@@ -36,16 +32,6 @@
                 read.disabled = true
                 webSocket.send('read')
             }
-        }
-
-        shutdown.onclick = () => {
-            webSocket.send('shutdown')
-            alert('Asked server to shutdown.')
-        }
-
-        restart.onclick = () => {
-            webSocket.send('restart')
-            alert('Asked server to restart.')
         }
 
         webSocket.onmessage = event => {
