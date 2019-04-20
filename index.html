@@ -9,7 +9,7 @@
 <body>
     <input type="button" value="Activate Sound" id="read" />
     <div id="output"></div>
-    <p id="cpu"></p>
+    <p id="cpu">Connecting...</p>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
     <script type="text/javascript">
         "use strict"
@@ -32,6 +32,10 @@
                 read.disabled = true
                 webSocket.send('read')
             }
+        }
+
+        webSocket.onopen = () => {
+            cpu.innerHTML = 'WebSocket opened.'
         }
 
         webSocket.onmessage = event => {
@@ -72,7 +76,7 @@
         }
 
         webSocket.onclose = () => {
-            const speech = 'Server closed.'
+            const speech = 'WebSocket closed.'
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             cpu.innerHTML = speech
         }
