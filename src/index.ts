@@ -34,6 +34,7 @@ const configPath = path.join(__dirname, './config.json')
 const cachePath = path.join(__dirname, './cache.json')
 let httpPort: number | undefined
 let ip: string | undefined
+let interval: number | undefined
 
     ; (function loadConfiguration() {
 
@@ -41,12 +42,14 @@ let ip: string | undefined
             const config = fs.readJsonSync(configPath)
             ip = config.ip
             httpPort = config.httpPort
-            if (!ip || !httpPort) {
-                throw("Expected both 'ip' and 'httpPort' in './config.json'.")
+            interval = config.interval
+            if (!ip || !httpPort || !interval) {
+                throw("Expected 'httpPort', 'interval' and 'ip' in './config.json'.")
             }
         } else {
             ip = 'localhost'
             httpPort = 80
+            interval = 20000
             fs.writeJsonSync(configPath, { ip, httpPort }, { encoding: 'utf8' })
         }
 
@@ -65,7 +68,7 @@ const notifications: { type: string; value: Result }[] = []
 
 const versions: ManifestVersion[] = []
 
-setInterval(main, 18000)
+setInterval(main, interval)
 
 async function main() {
     try {
