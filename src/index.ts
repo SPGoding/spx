@@ -32,6 +32,7 @@ const lastResults: StringStringMap = {
 
 const configPath = path.join(__dirname, './config.json')
 const cachePath = path.join(__dirname, './cache.json')
+let httpPort: number | undefined
 let ip: string | undefined
 
     ; (function loadConfiguration() {
@@ -39,9 +40,14 @@ let ip: string | undefined
         if (fs.existsSync(configPath)) {
             const config = fs.readJsonSync(configPath)
             ip = config.ip
+            httpPort = config.httpPort
+            if (!ip || !httpPort) {
+                throw("Expected both 'ip' and 'httpPort' in './config.json'.")
+            }
         } else {
             ip = 'localhost'
-            fs.writeJsonSync(configPath, { ip }, { encoding: 'utf8' })
+            httpPort = 80
+            fs.writeJsonSync(configPath, { ip, httpPort }, { encoding: 'utf8' })
         }
 
         if (fs.existsSync(cachePath)) {
@@ -118,7 +124,6 @@ async function getCpuTemperature() {
 
 //#region Notification
 const connections: connection[] = []
-const httpPort = 80
 const wsPort = getRandomInt(49152, 65535)
 
 const httpServer = http
