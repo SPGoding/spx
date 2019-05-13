@@ -110,7 +110,7 @@ export const converters = {
                 return ((node as Text).textContent as string)
                     .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
             default:
-                return ''
+                return node.textContent ? node.textContent : ''
             // throw `Unknown type: '${node.nodeName}'.`
         }
     },

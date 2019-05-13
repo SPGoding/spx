@@ -36,30 +36,30 @@ let httpPort: number | undefined
 let ip: string | undefined
 let interval: number | undefined
 
-    ; (function loadConfiguration() {
+(function loadConfiguration() {
 
-        if (fs.existsSync(configPath)) {
-            const config = fs.readJsonSync(configPath)
-            ip = config.ip
-            httpPort = config.httpPort
-            interval = config.interval
-            if (!ip || !httpPort || !interval) {
-                throw("Expected 'httpPort', 'interval' and 'ip' in './config.json'.")
-            }
-        } else {
-            ip = 'localhost'
-            httpPort = 80
-            interval = 20000
-            fs.writeJsonSync(configPath, { ip, httpPort }, { encoding: 'utf8' })
+    if (fs.existsSync(configPath)) {
+        const config = fs.readJsonSync(configPath)
+        ip = config.ip
+        httpPort = config.httpPort
+        interval = config.interval
+        if (!ip || !httpPort || !interval) {
+            throw ("Expected 'httpPort', 'interval' and 'ip' in './config.json'.")
         }
+    } else {
+        ip = 'localhost'
+        httpPort = 80
+        interval = 20000
+        fs.writeJsonSync(configPath, { ip, httpPort }, { encoding: 'utf8' })
+    }
 
-        if (fs.existsSync(cachePath)) {
-            const cache = fs.readJsonSync(cachePath)
-            lastResults.article = cache.article
-            lastResults.question = cache.question
-            lastResults.version = cache.version
-        }
-    })()
+    if (fs.existsSync(cachePath)) {
+        const cache = fs.readJsonSync(cachePath)
+        lastResults.article = cache.article
+        lastResults.question = cache.question
+        lastResults.version = cache.version
+    }
+})()
 
 /**
  * All notifications that still aren't read by clients.
