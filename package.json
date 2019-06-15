@@ -31,7 +31,7 @@
         "@types/websocket": "0.0.40",
         "ts-node": "^8.2.0",
         "tslint": "^5.17.0",
-        "typescript": "^3.5.1"
+        "typescript": "^3.5.2"
     },
     "dependencies": {
         "clipboard": "^2.0.4",
