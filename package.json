@@ -41,7 +41,7 @@
         "power-assert": "^1.6.1",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.7",
-        "say": "^0.15.0",
+        "say": "^0.16.0",
         "websocket": "^1.0.28"
     }
 }
