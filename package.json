@@ -37,7 +37,7 @@
         "clipboard": "^2.0.4",
         "fs-extra": "^7.0.1",
         "jsdom": "^14.1.0",
-        "mocha": "^5.2.0",
+        "mocha": "^6.0.0",
         "power-assert": "^1.6.1",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.7",
