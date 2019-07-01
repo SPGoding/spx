@@ -58,10 +58,10 @@
             let append = ''
             switch (json.type) {
                 case 'article':
-                    append = `ARTICLE - <a href="${json.value.identity}">${json.value.readable}</a>`
+                    append = `ARTICLE - <a href="${json.value.identity}" target="_blank">${json.value.readable}</a>`
                     break
                 case 'question':
-                    append = `QUESTION - <a href="${json.value.identity}">${json.value.readable}</a>`
+                    append = `QUESTION - <a href="${json.value.identity}" target="_blank">${json.value.readable}</a>`
                     break
                 case 'version':
                     append = `VERSION - ${json.value.identity}`
