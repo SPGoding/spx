@@ -169,16 +169,33 @@ wsServer.on('request', request => {
         }
     }
 
-    connection.on('message', data => {
-        switch (data.utf8Data) {
-            case 'read':
-                notifications.splice(0, notifications.length)
-                notice('read', { identity: '', readable: '' })
-                console.log('Marked as read.')
-                break
-            default:
-                console.error(`Unknown client request: ${data.utf8Data}.`)
-                break
+    connection.on('message', async data => {
+        if (data.utf8Data) {
+            const args = data.utf8Data.split(', ')
+            switch (args[0]) {
+                case 'read':
+                    notifications.splice(0, notifications.length)
+                    notice('read', { identity: '', readable: '' })
+                    console.log('Marked as read.')
+                    break
+                case 'request':
+                    const src = await rp(args[1])
+                    const html = new JSDOM(src).window.document
+                    let bbcode = convertMCAriticleToBBCode(html)
+                    const articleType = getArticleType(html)
+                    if (articleType === 'News') {
+                        const version = lastResults.version
+                        const versionType = getVersionType(versions, version)
+                        const beginning = getBeginning(versionType, version, versions)
+                        const ending = getEnding(versionType)
+                        bbcode = beginning + bbcode + ending
+                    }
+                    notice('response', { addition: bbcode, identity: '', readable: 'Server responsed.' })
+                    break
+                default:
+                    console.error(`Unknown client request: ${data.utf8Data}.`)
+                    break
+            }
         }
     })
 
