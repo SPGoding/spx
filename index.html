@@ -4,14 +4,29 @@
 <head>
     <title>spx client</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #root {
+            text-align: center;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            transition: 0.3s;
+            padding: 2px 16px;
+            font-size: 20px;
+        }
+
+        #root:hover {
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
 
 <body>
-    <input type="text" placeholder="Article URI" id="url" />
-    <input type="button" value="Request" id="request" />
-    <div id="output"></div>
-    <p id="cpu">Connecting...</p>
-    <input type="button" value="Activate Sound" id="read" /><br />
+    <div id="root">
+        <input type="text" placeholder="Article URI" id="url" />
+        <input type="button" value="Request" id="request" />
+        <div id="output"></div>
+        <p id="cpu">Connecting...</p>
+        <input type="button" value="Activate Sound" id="read" /><br />
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
     <script type="text/javascript">
         "use strict"
@@ -27,7 +42,7 @@
 
         request.onclick = () => {
             if (url.value) {
-                webSocket.send(`requst, ${url.value}`)
+                webSocket.send(`bbcode, ${url.value}`)
                 url.value = ''
             } else {
                 alert('Please input URI')
@@ -56,19 +71,19 @@
             let append = ''
             switch (json.type) {
                 case 'article':
-                    append = `ARTICLE - <a href="${json.value.identity}">${json.value.readable}</a>`
+                    append = `ARTICLE - <a href="${json.value.identity}" target="_blank">${json.value.readable}</a>`
                     break
                 case 'question':
-                    append = `QUESTION - <a href="${json.value.identity}">${json.value.readable}</a>`
+                    append = `QUESTION - <a href="${json.value.identity}" target="_blank">${json.value.readable}</a>`
                     break
                 case 'version':
                     append = `VERSION - ${json.value.identity}`
                     break
+                case 'bbcode':
+                    append = 'BBCode'
+                    break
                 case 'cpu':
                     cpu.innerHTML = json.value.readable
-                    return
-                case 'response':
-                    append = `Server Response - ${json.value.readable}`
                     return
                 case 'read':
                     output.innerHTML = ""

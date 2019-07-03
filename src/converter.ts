@@ -174,7 +174,10 @@ export const converters = {
         if (ele.classList.contains('pubDate')) {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             // Use `.slice(0, 10)` to get '2019-03-08'.
-            ans = (ele.attributes.getNamedItem('date-value') as Attr).value.slice(0, 10)
+            const date = ele.attributes.getNamedItem('data-value')
+            if (date) {
+                ans = date.value.slice(0, 10)
+            }
         }
 
         ans += '，'

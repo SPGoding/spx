@@ -70,6 +70,11 @@ const versions: ManifestVersion[] = []
 
 setInterval(main, interval)
 
+async function getVersions() {
+    const webCode = await rp(urls.version)
+    await getLatest.version(webCode, lastResults.version, versions)
+}
+
 async function main() {
     try {
         for (const type of ['version', 'article', 'question']) {
@@ -178,7 +183,10 @@ wsServer.on('request', request => {
                     notice('read', { identity: '', readable: '' })
                     console.log('Marked as read.')
                     break
-                case 'request':
+                case 'bbcode':
+                    if (versions.length === 0) {
+                        await getVersions()
+                    }
                     const src = await rp(args[1])
                     const html = new JSDOM(src).window.document
                     let bbcode = convertMCAriticleToBBCode(html)
@@ -190,7 +198,7 @@ wsServer.on('request', request => {
                         const ending = getEnding(versionType)
                         bbcode = beginning + bbcode + ending
                     }
-                    notice('response', { addition: bbcode, identity: '', readable: 'Server responsed.' })
+                    await notice('bbcode', { addition: bbcode, identity: '', readable: '' })
                     break
                 default:
                     console.error(`Unknown client request: ${data.utf8Data}.`)

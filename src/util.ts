@@ -1,4 +1,4 @@
-const nextMainRelease = '1.14'
+const nextMainRelease = '1.14.4'
 const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
 const AFVersions = ['3D Shareware v1.34']
@@ -30,13 +30,17 @@ export function getRandomInt(min: number, max: number) {
 export function getVersionType(versions: ManifestVersion[], version: string): 'snapshot' | 'pre_release' | 'release' {
     const manifestVersion = versions.filter(ver => ver.id === version)[0]
 
-    if (manifestVersion.type === 'snapshot') {
-        if (manifestVersion.id.toLowerCase().indexOf('pre') !== -1) {
-            return 'pre_release'
+    if (manifestVersion) {
+        if (manifestVersion.type === 'snapshot') {
+            if (manifestVersion.id.toLowerCase().indexOf('pre') !== -1) {
+                return 'pre_release'
+            }
+            return 'snapshot'
+        } else {
+            return 'release'
         }
-        return 'snapshot'
     } else {
-        return 'release'
+        return 'snapshot'
     }
 }
 
