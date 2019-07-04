@@ -5,7 +5,7 @@
     "main": "./out/index",
     "author": "SPGoding",
     "contributors": [],
-    "license": "ISC",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SPGoding/spx.git"
