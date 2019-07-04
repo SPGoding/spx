@@ -24,7 +24,7 @@
         <input type="text" placeholder="Article URI" id="url" />
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
-        <p id="cpu">Connecting...</p>
+        <p id="status">Connecting...</p>
         <input type="button" value="Activate Sound" id="read" /><br />
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
@@ -34,7 +34,7 @@
         const request = document.getElementById('request')
         const output = document.getElementById('output')
         const url = document.getElementById('url')
-        const cpu = document.getElementById('cpu')
+        const status = document.getElementById('status')
         const wsURL = 'ws://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
 
@@ -63,37 +63,28 @@
         }
 
         webSocket.onopen = () => {
-            cpu.innerHTML = 'WebSocket opened.'
+            status.innerHTML = 'WebSocket opened.'
         }
 
         webSocket.onmessage = event => {
             const json = JSON.parse(event.data)
             let append = ''
             switch (json.type) {
-                case 'article':
-                    append = `ARTICLE - <a href="${json.value.identity}" target="_blank">${json.value.readable}</a>`
-                    break
-                case 'question':
-                    append = `QUESTION - <a href="${json.value.identity}" target="_blank">${json.value.readable}</a>`
-                    break
                 case 'version':
-                    append = `VERSION - ${json.value.identity}`
+                    append = `VERSION - ${json.value.id}`
                     break
                 case 'bbcode':
                     append = 'BBCode'
                     break
-                case 'cpu':
-                    cpu.innerHTML = json.value.readable
-                    return
                 case 'read':
                     output.innerHTML = ""
                     read.disabled = true
                     return
                 default:
-                    alert(`Unknown server notification: ${event.data}.`)
+                    append = `QUESTION - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
             }
-            const speech = `New ${json.type} detected: ${json.value.readable}`
+            const speech = `New ${json.type} detected: ${json.value.text}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             if (json.value.addition) {
                 append += `<button class="copy" data-clipboard-text="${json.value.addition.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}">Copy BBCode</button>`
@@ -109,7 +100,7 @@
         webSocket.onclose = () => {
             const speech = 'WebSocket closed.'
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
-            cpu.innerHTML = speech
+            status.innerHTML = speech
         }
     </script>
 </body>

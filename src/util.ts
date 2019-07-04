@@ -18,9 +18,9 @@ export type StringFunctionMap = {
 export type ManifestVersion = { id: string, type: 'snapshot' | 'release', [key: string]: any }
 
 export type Result = {
-    identity: string,
-    readable: string,
-    addition?: string | { beginning: string, ending: string }
+    id: string,
+    text: string,
+    addition?: string
 }
 
 export function getRandomInt(min: number, max: number) {
@@ -71,53 +71,6 @@ export function getCounts(versions: ManifestVersion[], version: string): [number
     }
 
     return [snapCount, preCount]
-}
-
-/**
- * Returns the latest article, question or version from web source code.
- */
-export const getLatest: StringFunctionMap = {
-    article: (source, lastResult, _) => {
-        try {
-            const json = JSON.parse(source)
-            const url = json.article_grid[0].article_url
-            const readable = json.article_grid[0].default_tile.title
-            const identity = `https://www.minecraft.net${url}`
-            return { identity, readable }
-        } catch (ex) {
-            console.error(ex)
-            return { identity: lastResult, readable: '' }
-        }
-    },
-    question: (source, lastResult, _) => {
-        try {
-            const tidRegex = /<tbody id="normalthread_(\d+)">/
-            const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
-            const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
-            const titleRegex = /class="s xst">(.+?)<\/a>/
-            const readable = (titleRegex.exec(
-                source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
-            return { identity, readable }
-        } catch (ex) {
-            console.error(ex)
-            return { identity: lastResult, readable: '' }
-        }
-    },
-    version: (source, lastResult, versions: ManifestVersion[]) => {
-        try {
-            const json: {
-                latest: { snapshot: string, release: string },
-                versions: ManifestVersion[]
-            } = JSON.parse(source)
-            const latest: string = json.latest.snapshot
-            versions.splice(0)
-            versions.push(...json.versions)
-            return { identity: latest, readable: latest }
-        } catch (ex) {
-            console.error(ex)
-            return { identity: lastResult, readable: '' }
-        }
-    }
 }
 
 /**
