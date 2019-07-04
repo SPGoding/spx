@@ -75,9 +75,9 @@ export class McbbsContentProvider extends HtmlContentProvider {
         try {
             const webCode = await rp(this.url)
             return {
-                id: await super.idGetter(webCode),
-                text: await super.textGetter(webCode),
-                addition: await super.additionGetter(webCode)
+                id: await this.idGetter(webCode),
+                text: await this.textGetter(webCode),
+                addition: await this.additionGetter(webCode)
             }
         } catch (ex) {
             throw `Error occurred while getting content: \n${ex.stack}`
