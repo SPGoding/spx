@@ -115,6 +115,7 @@ async function main() {
                 msg = `Detected new ${key}: ${content.id}.`
             }
             if (msg) {
+                console.log(msg)
                 lastResults[key] = content.id
                 notice(key, content)
                 notifications.push({ type: key, value: content })
@@ -122,7 +123,7 @@ async function main() {
             }
         }
     } catch (ex) {
-        console.error(ex.stack)
+        console.error(ex)
     }
 }
 //#endregion
