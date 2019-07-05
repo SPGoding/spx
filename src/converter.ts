@@ -11,7 +11,7 @@ export function convertMCAriticleToBBCode(html: Document) {
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
-    const ans = `${heroImage}\n${content}`
+    const ans = `[align=center]${heroImage}\n${content}[/align]`
 
     return ans
 }
@@ -43,14 +43,14 @@ export function getContent(html: Document) {
         serverUrl = serverUrls[0]
     }
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
-    ans = ans.slice(0, ans.lastIndexOf('】') + 1)
+    ans = ans.slice(0, ans.lastIndexOf('【'))
     // Add spaces between text and '['.
     ans = ans.replace(/([a-zA-Z0-9\-\.\_])\[/, '$1 [')
     // Append the server URL if it exists.
     if (serverUrl) {
         ans += `[align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]官方服务端下载地址[/b][/color][/size][/align][/td][/tr]
-[tr][td][align=center][url=${serverUrl}]${serverUrl}[/url][/align][/td][/tr]
+[tr][td][align=center][url=${serverUrl}]Minecraft server.jar[/url][/align][/td][/tr]
 [/table][/align]`
     }
 
@@ -108,7 +108,7 @@ export const converters = {
                 return converters.ul(node as HTMLElement)
             case '#text':
                 return ((node as Text).textContent as string)
-                    .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+                    .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ')
             default:
                 return node.textContent ? node.textContent : ''
             // throw `Unknown type: '${node.nodeName}'.`
@@ -231,7 +231,7 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[spoiler]${inner}[/spoiler]${inner}\n`
+        let ans = `\n[spoiler][align=center]${inner}[/align][/spoiler]${inner}\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${inner}[/b][/size]\n`

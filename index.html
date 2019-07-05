@@ -74,14 +74,14 @@
                     append = `VERSION - ${json.value.id}`
                     break
                 case 'bbcode':
-                    append = 'BBCode'
+                    append = 'BBCode - '
                     break
                 case 'read':
                     output.innerHTML = ""
                     read.disabled = true
                     return
                 default:
-                    append = `QUESTION - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                    append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
             }
             const speech = `New ${json.type} detected: ${json.value.text}`
