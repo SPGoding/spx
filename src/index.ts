@@ -21,7 +21,7 @@ const lastResults: StringStringMap = {}
 
 const providers: { [key: string]: ContentProvider } = {
     article: new JsonContentProvider(
-        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news',
+        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news&lang=/content/minecraft-net/language-masters/zh-hans',
         json => `https://www.minecraft.net${json.article_grid[0].article_url}`,
         json => json.article_grid[0].default_tile.title,
         async json => {
@@ -113,12 +113,13 @@ async function main() {
             } else if (lastResults[key] !== content.id) {
                 msg = `Detected new ${key}: ${content.id}.`
             }
+            lastResults[key] = content.id
             if (msg) {
                 console.log(msg)
-                lastResults[key] = content.id
+                console.log(JSON.stringify(lastResults, undefined, 4))
                 notice(key, content)
                 notifications.push({ type: key, value: content })
-                await fs.writeJson(cachePath, lastResults, { encoding: 'utf8' })
+                fs.writeJsonSync(cachePath, lastResults, { encoding: 'utf8' })
             }
         }
     } catch (ex) {
