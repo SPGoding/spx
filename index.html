@@ -87,7 +87,12 @@
             const speech = `New ${json.type} detected: ${json.value.text}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             if (json.value.addition) {
-                append += `<button class="copy" data-clipboard-text="${json.value.addition.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}">Copy BBCode</button>`
+                append += `<button class="copy" data-clipboard-text="${
+                    json.value.addition
+                        .replace(/\</g, '&lt;')
+                        .replace(/&/g, '&amp;')
+                        .replace(/"/g, '&#39;')
+                    }">Copy BBCode</button>`
             }
             output.innerHTML = `${append}<br />${output.innerHTML}`
             read.disabled = false
