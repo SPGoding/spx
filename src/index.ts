@@ -194,7 +194,10 @@ wsServer.on('request', request => {
                         const versionType = getVersionType(versions, version)
                         const beginning = getBeginning(versionType, version, versions)
                         const ending = getEnding(versionType)
-                        bbcode = beginning + bbcode + ending
+                        bbcode =
+                            beginning +
+                            bbcode.slice(0, bbcode.lastIndexOf('[size=6][b][color=Gray]GET THE SNAPSHOT[/color][/b][/size]')) +
+                            ending
                     }
                     await notice('bbcode', { addition: bbcode, id: '', text: '' })
                     break

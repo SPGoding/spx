@@ -43,9 +43,9 @@ export function getContent(html: Document) {
         serverUrl = serverUrls[0]
     }
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
-    ans = ans.slice(0, ans.lastIndexOf('【'))
+    ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Add spaces between text and '['.
-    ans = ans.replace(/([a-zA-Z0-9\-\.\_])\[/, '$1 [')
+    ans = ans.replace(/([a-zA-Z0-9\-\.\_])\[/g, '$1 [')
     // Append the server URL if it exists.
     if (serverUrl) {
         ans += `[align=center][table=70%,#EDFBFF]
@@ -108,7 +108,7 @@ export const converters = {
                 return converters.ul(node as HTMLElement)
             case '#text':
                 return ((node as Text).textContent as string)
-                    .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ')
+                    .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
             default:
                 return node.textContent ? node.textContent : ''
             // throw `Unknown type: '${node.nodeName}'.`
