@@ -115,11 +115,12 @@ async function main() {
             }
             lastResults[key] = content.id
             if (msg) {
+                const lastResultsJson = JSON.stringify(lastResults, undefined, 4)
                 console.log(msg)
-                console.log(JSON.stringify(lastResults, undefined, 4))
+                console.log(lastResultsJson)
                 notice(key, content)
                 notifications.push({ type: key, value: content })
-                fs.writeJsonSync(cachePath, lastResults, { encoding: 'utf8' })
+                fs.writeFileSync(cachePath, lastResultsJson, { encoding: 'utf8' })
             }
         }
     } catch (ex) {
