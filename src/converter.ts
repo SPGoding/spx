@@ -240,7 +240,14 @@ export const converters = {
         return ans
     },
     span: (ele: HTMLElement) => {
+        const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
+        const suffix = '[/font][/backcolor]'
         const ans = converters.rescure(ele)
+
+        if (ele.classList.contains('bedrock-server')) {
+            // Is code.
+            return `${prefix}${ans}${suffix}`
+        }
 
         return ans
     },
