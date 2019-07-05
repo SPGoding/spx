@@ -44,8 +44,10 @@ export function getContent(html: Document) {
     }
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
-    // Add spaces between text and '['.
-    ans = ans.replace(/([a-zA-Z0-9\-\.\_])\[/g, '$1 [')
+    // Add spaces between texts and '[x'.
+    ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
+    // Add spaces between '[/x]' and texts.
+    ans = ans.replace(/(\[\/.+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
     // Append the server URL if it exists.
     if (serverUrl) {
         ans += `[align=center][table=70%,#EDFBFF]
