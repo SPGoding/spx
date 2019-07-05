@@ -47,7 +47,7 @@ export function getContent(html: Document) {
     // Add spaces between texts and '[x'.
     ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
     // Add spaces between '[/x]' and texts.
-    ans = ans.replace(/(\[\/.+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
+    ans = ans.replace(/(\[\/[^\]]+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
     // Append the server URL if it exists.
     if (serverUrl) {
         ans += `[align=center][table=70%,#EDFBFF]
