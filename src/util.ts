@@ -7,21 +7,7 @@ export type StringStringMap = {
     [key: string]: string
 }
 
-export type StringNumberMap = {
-    [key: string]: number
-}
-
-export type StringFunctionMap = {
-    [key: string]: (...params: any[]) => Result
-}
-
 export type ManifestVersion = { id: string, type: 'snapshot' | 'release', [key: string]: any }
-
-export type Result = {
-    id: string,
-    text: string,
-    addition?: string
-}
 
 export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * Math.floor(max - min)) + min

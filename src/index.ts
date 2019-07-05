@@ -7,7 +7,6 @@ import {
     getBeginning,
     getEnding,
     StringStringMap,
-    Result,
     getArticleType,
     ManifestVersion,
     getVersionType
@@ -15,7 +14,7 @@ import {
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 import { JSDOM } from 'jsdom'
-import { ContentProvider, JsonContentProvider, HtmlContentProvider, McbbsContentProvider } from './content-provider'
+import { ContentProvider, JsonContentProvider, HtmlContentProvider, McbbsContentProvider, Content } from './content-provider'
 
 //#region Detection
 const lastResults: StringStringMap = {}
@@ -40,10 +39,10 @@ const providers: { [key: string]: ContentProvider } = {
             return addition
         }
     ),
-    qanda: new McbbsContentProvider(
+    vanilla_question: new McbbsContentProvider(
         'http://www.mcbbs.net/forum-qanda-1.html'
     ),
-    etcqanda: new McbbsContentProvider(
+    other_question: new McbbsContentProvider(
         'http://www.mcbbs.net/forum-etcqanda-1.html'
     ),
     version: new JsonContentProvider(
@@ -90,7 +89,7 @@ let interval: number | undefined
 /**
  * All notifications that still aren't read by clients.
  */
-const notifications: { type: string; value: Result }[] = []
+const notifications: { type: string; value: Content }[] = []
 
 const versions: ManifestVersion[] = []
 
@@ -199,7 +198,12 @@ wsServer.on('request', request => {
                             bbcode.slice(0, bbcode.lastIndexOf('[size=6][b][color=Gray]GET THE SNAPSHOT[/color][/b][/size]')) +
                             ending
                     }
-                    await notice('bbcode', { addition: bbcode, id: '', text: '' })
+                    const content = {
+                        addition: bbcode, id: args[1],
+                        text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
+                    }
+                    await notice('bbcode', content)
+                    notifications.push({ type: 'bbcode', value: content })
                     break
                 default:
                     console.error(`Unknown client request: ${data.utf8Data}.`)
@@ -214,7 +218,7 @@ wsServer.on('request', request => {
     })
 })
 
-function notice(type: string, value: Result) {
+function notice(type: string, value: Content) {
     connections.forEach(connection => {
         connection.sendUTF(JSON.stringify({ type, value }))
     })

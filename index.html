@@ -74,7 +74,7 @@
                     append = `VERSION - ${json.value.id}`
                     break
                 case 'bbcode':
-                    append = 'BBCode - '
+                    append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
                 case 'read':
                     output.innerHTML = ""
@@ -84,10 +84,10 @@
                     append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
             }
-            const speech = `New ${json.type} detected: ${json.value.text}`
+            const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             if (json.value.addition) {
-                append += `<button class="copy" data-clipboard-text="${
+                append += ` - <button class="copy" data-clipboard-text="${
                     json.value.addition
                         .replace(/\</g, '&lt;')
                         .replace(/&/g, '&amp;')

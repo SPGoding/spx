@@ -126,6 +126,8 @@ export const converters = {
             ans += converters.convert(child)
         })
 
+        ans = removeLastLinebreak(ans)
+
         return ans
     },
     a: (anchor: HTMLAnchorElement) => {
@@ -227,7 +229,8 @@ export const converters = {
         return ans
     },
     ol: (ele: HTMLElement) => {
-        const ans = `\n[list=1]\n${converters.rescure(ele)}[/list]\n`
+        const inner = converters.rescure(ele)
+        const ans = `\n[list=1]\n${inner}[/list]\n`
 
         return ans
     },
@@ -276,7 +279,8 @@ export const converters = {
         return ans
     },
     ul: (ele: HTMLElement) => {
-        const ans = `\n[list]\n${converters.rescure(ele)}[/list]\n`
+        const inner = converters.rescure(ele)
+        const ans = `\n[list]\n${inner}[/list]\n`
 
         return ans
     }
@@ -291,4 +295,11 @@ export function resolveUrl(url: string) {
     } else {
         return url
     }
+}
+
+function removeLastLinebreak(str: string) {
+    if (str.slice(-1) === '\n') {
+        return str.slice(0, -1)
+    }
+    return str
 }
