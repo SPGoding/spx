@@ -11,7 +11,7 @@ export function convertMCAriticleToBBCode(html: Document) {
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
-    const ans = `${heroImage}\n${content}`
+    const ans = `[align=center]${heroImage}\n${content}[/align]`
 
     return ans
 }
@@ -44,13 +44,15 @@ export function getContent(html: Document) {
     }
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
-    // Add spaces between text and '['.
-    ans = ans.replace(/([a-zA-Z0-9\-\.\_])\[/, '$1 [')
+    // Add spaces between texts and '[x'.
+    ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
+    // Add spaces between '[/x]' and texts.
+    ans = ans.replace(/(\[\/[^\]]+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
     // Append the server URL if it exists.
     if (serverUrl) {
         ans += `[align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]官方服务端下载地址[/b][/color][/size][/align][/td][/tr]
-[tr][td][align=center][url=${serverUrl}]${serverUrl}[/url][/align][/td][/tr]
+[tr][td][align=center][url=${serverUrl}]Minecraft server.jar[/url][/align][/td][/tr]
 [/table][/align]`
     }
 
@@ -124,6 +126,8 @@ export const converters = {
             ans += converters.convert(child)
         })
 
+        ans = removeLastLinebreak(ans)
+
         return ans
     },
     a: (anchor: HTMLAnchorElement) => {
@@ -174,7 +178,10 @@ export const converters = {
         if (ele.classList.contains('pubDate')) {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             // Use `.slice(0, 10)` to get '2019-03-08'.
-            ans = (ele.attributes.getNamedItem('date-value') as Attr).value.slice(0, 10)
+            const date = ele.attributes.getNamedItem('data-value')
+            if (date) {
+                ans = date.value.slice(0, 10)
+            }
         }
 
         ans += '，'
@@ -222,13 +229,14 @@ export const converters = {
         return ans
     },
     ol: (ele: HTMLElement) => {
-        const ans = `\n[list=1]\n${converters.rescure(ele)}[/list]\n`
+        const inner = converters.rescure(ele)
+        const ans = `\n[list=1]\n${inner}[/list]\n`
 
         return ans
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[spoiler]${inner}[/spoiler]${inner}\n`
+        let ans = `\n[spoiler][align=center]${inner}[/align][/spoiler]${inner}\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${inner}[/b][/size]\n`
@@ -237,7 +245,14 @@ export const converters = {
         return ans
     },
     span: (ele: HTMLElement) => {
+        const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
+        const suffix = '[/font][/backcolor]'
         const ans = converters.rescure(ele)
+
+        if (ele.classList.contains('bedrock-server')) {
+            // Is code.
+            return `${prefix}${ans}${suffix}`
+        }
 
         return ans
     },
@@ -264,7 +279,8 @@ export const converters = {
         return ans
     },
     ul: (ele: HTMLElement) => {
-        const ans = `\n[list]\n${converters.rescure(ele)}[/list]\n`
+        const inner = converters.rescure(ele)
+        const ans = `\n[list]\n${inner}[/list]\n`
 
         return ans
     }
@@ -279,4 +295,11 @@ export function resolveUrl(url: string) {
     } else {
         return url
     }
+}
+
+function removeLastLinebreak(str: string) {
+    if (str.slice(-1) === '\n') {
+        return str.slice(0, -1)
+    }
+    return str
 }

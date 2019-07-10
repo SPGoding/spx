@@ -7,8 +7,6 @@ import {
     getBeginning,
     getEnding,
     StringStringMap,
-    Result,
-    getLatest,
     getArticleType,
     ManifestVersion,
     getVersionType
@@ -16,18 +14,45 @@ import {
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 import { JSDOM } from 'jsdom'
+import { ContentProvider, JsonContentProvider, HtmlContentProvider, McbbsContentProvider, Content } from './content-provider'
 
 //#region Detection
-const urls: StringStringMap = {
-    article:
-        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/insider,minecraft:article/news&propResPath=/content/minecraft-net/language-masters/zh-hans/jcr:content/root/generic-container/par/grid&offset=0&count=2000&pageSize=20&tag=ALL&lang=/content/minecraft-net/language-masters/zh-hans',
-    question: 'http://www.mcbbs.net/forum-qanda-1.html',
-    version: 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
-}
-const lastResults: StringStringMap = {
-    article: '',
-    question: '',
-    version: ''
+const lastResults: StringStringMap = {}
+
+const providers: { [key: string]: ContentProvider } = {
+    article: new JsonContentProvider(
+        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news&lang=/content/minecraft-net/language-masters/zh-hans',
+        json => `https://www.minecraft.net${json.article_grid[0].article_url}`,
+        json => json.article_grid[0].default_tile.title,
+        async json => {
+            const src = await rp(`https://www.minecraft.net${json.article_grid[0].article_url}`)
+            const html = new JSDOM(src).window.document
+            let addition = convertMCAriticleToBBCode(html)
+            const articleType = getArticleType(html)
+            if (articleType === 'News') {
+                const version = lastResults.version
+                const versionType = getVersionType(versions, version)
+                const beginning = getBeginning(versionType, version, versions)
+                const ending = getEnding(versionType)
+                addition = beginning + addition + ending
+            }
+            return addition
+        }
+    ),
+    vanilla_question: new McbbsContentProvider(
+        'http://www.mcbbs.net/forum-qanda-1.html'
+    ),
+    other_question: new McbbsContentProvider(
+        'http://www.mcbbs.net/forum-etcqanda-1.html'
+    ),
+    version: new JsonContentProvider(
+        'https://launchermeta.mojang.com/mc/game/version_manifest.json',
+        json => {
+            versions.splice(0)
+            versions.push(...json.versions)
+            return json.latest.snapshot
+        }
+    )
 }
 
 const configPath = path.join(__dirname, './config.json')
@@ -64,61 +89,40 @@ let interval: number | undefined
 /**
  * All notifications that still aren't read by clients.
  */
-const notifications: { type: string; value: Result }[] = []
+const notifications: { type: string; value: Content }[] = []
 
 const versions: ManifestVersion[] = []
 
 setInterval(main, interval)
 
+async function getVersions() {
+    await providers.version.getContent()
+}
+
 async function main() {
     try {
-        for (const type of ['version', 'article', 'question']) {
-            const webCode = await rp(urls[type])
-            const latest = getLatest[type](webCode, lastResults[type], versions)
-            const last = lastResults[type]
-            lastResults[type] = latest.identity
-
-            let text = ''
-            if (!last) {
-                text = `Initialized ${type}: ${latest.identity}.`
-            } else if (last !== latest.identity) {
-                text = `Detected new ${type}: ${latest.identity}.`
+        if (versions.length === 0) {
+            await getVersions()
+        }
+        for (const key in providers) {
+            const provider = providers[key]
+            const content = await provider.getContent()
+            let msg: string = ''
+            if (!lastResults[key]) {
+                msg = `Initialized ${key}: ${content.id}.`
+            } else if (lastResults[key] !== content.id) {
+                msg = `Detected new ${key}: ${content.id}.`
             }
-            if (text) {
-                console.log(text)
-                // Deal with additional information.
-                if (type === 'article') {
-                    const src = await rp(latest.identity)
-                    const html = new JSDOM(src).window.document
-                    let addition = convertMCAriticleToBBCode(html)
-                    const articleType = getArticleType(html)
-                    if (articleType === 'News') {
-                        const version = lastResults.version
-                        const versionType = getVersionType(versions, version)
-                        const beginning = getBeginning(versionType, version, versions)
-                        const ending = getEnding(versionType)
-                        addition = beginning + addition + ending
-                    }
-                    latest.addition = addition
-                }
-                notice(type, latest)
-                notifications.push({ type, value: latest })
-                await fs.writeJson(cachePath, lastResults, { encoding: 'utf8' })
+            lastResults[key] = content.id
+            if (msg) {
+                const lastResultsJson = JSON.stringify(lastResults, undefined, 4)
+                console.log(msg)
+                console.log(lastResultsJson)
+                notice(key, content)
+                notifications.push({ type: key, value: content })
+                fs.writeFileSync(cachePath, lastResultsJson, { encoding: 'utf8' })
             }
         }
-    } catch (ex) {
-        console.error(ex)
-    }
-}
-
-if (fs.existsSync('/sys/class/thermal/thermal_zone0/temp')) {
-    setInterval(getCpuTemperature, 1000)
-}
-
-async function getCpuTemperature() {
-    try {
-        const value = await fs.readFile('/sys/class/thermal/thermal_zone0/temp', { encoding: 'utf8' })
-        notice('cpu', { identity: value, readable: `${parseInt(value) / 1000}℃` })
     } catch (ex) {
         console.error(ex)
     }
@@ -169,16 +173,44 @@ wsServer.on('request', request => {
         }
     }
 
-    connection.on('message', data => {
-        switch (data.utf8Data) {
-            case 'read':
-                notifications.splice(0, notifications.length)
-                notice('read', { identity: '', readable: '' })
-                console.log('Marked as read.')
-                break
-            default:
-                console.error(`Unknown client request: ${data.utf8Data}.`)
-                break
+    connection.on('message', async data => {
+        if (data.utf8Data) {
+            const args = data.utf8Data.split(', ')
+            switch (args[0]) {
+                case 'read':
+                    notifications.splice(0, notifications.length)
+                    notice('read', { id: '', text: '' })
+                    console.log('Marked as read.')
+                    break
+                case 'bbcode':
+                    if (versions.length === 0) {
+                        await getVersions()
+                    }
+                    const src = await rp(args[1])
+                    const html = new JSDOM(src).window.document
+                    let bbcode = convertMCAriticleToBBCode(html)
+                    const articleType = getArticleType(html)
+                    if (articleType === 'News') {
+                        const version = lastResults.version
+                        const versionType = getVersionType(versions, version)
+                        const beginning = getBeginning(versionType, version, versions)
+                        const ending = getEnding(versionType)
+                        bbcode =
+                            beginning +
+                            bbcode.slice(0, bbcode.lastIndexOf('[size=6][b][color=Gray]GET THE SNAPSHOT[/color][/b][/size]')) +
+                            ending
+                    }
+                    const content = {
+                        addition: bbcode, id: args[1],
+                        text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
+                    }
+                    await notice('bbcode', content)
+                    notifications.push({ type: 'bbcode', value: content })
+                    break
+                default:
+                    console.error(`Unknown client request: ${data.utf8Data}.`)
+                    break
+            }
         }
     })
 
@@ -188,7 +220,7 @@ wsServer.on('request', request => {
     })
 })
 
-function notice(type: string, value: Result) {
+function notice(type: string, value: Content) {
     connections.forEach(connection => {
         connection.sendUTF(JSON.stringify({ type, value }))
     })

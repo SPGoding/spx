@@ -1,4 +1,4 @@
-const nextMainRelease = '1.14'
+const nextMainRelease = '1.14.4'
 const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
 
 const AFVersions = ['3D Shareware v1.34']
@@ -7,21 +7,7 @@ export type StringStringMap = {
     [key: string]: string
 }
 
-export type StringNumberMap = {
-    [key: string]: number
-}
-
-export type StringFunctionMap = {
-    [key: string]: (...params: any[]) => Result
-}
-
 export type ManifestVersion = { id: string, type: 'snapshot' | 'release', [key: string]: any }
-
-export type Result = {
-    identity: string,
-    readable: string,
-    addition?: string | { beginning: string, ending: string }
-}
 
 export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * Math.floor(max - min)) + min
@@ -30,13 +16,17 @@ export function getRandomInt(min: number, max: number) {
 export function getVersionType(versions: ManifestVersion[], version: string): 'snapshot' | 'pre_release' | 'release' {
     const manifestVersion = versions.filter(ver => ver.id === version)[0]
 
-    if (manifestVersion.type === 'snapshot') {
-        if (manifestVersion.id.toLowerCase().indexOf('pre') !== -1) {
-            return 'pre_release'
+    if (manifestVersion) {
+        if (manifestVersion.type === 'snapshot') {
+            if (manifestVersion.id.toLowerCase().indexOf('pre') !== -1) {
+                return 'pre_release'
+            }
+            return 'snapshot'
+        } else {
+            return 'release'
         }
-        return 'snapshot'
     } else {
-        return 'release'
+        return 'snapshot'
     }
 }
 
@@ -67,53 +57,6 @@ export function getCounts(versions: ManifestVersion[], version: string): [number
     }
 
     return [snapCount, preCount]
-}
-
-/**
- * Returns the latest article, question or version from web source code.
- */
-export const getLatest: StringFunctionMap = {
-    article: (source, lastResult, _) => {
-        try {
-            const json = JSON.parse(source)
-            const url = json.article_grid[0].article_url
-            const readable = json.article_grid[0].default_tile.title
-            const identity = `https://www.minecraft.net${url}`
-            return { identity, readable }
-        } catch (ex) {
-            console.error(ex)
-            return { identity: lastResult, readable: '' }
-        }
-    },
-    question: (source, lastResult, _) => {
-        try {
-            const tidRegex = /<tbody id="normalthread_(\d+)">/
-            const tid = (tidRegex.exec(source) as RegExpExecArray)[1]
-            const identity = `http://www.mcbbs.net/thread-${tid}-1-1.html`
-            const titleRegex = /class="s xst">(.+?)<\/a>/
-            const readable = (titleRegex.exec(
-                source.slice(source.indexOf('normalthread_'))) as RegExpExecArray)[1]
-            return { identity, readable }
-        } catch (ex) {
-            console.error(ex)
-            return { identity: lastResult, readable: '' }
-        }
-    },
-    version: (source, lastResult, versions: ManifestVersion[]) => {
-        try {
-            const json: {
-                latest: { snapshot: string, release: string },
-                versions: ManifestVersion[]
-            } = JSON.parse(source)
-            const latest: string = json.latest.snapshot
-            versions.splice(0)
-            versions.push(...json.versions)
-            return { identity: latest, readable: latest }
-        } catch (ex) {
-            console.error(ex)
-            return { identity: lastResult, readable: '' }
-        }
-    }
 }
 
 /**
