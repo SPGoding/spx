@@ -11,7 +11,7 @@ export function convertMCAriticleToBBCode(html: Document) {
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
-    const ans = `[align=center]${heroImage}\n${content}[/align]`
+    const ans = `${heroImage}\n${content}`
 
     return ans
 }
@@ -44,13 +44,15 @@ export function getContent(html: Document) {
     }
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
+    // Remove 'GET THE SNAPSHOT' for releasing
+    ans = ans.slice(0, ans.lastIndexOf('[size=6][b][color=Gray]GET THE SNAPSHOT[/color][/b][/size]'))
     // Add spaces between texts and '[x'.
     ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
     // Add spaces between '[/x]' and texts.
     ans = ans.replace(/(\[\/[^\]]+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
     // Append the server URL if it exists.
     if (serverUrl) {
-        ans += `[align=center][table=70%,#EDFBFF]
+        ans += `\n[align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]官方服务端下载地址[/b][/color][/size][/align][/td][/tr]
 [tr][td][align=center][url=${serverUrl}]Minecraft server.jar[/url][/align][/td][/tr]
 [/table][/align]`
@@ -197,7 +199,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]\n'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}${prefix}${inner}${suffix}`
+        const ans = `\n${prefix}${inner}${suffix} ${prefix}[color=Gray]${inner}[/color]${suffix}`
 
         return ans
     },
@@ -205,7 +207,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]\n'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}${prefix}${inner}${suffix}`
+        const ans = `\n${prefix}${inner}${suffix} ${prefix}[color=Gray]${inner}[/color]${suffix}`
 
         return ans
     },
@@ -213,7 +215,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]\n'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}${prefix}${inner}${suffix}`
+        const ans = `\n${prefix}${inner}${suffix} ${prefix}[color=Gray]${inner}[/color]${suffix}`
 
         return ans
     },
@@ -236,7 +238,7 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[spoiler][align=center]${inner}[/align][/spoiler]${inner}\n`
+        let ans = `\n[align=center][spoiler][align=center]${inner}[/align][/spoiler]${inner}[/align]\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${inner}[/b][/size]\n`
