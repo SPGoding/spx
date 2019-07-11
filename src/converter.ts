@@ -45,7 +45,7 @@ export function getContent(html: Document) {
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Remove 'GET THE SNAPSHOT' for releasing
-    ans = ans.slice(0, ans.lastIndexOf('[size=6][b][color=Gray]GET THE SNAPSHOT[/color][/b][/size]'))
+    ans = ans.slice(0, ans.lastIndexOf('[size=6][b]GET THE SNAPSHOT[/b][/size]'))
     // Add spaces between texts and '[x'.
     ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
     // Add spaces between '[/x]' and texts.
@@ -197,25 +197,25 @@ export const converters = {
     },
     h1: (ele: HTMLElement) => {
         const prefix = '[size=6][b]'
-        const suffix = '[/b][/size]\n'
+        const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}${inner}${suffix} ${prefix}[color=Gray]${inner}[/color]${suffix}`
+        const ans = `\n${prefix}${inner} [color=Gray]${inner}[/color]${suffix}\n`
 
         return ans
     },
     h2: (ele: HTMLElement) => {
         const prefix = '[size=5][b]'
-        const suffix = '[/b][/size]\n'
+        const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}${inner}${suffix} ${prefix}[color=Gray]${inner}[/color]${suffix}`
+        const ans = `\n${prefix}${inner} [color=Gray]${inner}[/color]${suffix}\n`
 
         return ans
     },
     h3: (ele: HTMLElement) => {
         const prefix = '[size=4][b]'
-        const suffix = '[/b][/size]\n'
+        const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}${inner}${suffix} ${prefix}[color=Gray]${inner}[/color]${suffix}`
+        const ans = `\n${prefix}${inner} [color=Gray]${inner}[/color]${suffix}\n`
 
         return ans
     },

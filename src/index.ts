@@ -197,7 +197,7 @@ wsServer.on('request', request => {
                         const ending = getEnding(versionType)
                         bbcode =
                             beginning +
-                            bbcode.slice(0, bbcode.lastIndexOf('[size=6][b][color=Gray]GET THE SNAPSHOT[/color][/b][/size]')) +
+                            bbcode +
                             ending
                     }
                     const content = {
