@@ -177,11 +177,6 @@ wsServer.on('request', request => {
 
     connections.push(connection)
     console.log(`${connection.remoteAddress} connected.`)
-    if (notifications.length > 0) {
-        for (const i of notifications) {
-            connection.sendUTF(JSON.stringify(i))
-        }
-    }
 
     connection.on('message', async data => {
         if (data.utf8Data) {
@@ -202,7 +197,13 @@ wsServer.on('request', request => {
                         const pwd = args[1].slice(7)
                         if (password === pwd) {
                             verifiedConnections.push(connection)
-                            notice('verify', { id: '', text: '' }, true)
+                            notice('verify', { id: '', text: '' })
+                            console.log(`Verified: ${connection.remoteAddress}.`)
+                            if (notifications.length > 0) {
+                                for (const i of notifications) {
+                                    connection.sendUTF(JSON.stringify(i))
+                                }
+                            }
                         }
                     } else {
                         try {
