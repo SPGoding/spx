@@ -40,11 +40,18 @@
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
 
-        const clipboardJS = new ClipboardJS('.copy');
+        const clipboardJS = new ClipboardJS('.copy')
+
+        if (localStorage.getItem('lastRequest')) {
+            url.value = localStorage.getItem('lastRequest')
+        }
 
         request.onclick = () => {
             if (url.value) {
                 webSocket.send(`request, ${url.value}`)
+                if (url.value.slice(0, 7) === 'verify ') {
+                    localStorage.setItem('lastRequest', url.value)
+                }
                 url.value = ''
             } else {
                 alert('Please input URI')
