@@ -45,7 +45,10 @@ export function getContent(html: Document) {
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Remove 'GET THE SNAPSHOT' for releasing
-    ans = ans.slice(0, ans.lastIndexOf('[color=Gray]GET THE SNAPSHOT[/color][/b][/size]'))
+    const index = ans.lastIndexOf('[color=Gray]GET THE SNAPSHOT[/color][/b][/size]')
+    if (index !== -1) {
+        ans = ans.slice(0, index)
+    }
     // Add spaces between texts and '[x'.
     ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
     // Add spaces between '[/x]' and texts.
