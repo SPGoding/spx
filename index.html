@@ -119,6 +119,9 @@
             const speech = 'WebSocket closed.'
             speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
             status.innerHTML = speech
+            read.disabled = true
+            request.disabled = true
+            url.disabled = true
         }
     </script>
 </body>

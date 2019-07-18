@@ -125,7 +125,7 @@ async function main() {
                 const lastResultsJson = JSON.stringify(lastResults, undefined, 4)
                 console.log(msg)
                 console.log(lastResultsJson)
-                notice(key, content)
+                announce(key, content)
                 notifications.push({ type: key, value: content })
                 fs.writeFileSync(cachePath, lastResultsJson, { encoding: 'utf8' })
             }
@@ -185,7 +185,7 @@ wsServer.on('request', request => {
                 case 'read':
                     if (verifiedConnections.map(v => v.remoteAddress).indexOf(connection.remoteAddress) !== -1) {
                         notifications.splice(0, notifications.length)
-                        notice('read', { id: '', text: '' })
+                        announce('read', { id: '', text: '' })
                         console.log('Marked as read.')
                     }
                     break
@@ -228,8 +228,10 @@ wsServer.on('request', request => {
                                 addition: bbcode, id: args[1],
                                 text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
                             }
-                            await notice('bbcode', content, false)
-                            notifications.push({ type: 'bbcode', value: content })
+                            await connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
+                            if (verifiedConnections.map(v => v.remoteAddress).indexOf(connection.remoteAddress) === -1) {
+                                connection.close()
+                            }
                         } catch (e) {
                             connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong URI.' } }))
                             connection.close()
@@ -237,7 +239,8 @@ wsServer.on('request', request => {
                     }
                     break
                 default:
-                    console.error(`Unknown client request: ${data.utf8Data}.`)
+                    connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Unknown request.' } }))
+                    connection.close()
                     break
             }
         }
@@ -250,7 +253,7 @@ wsServer.on('request', request => {
     })
 })
 
-function notice(type: string, value: Content, onlyVerified = true) {
+function announce(type: string, value: Content, onlyVerified = true) {
     if (onlyVerified) {
         verifiedConnections.forEach(v => {
             v.sendUTF(JSON.stringify({ type, value }))
