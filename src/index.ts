@@ -61,8 +61,8 @@ let httpPort: number | undefined
 let ip: string | undefined
 let password: string | undefined
 let interval: number | undefined
-let keyFile: Buffer | undefined
-let certFile: Buffer | undefined
+let key: Buffer | undefined
+let cert: Buffer | undefined
 
 (function loadConfiguration() {
 
@@ -72,9 +72,9 @@ let certFile: Buffer | undefined
         httpPort = config.httpPort
         interval = config.interval
         password = config.password
-        keyFile = fs.readFileSync(config.keyFile)
-        certFile = fs.readFileSync(config.certFile)
-        if (!ip || !httpPort || !interval || !keyFile || !certFile || !password) {
+        key = fs.readFileSync(config.keyFile)
+        cert = fs.readFileSync(config.certFile)
+        if (!ip || !httpPort || !interval || !key || !cert || !password) {
             throw ("Expected 'httpPort', 'interval', 'ip', 'keyFile', 'certFile' and 'password' in './config.json'.")
         }
     } else {
@@ -142,10 +142,7 @@ const verifiedConnections: connection[] = []
 const wsPort = getRandomInt(49152, 65535)
 
 const httpsServer = https
-    .createServer({
-        key: fs.readFileSync(keyFile),
-        cert: fs.readFileSync(certFile)
-    }, async (req, res) => {
+    .createServer({ key, cert }, async (req, res) => {
         try {
             req.on('error', e => {
                 console.error(e.message)
@@ -168,10 +165,7 @@ httpsServer.on('error', e => {
 })
 
 const wsServer = new WSServer({
-    httpServer: https.createServer({
-        key: fs.readFileSync(keyFile),
-        cert: fs.readFileSync(certFile)
-    }).listen(wsPort)
+    httpServer: https.createServer({ key, cert }).listen(wsPort)
 })
 console.log(`WebSocket server is running at ${ip}:${wsPort}`)
 wsServer.on('request', request => {
