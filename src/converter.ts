@@ -229,7 +229,7 @@ export const converters = {
         return ans
     },
     img: (img: HTMLImageElement) => {
-        const ans = `[img]${resolveUrl(img.src)}[/img]`
+        const ans = `\n[img]${resolveUrl(img.src)}[/img]\n`
 
         return ans
     },
