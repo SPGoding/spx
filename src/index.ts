@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra'
-import * as http from 'http'
+import * as https from 'https'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
 import {
@@ -14,7 +14,7 @@ import {
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 import { JSDOM } from 'jsdom'
-import { ContentProvider, JsonContentProvider, HtmlContentProvider, McbbsContentProvider, Content } from './content-provider'
+import { ContentProvider, JsonContentProvider, McbbsContentProvider, Content } from './content-provider'
 
 //#region Detection
 const lastResults: StringStringMap = {}
@@ -40,10 +40,10 @@ const providers: { [key: string]: ContentProvider } = {
         }
     ),
     vanilla_question: new McbbsContentProvider(
-        'http://www.mcbbs.net/forum-qanda-1.html'
+        'https://www.mcbbs.net/forum-qanda-1.html'
     ),
     other_question: new McbbsContentProvider(
-        'http://www.mcbbs.net/forum-etcqanda-1.html'
+        'https://www.mcbbs.net/forum-etcqanda-1.html'
     ),
     version: new JsonContentProvider(
         'https://launchermeta.mojang.com/mc/game/version_manifest.json',
@@ -59,7 +59,10 @@ const configPath = path.join(__dirname, './config.json')
 const cachePath = path.join(__dirname, './cache.json')
 let httpPort: number | undefined
 let ip: string | undefined
+let password: string | undefined
 let interval: number | undefined
+let keyFile: Buffer | undefined
+let certFile: Buffer | undefined
 
 (function loadConfiguration() {
 
@@ -68,14 +71,18 @@ let interval: number | undefined
         ip = config.ip
         httpPort = config.httpPort
         interval = config.interval
-        if (!ip || !httpPort || !interval) {
-            throw ("Expected 'httpPort', 'interval' and 'ip' in './config.json'.")
+        password = config.password
+        keyFile = fs.readFileSync(config.keyFile)
+        certFile = fs.readFileSync(config.certFile)
+        if (!ip || !httpPort || !interval || !keyFile || !certFile || !password) {
+            throw ("Expected 'httpPort', 'interval', 'ip', 'keyFile', 'certFile' and 'password' in './config.json'.")
         }
     } else {
         ip = 'localhost'
         httpPort = 80
         interval = 20000
-        fs.writeJsonSync(configPath, { ip, httpPort }, { encoding: 'utf8' })
+        fs.writeJsonSync(configPath, { ip, httpPort, interval, keyFile: null, certFile: null, password: null }, { encoding: 'utf8' })
+        throw 'Please complete the config file.'
     }
 
     if (fs.existsSync(cachePath)) {
@@ -131,10 +138,14 @@ async function main() {
 
 //#region Notification
 const connections: connection[] = []
+const verifiedConnections: connection[] = []
 const wsPort = getRandomInt(49152, 65535)
 
-const httpServer = http
-    .createServer(async (req, res) => {
+const httpsServer = https
+    .createServer({
+        key: fs.readFileSync(keyFile),
+        cert: fs.readFileSync(certFile)
+    }, async (req, res) => {
         try {
             req.on('error', e => {
                 console.error(e.message)
@@ -151,12 +162,17 @@ const httpServer = http
         }
     })
     .listen(httpPort)
-console.log(`HTTP server is running at ${ip}:${httpPort}`)
-httpServer.on('error', e => {
+console.log(`HTTPS server is running at ${ip}:${httpPort}`)
+httpsServer.on('error', e => {
     console.error(e.message)
 })
 
-const wsServer = new WSServer({ httpServer: http.createServer().listen(wsPort) })
+const wsServer = new WSServer({
+    httpServer: https.createServer({
+        key: fs.readFileSync(keyFile),
+        cert: fs.readFileSync(certFile)
+    }).listen(wsPort)
+})
 console.log(`WebSocket server is running at ${ip}:${wsPort}`)
 wsServer.on('request', request => {
     const connection = request.accept()
@@ -178,34 +194,48 @@ wsServer.on('request', request => {
             const args = data.utf8Data.split(', ')
             switch (args[0]) {
                 case 'read':
-                    notifications.splice(0, notifications.length)
-                    notice('read', { id: '', text: '' })
-                    console.log('Marked as read.')
+                    if (verifiedConnections.map(v => v.remoteAddress).indexOf(connection.remoteAddress) !== -1) {
+                        notifications.splice(0, notifications.length)
+                        notice('read', { id: '', text: '' })
+                        console.log('Marked as read.')
+                    }
                     break
-                case 'bbcode':
+                case 'request':
                     if (versions.length === 0) {
                         await getVersions()
                     }
-                    const src = await rp(args[1])
-                    const html = new JSDOM(src).window.document
-                    let bbcode = convertMCAriticleToBBCode(html)
-                    const articleType = getArticleType(html)
-                    if (articleType === 'News') {
-                        const version = lastResults.version
-                        const versionType = getVersionType(versions, version)
-                        const beginning = getBeginning(versionType, version, versions)
-                        const ending = getEnding(versionType)
-                        bbcode =
-                            beginning +
-                            bbcode +
-                            ending
+                    if (args[1].slice(0, 7) === 'verify ') {
+                        const pwd = args[1].slice(7)
+                        if (password === pwd) {
+                            verifiedConnections.push(connection)
+                            notice('verify', { id: '', text: '' }, true)
+                        }
+                    } else {
+                        try {
+                            const src = await rp(args[1])
+                            const html = new JSDOM(src).window.document
+                            let bbcode = convertMCAriticleToBBCode(html)
+                            const articleType = getArticleType(html)
+                            if (articleType === 'News') {
+                                const version = lastResults.version
+                                const versionType = getVersionType(versions, version)
+                                const beginning = getBeginning(versionType, version, versions)
+                                const ending = getEnding(versionType)
+                                bbcode =
+                                    beginning +
+                                    bbcode +
+                                    ending
+                            }
+                            const content = {
+                                addition: bbcode, id: args[1],
+                                text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
+                            }
+                            await notice('bbcode', content, false)
+                            notifications.push({ type: 'bbcode', value: content })
+                        } catch (e) {
+                            connection.close()
+                        }
                     }
-                    const content = {
-                        addition: bbcode, id: args[1],
-                        text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
-                    }
-                    await notice('bbcode', content)
-                    notifications.push({ type: 'bbcode', value: content })
                     break
                 default:
                     console.error(`Unknown client request: ${data.utf8Data}.`)
@@ -217,12 +247,19 @@ wsServer.on('request', request => {
     connection.on('close', () => {
         console.log(`${connection.remoteAddress} disconnected.`)
         connections.splice(connections.indexOf(connection), 1)
+        verifiedConnections.splice(verifiedConnections.indexOf(connection), 1)
     })
 })
 
-function notice(type: string, value: Content) {
-    connections.forEach(connection => {
-        connection.sendUTF(JSON.stringify({ type, value }))
-    })
+function notice(type: string, value: Content, onlyVerified = true) {
+    if (onlyVerified) {
+        verifiedConnections.forEach(v => {
+            v.sendUTF(JSON.stringify({ type, value }))
+        })
+    } else {
+        connections.forEach(v => {
+            v.sendUTF(JSON.stringify({ type, value }))
+        })
+    }
 }
 //#endregion

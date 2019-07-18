@@ -23,7 +23,7 @@ export function convertMCAriticleToBBCode(html: Document) {
 export function getHeroImage(html: Document) {
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement
     const src = img.src
-    const ans = `[img=1200,513]${resolveUrl(src)}[/img]`
+    const ans = `[align=center][img=1200,513]${resolveUrl(src)}[/img][/align]`
 
     return ans
 }
@@ -199,7 +199,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}${inner} [color=Gray]${inner}[/color]${suffix}\n`
+        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${prefix}${inner}${suffix}\n`
 
         return ans
     },
@@ -207,7 +207,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}${inner} [color=Gray]${inner}[/color]${suffix}\n`
+        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${prefix}${inner}${suffix}\n`
 
         return ans
     },
@@ -215,7 +215,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}${inner} [color=Gray]${inner}[/color]${suffix}\n`
+        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${prefix}${inner}${suffix}\n`
 
         return ans
     },
@@ -238,7 +238,7 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[align=center][spoiler][align=center]${inner}[/align][/spoiler]${inner}[/align]\n`
+        let ans = `\n[color=Gray]${inner}[/color]\n${inner}\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${inner}[/b][/size]\n`

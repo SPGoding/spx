@@ -25,6 +25,7 @@
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
         <p id="status">Connecting...</p>
+        <p id="verified" style="color:darkgray">You are NOT verified.</p>
         <input type="button" value="Activate Sound" id="read" /><br />
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
@@ -35,6 +36,7 @@
         const output = document.getElementById('output')
         const url = document.getElementById('url')
         const status = document.getElementById('status')
+        const verified = document.getElementById('verified')
         const wsURL = 'ws://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
 
@@ -42,7 +44,7 @@
 
         request.onclick = () => {
             if (url.value) {
-                webSocket.send(`bbcode, ${url.value}`)
+                webSocket.send(`request, ${url.value}`)
                 url.value = ''
             } else {
                 alert('Please input URI')
@@ -79,6 +81,10 @@
                 case 'read':
                     output.innerHTML = ""
                     read.disabled = true
+                    return
+                case 'verify':
+                    verified.innerHTML = 'You are my master.'
+                    verified.style = 'color: green;'
                     return
                 default:
                     append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
