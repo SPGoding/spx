@@ -136,7 +136,13 @@ export const converters = {
         return ans
     },
     a: (anchor: HTMLAnchorElement) => {
-        const ans = `[url=${resolveUrl(anchor.href)}]${converters.rescure(anchor)}[/url]`
+        const url = resolveUrl(anchor.href)
+        let ans
+        if (url) {
+            ans = `[url=${url}]${converters.rescure(anchor)}[/url]`
+        } else {
+            ans = converters.rescure(anchor)
+        }
 
         return ans
     },
