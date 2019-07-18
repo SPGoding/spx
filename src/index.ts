@@ -197,13 +197,16 @@ wsServer.on('request', request => {
                         const pwd = args[1].slice(7)
                         if (password === pwd) {
                             verifiedConnections.push(connection)
-                            notice('verify', { id: '', text: '' })
+                            connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: '', text: '' } }))
                             console.log(`Verified: ${connection.remoteAddress}.`)
                             if (notifications.length > 0) {
                                 for (const i of notifications) {
                                     connection.sendUTF(JSON.stringify(i))
                                 }
                             }
+                        } else {
+                            connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong password.' } }))
+                            connection.close()
                         }
                     } else {
                         try {
@@ -228,6 +231,7 @@ wsServer.on('request', request => {
                             await notice('bbcode', content, false)
                             notifications.push({ type: 'bbcode', value: content })
                         } catch (e) {
+                            connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong URI.' } }))
                             connection.close()
                         }
                     }
