@@ -125,7 +125,7 @@ async function main() {
                 const lastResultsJson = JSON.stringify(lastResults, undefined, 4)
                 console.log(msg)
                 console.log(lastResultsJson)
-                announce(key, content)
+                announce(key, content, true)
                 notifications.push({ type: key, value: content })
                 fs.writeFileSync(cachePath, lastResultsJson, { encoding: 'utf8' })
             }
@@ -138,7 +138,7 @@ async function main() {
 
 //#region Notification
 const connections: connection[] = []
-const verifiedConnections: connection[] = []
+const verifiedIps: string[] = []
 const wsPort = getRandomInt(49152, 65535)
 
 const httpsServer = https
@@ -183,9 +183,9 @@ wsServer.on('request', request => {
             const args = data.utf8Data.split(', ')
             switch (args[0]) {
                 case 'read':
-                    if (verifiedConnections.map(v => v.remoteAddress).indexOf(connection.remoteAddress) !== -1) {
+                    if (verifiedIps.indexOf(connection.remoteAddress) !== -1) {
                         notifications.splice(0, notifications.length)
-                        announce('read', { id: '', text: '' })
+                        announce('read', { id: '', text: '' }, true)
                         console.log('Marked as read.')
                     }
                     break
@@ -196,7 +196,7 @@ wsServer.on('request', request => {
                     if (args[1].slice(0, 7) === 'verify ') {
                         const pwd = args[1].slice(7)
                         if (password === pwd) {
-                            verifiedConnections.push(connection)
+                            verifiedIps.push(connection.remoteAddress)
                             connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: '', text: '' } }))
                             console.log(`Verified: ${connection.remoteAddress}.`)
                             if (notifications.length > 0) {
@@ -229,7 +229,7 @@ wsServer.on('request', request => {
                                 text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
                             }
                             await connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
-                            if (verifiedConnections.map(v => v.remoteAddress).indexOf(connection.remoteAddress) === -1) {
+                            if (verifiedIps.indexOf(connection.remoteAddress) === -1) {
                                 connection.close()
                             }
                         } catch (e) {
@@ -249,19 +249,15 @@ wsServer.on('request', request => {
     connection.on('close', () => {
         console.log(`${connection.remoteAddress} disconnected.`)
         connections.splice(connections.indexOf(connection), 1)
-        verifiedConnections.splice(verifiedConnections.indexOf(connection), 1)
+        verifiedIps.splice(verifiedIps.indexOf(connection.remoteAddress), 1)
     })
 })
 
-function announce(type: string, value: Content, onlyVerified = true) {
-    if (onlyVerified) {
-        verifiedConnections.forEach(v => {
+function announce(type: string, value: Content, forVerified: boolean) {
+    connections.forEach(v => {
+        if (!forVerified || verifiedIps.indexOf(v.remoteAddress) !== -1) {
             v.sendUTF(JSON.stringify({ type, value }))
-        })
-    } else {
-        connections.forEach(v => {
-            v.sendUTF(JSON.stringify({ type, value }))
-        })
-    }
+        }
+    })
 }
 //#endregion

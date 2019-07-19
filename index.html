@@ -25,7 +25,7 @@
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
         <p id="status">Connecting...</p>
-        <p id="verified" style="color:darkgray">You are NOT verified.</p>
+        <p id="verifiedStatus" style="color:darkgray">You are NOT verified.</p>
         <input type="button" value="Activate Sound" id="read" /><br />
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
@@ -36,9 +36,10 @@
         const output = document.getElementById('output')
         const url = document.getElementById('url')
         const status = document.getElementById('status')
-        const verified = document.getElementById('verified')
+        const verifiedStatus = document.getElementById('verifiedStatus')
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
+        let isVerified = false
 
         const clipboardJS = new ClipboardJS('.copy')
 
@@ -90,8 +91,9 @@
                     read.disabled = true
                     return
                 case 'verify':
-                    verified.innerHTML = 'Hi, SPGoding!'
-                    verified.style = 'color: green;'
+                    isVerified = true
+                    verifiedStatus.innerHTML = 'Hi, SPGoding!'
+                    verifiedStatus.style = 'color: green;'
                     return
                 default:
                     append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
