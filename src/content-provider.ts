@@ -62,7 +62,7 @@ export class McbbsContentProvider extends HtmlContentProvider {
             webCode => {
                 const tidRegex = /<tbody id="normalthread_(\d+)">/
                 const tid = (tidRegex.exec(webCode) as RegExpExecArray)[1]
-                return `http://www.mcbbs.net/thread-${tid}-1-1.html`
+                return `https://www.mcbbs.net/thread-${tid}-1-1.html`
             },
             webCode => {
                 const titleRegex = /class="s xst">(.+?)<\/a>/
