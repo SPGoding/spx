@@ -45,9 +45,6 @@ const providers: { [key: string]: ContentProvider } = {
     other_question: new McbbsContentProvider(
         'https://www.mcbbs.net/forum-etcqanda-1.html'
     ),
-    chat: new McbbsContentProvider(
-        'https://www.mcbbs.net/forum.php?mod=forumdisplay&fid=52&filter=author&orderby=dateline'
-    ),
     version: new JsonContentProvider(
         'https://launchermeta.mojang.com/mc/game/version_manifest.json',
         json => {
