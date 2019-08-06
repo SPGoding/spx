@@ -78,7 +78,7 @@ export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', versi
     const [snapCount, preCount] = getCounts(versions, version)
     switch (type) {
         case 'snapshot':
-            return `[postbg]bg3.png[/postbg][align=center][table=80%,#EDFBFF]
+            return `[align=center][table=80%,#EDFBFF]
 [tr][td][align=center][color=red]每周快照[/color]是Minecraft Java版的测试机制，主要用于下一个正式版的特性预览。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
@@ -93,7 +93,7 @@ export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', versi
 
 [hr]\n`
         case 'pre_release':
-            return `[postbg]bg3.png[/postbg][align=center][table=80%,#EDFBFF]
+            return `[align=center][table=80%,#EDFBFF]
 [tr][td][align=center][color=red]预发布版[/color]是Minecraft Java版的测试机制，如果该版本作为正式版发布，那么预发布版的游戏文件将与启动器推送的正式版完全相同。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
@@ -109,7 +109,7 @@ export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', versi
 [hr]\n`
         case 'release':
         default:
-            return `[postbg]bg3.png[/postbg][align=center][table=80%,#EDFBFF]
+            return `[align=center][table=80%,#EDFBFF]
 [tr][td][align=center][color=red]正式版[/color]是Minecraft Java版经过一段时间的预览版测试后得到的稳定版本，也是众多材质、Mod与服务器插件会逐渐跟进的版本。官方启动器也会第一时间进行推送。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]

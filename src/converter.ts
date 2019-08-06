@@ -6,12 +6,17 @@ const config = {
     translator: 'SPGoding'
 }
 
+let url = '',
+    title = ''
 
-export function convertMCAriticleToBBCode(html: Document) {
+export function convertMCAriticleToBBCode(html: Document, articleUrl: string, articleTitle: string) {
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
     const ans = `${heroImage}\n${content}`
+
+    url = articleUrl
+    title = articleTitle
 
     return ans
 }
@@ -23,7 +28,7 @@ export function convertMCAriticleToBBCode(html: Document) {
 export function getHeroImage(html: Document) {
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement
     const src = img.src
-    const ans = `[align=center][img=1200,513]${resolveUrl(src)}[/img][/align]`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img][/align]`
 
     return ans
 }
@@ -139,7 +144,7 @@ export const converters = {
         const url = resolveUrl(anchor.href)
         let ans
         if (url) {
-            ans = `[url=${url}]${converters.rescure(anchor)}[/url]`
+            ans = `[url=${url}][color=#008000]${converters.rescure(anchor)}[/color][/url]`
         } else {
             ans = converters.rescure(anchor)
         }
@@ -179,7 +184,7 @@ export const converters = {
     dl: (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n【${converters.rescure(ele)}译者：${config.translator}】`
+        const ans = `\n【原文：[url=${url}]${title}[/url]】\n【${converters.rescure(ele)}译者：${config.translator}】`
 
         return ans
     },
@@ -229,8 +234,10 @@ export const converters = {
         return ans
     },
     img: (img: HTMLImageElement) => {
-        const ans = `\n[img]${resolveUrl(img.src)}[/img]\n`
-
+        let ans = `\n[img]${resolveUrl(img.src)}[/img]\n`
+        if (img.alt === 'Author image') {
+            ans = ''
+        }
         return ans
     },
     li: (ele: HTMLElement) => {
