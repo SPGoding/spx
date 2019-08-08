@@ -321,7 +321,7 @@ export function replaceHalfToFull(input: string) {
     ]
 
     const quoteArrays = [
-        ['「', '」', '"']
+        ['“', '”', '"']
         // ['『', '』', "'"]
     ]
 
