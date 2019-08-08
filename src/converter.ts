@@ -169,7 +169,10 @@ export const converters = {
 
         if (ele.classList.contains('text-center')) {
             ans = `[align=center]${ans}[/align]`
-        } else if (ele.classList.contains('article-social')) {
+        } else if (ele.classList.contains('article-image-carousel__caption')) {
+            // Image description
+            ans = `[align=center][b]${ans}[/b][/align]`
+        } if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
         }
@@ -234,7 +237,7 @@ export const converters = {
         return ans
     },
     img: (img: HTMLImageElement) => {
-        let ans = `\n[img]${resolveUrl(img.src)}[/img]\n`
+        let ans = `\n[align=center][img]${resolveUrl(img.src)}[/img][/align]\n`
         if (img.alt === 'Author image') {
             ans = ''
         }
