@@ -171,7 +171,7 @@ export const converters = {
             ans = `[align=center]${ans}[/align]`
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
-            ans = `[align=center][b]${ans}[/b][/align]`
+            ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]`
         } if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -216,7 +216,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -224,7 +224,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -232,7 +232,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -314,13 +314,14 @@ export function replaceHalfToFull(input: string) {
     const mappings = [
         [/,\s?/g, '，'],
         [/!\s?/g, '！'],
+        [/\.\.\.\s?/g, '…'],
         [/\.\s?/g, '。'],
         [/\?\s?/g, '？']
     ]
 
     const quoteArrays = [
-        ['「', '」', '"'],
-        ['『', '』', "'"]
+        ['「', '」', '"']
+        // ['『', '』', "'"]
     ]
 
     for (const mapping of mappings) {
