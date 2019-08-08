@@ -211,9 +211,11 @@ wsServer.on('request', request => {
                         }
                     } else {
                         try {
-                            const src = await rp(args[1])
+                            const uri = args[1].split(' ')[0]
+                            const translator = args[1].split(' ')[1] ? args[1].split(' ')[1] : undefined
+                            const src = await rp(uri)
                             const html = new JSDOM(src).window.document
-                            let bbcode = convertMCAriticleToBBCode(html, args[1])
+                            let bbcode = convertMCAriticleToBBCode(html, uri, translator)
                             const articleType = getArticleType(html)
                             if (articleType === 'News') {
                                 const version = lastResults.version
@@ -226,8 +228,8 @@ wsServer.on('request', request => {
                                     ending
                             }
                             const content = {
-                                addition: bbcode, id: args[1],
-                                text: args[1].replace('https://www.minecraft.net/zh-hans/article/', '')
+                                addition: bbcode, id: uri,
+                                text: uri.replace('https://www.minecraft.net/zh-hans/article/', '')
                             }
                             await connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
                             if (verifiedIps.indexOf(connection.remoteAddress) === -1) {

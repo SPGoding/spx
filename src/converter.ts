@@ -2,16 +2,16 @@
  * @author SPGoding
  */
 
-const config = {
-    translator: 'SPGoding'
+const info = {
+    translator: '',
+    url: '',
+    title: ''
 }
 
-let url = '',
-    title = ''
-
-export function convertMCAriticleToBBCode(html: Document, articleUrl: string) {
-    url = articleUrl
-    title = html.title.split(' | ').slice(0, -1).join(' | ')
+export function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
+    info.url = articleUrl
+    info.title = html.title.split(' | ').slice(0, -1).join(' | ')
+    info.translator = translator
 
     const heroImage = getHeroImage(html)
     const content = getContent(html)
@@ -187,7 +187,7 @@ export const converters = {
     dl: (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n【原文：[url=${url}]${title}[/url]】\n【${converters.rescure(ele)}译者：${config.translator}】`
+        const ans = `\n【原文：[url=${info.url}]${info.title}[/url]】\n【${converters.rescure(ele)}译者：${info.translator}】`
 
         return ans
     },
@@ -312,11 +312,12 @@ export const converters = {
  */
 export function replaceHalfToFull(input: string) {
     const mappings = [
-        [/,\s?/g, '，'],
-        [/!\s?/g, '！'],
-        [/\.\.\.\s?/g, '…'],
-        [/\.\s?/g, '。'],
-        [/\?\s?/g, '？']
+        [/,[\s$]/g, '，'],
+        [/![\s$]/g, '！'],
+        [/\.\.\.[\s$]/g, '…'],
+        [/\.[\s$]/g, '。'],
+        [/\?[\s$]/g, '？'],
+        [/ \- /g, ' —— ']
     ]
 
     const quoteArrays = [

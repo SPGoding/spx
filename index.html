@@ -21,7 +21,8 @@
 
 <body>
     <div id="root">
-        <input type="text" placeholder="Article URI" id="url" />
+        <input type="text" placeholder="Article URL" id="url" />
+        <input type="text" placeholder="Translator" id="translator" />
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
         <p id="status">Connecting...</p>
@@ -35,6 +36,7 @@
         const request = document.getElementById('request')
         const output = document.getElementById('output')
         const url = document.getElementById('url')
+        const translator = document.getElementById('translator')
         const status = document.getElementById('status')
         const verifiedStatus = document.getElementById('verifiedStatus')
         const wsURL = 'wss://%replace_as_ws_url%'
@@ -46,13 +48,17 @@
         if (localStorage.getItem('lastRequest')) {
             url.value = localStorage.getItem('lastRequest')
         }
+        if (localStorage.getItem('translator')) {
+            translator.value = localStorage.getItem('translator')
+        }
 
         request.onclick = () => {
             if (url.value) {
-                webSocket.send(`request, ${url.value}`)
+                webSocket.send(`request, ${url.value} ${translator.value}`)
                 if (url.value.slice(0, 7) === 'verify ') {
                     localStorage.setItem('lastRequest', url.value)
                 }
+                localStorage.setItem('translator', translator.value)
                 url.value = ''
             } else {
                 alert('Please input URI')
