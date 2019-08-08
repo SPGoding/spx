@@ -21,8 +21,8 @@
 
 <body>
     <div id="root">
-        <input type="text" placeholder="Article URL" id="url" />
-        <input type="text" placeholder="Translator" id="translator" />
+        <input type="text" placeholder="Article URL" id="url" /><br />
+        <input type="text" placeholder="Translator" id="translator" /><br />
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
         <p id="status">Connecting...</p>
@@ -54,9 +54,11 @@
 
         request.onclick = () => {
             if (url.value) {
-                webSocket.send(`request, ${url.value} ${translator.value}`)
                 if (url.value.slice(0, 7) === 'verify ') {
                     localStorage.setItem('lastRequest', url.value)
+                    webSocket.send(`request, ${url.value}`)
+                } else {
+                    webSocket.send(`request, ${url.value} ${translator.value}`)
                 }
                 localStorage.setItem('translator', translator.value)
                 url.value = ''
@@ -98,7 +100,7 @@
                     return
                 case 'verify':
                     isVerified = true
-                    verifiedStatus.innerHTML = 'Hi, SPGoding!'
+                    verifiedStatus.innerHTML = 'Hi, my master!'
                     verifiedStatus.style = 'color: green;'
                     return
                 default:
