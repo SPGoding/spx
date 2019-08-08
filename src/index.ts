@@ -28,7 +28,7 @@ const providers: { [key: string]: ContentProvider } = {
             const url = `https://www.minecraft.net${json.article_grid[0].article_url}`
             const src = await rp(url)
             const html = new JSDOM(src).window.document
-            let addition = convertMCAriticleToBBCode(html, url, html.title)
+            let addition = convertMCAriticleToBBCode(html, url)
             const articleType = getArticleType(html)
             if (articleType === 'News') {
                 const version = lastResults.version
@@ -213,7 +213,7 @@ wsServer.on('request', request => {
                         try {
                             const src = await rp(args[1])
                             const html = new JSDOM(src).window.document
-                            let bbcode = convertMCAriticleToBBCode(html, args[1], html.title)
+                            let bbcode = convertMCAriticleToBBCode(html, args[1])
                             const articleType = getArticleType(html)
                             if (articleType === 'News') {
                                 const version = lastResults.version

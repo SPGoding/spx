@@ -2,7 +2,7 @@ import * as assert from 'power-assert'
 import * as fs from 'fs'
 import * as path from 'path'
 import { describe, it } from 'mocha'
-import { getHeroImage, resolveUrl, converters, convertMCAriticleToBBCode } from '../converter'
+import { getHeroImage, resolveUrl, converters, convertMCAriticleToBBCode, replaceHalfToFull } from '../converter'
 import { JSDOM } from 'jsdom'
 
 const testSrc = fs.readFileSync(path.join(__dirname, './data/article.html'), { encoding: 'utf8' })
@@ -119,8 +119,7 @@ describe('converter Tests', () => {
 [*][color=Gray]foo[/color]
 [*]foo
 [*][color=Gray]bar[/color]
-[*]bar
-[/list]
+[*]bar[/list]
 `)
         })
         it('Should convert <p>', () => {
@@ -148,8 +147,7 @@ describe('converter Tests', () => {
             assert.strictEqual(result, `
 [table]
 [tr][td]A1[/td][td]A2[/td][/tr]
-[tr][td]B1[/td][td]B2[/td][/tr]
-[/table]
+[tr][td]B1[/td][td]B2[/td][/tr][/table]
 `)
         })
         it('Should convert <ul>', () => {
@@ -163,8 +161,7 @@ describe('converter Tests', () => {
 [*][color=Gray]foo[/color]
 [*]foo
 [*][color=Gray]bar[/color]
-[*]bar
-[/list]
+[*]bar[/list]
 `)
         })
     })
@@ -174,13 +171,31 @@ describe('converter Tests', () => {
 
             assert.strictEqual(
                 result,
-                '[img=1200,513]https://www.minecraft.net/content/dam/minecraft/taking-inventory/snowball/header.jpg[/img]'
+                '[postbg]bg3.png[/postbg][align=center][img=1200,513]https://www.minecraft.net/content/dam/minecraft/taking-inventory/snowball/header.jpg[/img][/align]'
+            )
+        })
+    })
+    describe.only('replaceHalfToFull() Tests', () => {
+        it('Should replace all', () => {
+            const result = replaceHalfToFull('interesting, haha, haha!')
+
+            assert.strictEqual(
+                result,
+                'interesting，haha，haha！'
+            )
+        })
+        it('Should replace quotes', () => {
+            const result = replaceHalfToFull(`"'haha'"`)
+
+            assert.strictEqual(
+                result,
+                '「『haha』」'
             )
         })
     })
     describe.skip('convertMCAriticleToBBCode() Tests', () => {
         it('Should return whole BBCode', () => {
-            const result = convertMCAriticleToBBCode(testHtml, '', '')
+            const result = convertMCAriticleToBBCode(testHtml, '')
 
             fs.writeFileSync(path.join(__dirname, './data/output.txt'), result)
 

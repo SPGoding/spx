@@ -2,41 +2,13 @@ import * as assert from 'power-assert'
 import * as fs from 'fs'
 import * as path from 'path'
 import { describe, it } from 'mocha'
-import { getVersionType, getCounts, getLatest, StringStringMap, ManifestVersion } from '../util'
+import { getVersionType, getCounts, StringStringMap, ManifestVersion } from '../util'
 
 const testData: StringStringMap = {
     article: fs.readFileSync(path.join(__dirname, './data/article.json'), { encoding: 'utf8' }),
     question: fs.readFileSync(path.join(__dirname, './data/question.html'), { encoding: 'utf8' }),
     version: fs.readFileSync(path.join(__dirname, './data/version.json'), { encoding: 'utf8' })
 }
-
-describe('getLatest() tests', () => {
-    it('article() should return the latest article', () => {
-        const result = getLatest.article(testData.article, 'last article', [])
-
-        assert.deepStrictEqual(result,
-            {
-                identity: 'https://www.minecraft.net/en-us/article/minecraft-coming-xbox-game-pass',
-                readable: 'Minecraft is coming to Xbox Game Pass'
-            }
-        )
-    })
-    it('question() should return the latest question', () => {
-        const result = getLatest.question(testData.question, 'last article', [])
-
-        assert.deepStrictEqual(result,
-            {
-                identity: 'http://www.mcbbs.net/thread-839982-1-1.html',
-                readable: '单人-检测到某个或者几个格子内有指定物品则触发指令'
-            }
-        )
-    })
-    it('version() should return the latest version', () => {
-        const result = getLatest.version(testData.version, 'last article', [])
-
-        assert.deepStrictEqual(result, { identity: '19w04b', readable: '19w04b' })
-    })
-})
 
 describe('getVersionType() tests', () => {
     it('Should recognize snapshots', () => {

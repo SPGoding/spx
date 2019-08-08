@@ -9,14 +9,14 @@ const config = {
 let url = '',
     title = ''
 
-export function convertMCAriticleToBBCode(html: Document, articleUrl: string, articleTitle: string) {
+export function convertMCAriticleToBBCode(html: Document, articleUrl: string) {
+    url = articleUrl
+    title = html.title.split(' | ').slice(0, -1).join(' | ')
+
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
     const ans = `${heroImage}\n${content}`
-
-    url = articleUrl
-    title = articleTitle
 
     return ans
 }
@@ -213,7 +213,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${prefix}${inner}${suffix}\n`
+        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -221,7 +221,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${prefix}${inner}${suffix}\n`
+        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -229,7 +229,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${prefix}${inner}${suffix}\n`
+        const ans = `\n[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -242,7 +242,7 @@ export const converters = {
     },
     li: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        const ans = `[*][color=Gray]${inner}[/color]\n[*]${inner}\n`
+        const ans = `[*][color=Gray]${inner}[/color]\n[*]${replaceHalfToFull(inner)}\n`
 
         return ans
     },
@@ -254,10 +254,10 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[color=Gray]${inner}[/color]\n${inner}\n`
+        let ans = `\n[color=Gray]${inner}[/color]\n${replaceHalfToFull(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${inner}[/b][/size]\n`
+            ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
         }
 
         return ans
@@ -268,7 +268,7 @@ export const converters = {
         const ans = converters.rescure(ele)
 
         if (ele.classList.contains('bedrock-server')) {
-            // Is code.
+            // Is inline code.
             return `${prefix}${ans}${suffix}`
         }
 
@@ -302,6 +302,39 @@ export const converters = {
 
         return ans
     }
+}
+
+/**
+ * Replace all half-shape characters to full-shape characters.
+ */
+export function replaceHalfToFull(input: string) {
+    const mappings = [
+        [/,\s?/g, '，'],
+        [/!\s?/g, '！'],
+        [/\.\s?/g, '。'],
+        [/\?\s?/g, '？']
+    ]
+
+    const quoteArrays = [
+        ['「', '」', '"'],
+        ['『', '』', "'"]
+    ]
+
+    for (const mapping of mappings) {
+        input = input.replace(mapping[0], mapping[1] as string)
+    }
+
+    for (const quoteArray of quoteArrays) {
+        const splited = input.split(new RegExp(quoteArray[2], 'g'))
+        input = ''
+        for (let i = 0; i < splited.length - 1; i++) {
+            const element = splited[i]
+            input += element + quoteArray[i % 2]
+        }
+        input += splited[splited.length - 1]
+    }
+
+    return input
 }
 
 /**
