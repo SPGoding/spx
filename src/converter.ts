@@ -257,10 +257,10 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[color=Gray]${inner}[/color]\n${replaceHalfToFull(inner)}\n`
+        let ans = `\n[size=2][color=Gray]${inner}[/color][/size]\n${replaceHalfToFull(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][color=Gray]${inner}[/color][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
+            ans = `[size=4][b][size=2][color=Gray]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
         }
 
         return ans
