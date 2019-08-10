@@ -16,7 +16,7 @@ export function convertMCAriticleToBBCode(html: Document, articleUrl: string, tr
     const heroImage = getHeroImage(html)
     const content = getContent(html)
 
-    const ans = `${heroImage}\n${content}`
+    const ans = `${heroImage}${content}`
 
     return ans
 }
@@ -171,7 +171,7 @@ export const converters = {
             ans = `[align=center]${ans}[/align]`
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
-            ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]`
+            ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
         } if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -237,7 +237,7 @@ export const converters = {
         return ans
     },
     img: (img: HTMLImageElement) => {
-        let ans = `\n[align=center][img]${resolveUrl(img.src)}[/img][/align]\n`
+        let ans = `\n\n[align=center][img]${resolveUrl(img.src)}[/img][/align]\n`
         if (img.alt === 'Author image') {
             ans = ''
         }
