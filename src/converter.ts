@@ -50,7 +50,7 @@ export function getContent(html: Document) {
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Remove 'GET THE SNAPSHOT' for releasing
-    const index = ans.lastIndexOf('[color=Gray]GET THE SNAPSHOT[/color][/b][/size]')
+    const index = ans.lastIndexOf('[color=Silver]GET THE SNAPSHOT[/color][/b][/size]')
     if (index !== -1) {
         ans = ans.slice(0, index)
     }
@@ -216,7 +216,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -224,7 +224,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -232,7 +232,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Gray]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -245,7 +245,7 @@ export const converters = {
     },
     li: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        const ans = `[*][color=Gray]${inner}[/color]\n[*]${replaceHalfToFull(inner)}\n`
+        const ans = `[*][color=Silver]${inner}[/color]\n[*]${replaceHalfToFull(inner)}\n`
 
         return ans
     },
@@ -257,10 +257,10 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[size=2][color=Gray]${inner}[/color][/size]\n${replaceHalfToFull(inner)}\n`
+        let ans = `\n[size=2][color=Silver]${inner}[/color][/size]\n${replaceHalfToFull(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Gray]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
         }
 
         return ans
