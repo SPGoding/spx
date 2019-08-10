@@ -91,9 +91,9 @@ let cert: Buffer | undefined
 
     if (fs.existsSync(cachePath)) {
         const cache = fs.readJsonSync(cachePath)
-        lastResults.article = cache.article
-        lastResults.question = cache.question
-        lastResults.version = cache.version
+        for (const key in providers) {
+            lastResults[key] = cache[key]
+        }
     }
 })()
 
