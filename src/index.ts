@@ -40,12 +40,6 @@ const providers: { [key: string]: ContentProvider } = {
             return addition
         }
     ),
-    vanilla_question: new McbbsContentProvider(
-        'https://www.mcbbs.net/forum-qanda-1.html'
-    ),
-    other_question: new McbbsContentProvider(
-        'https://www.mcbbs.net/forum-etcqanda-1.html'
-    ),
     gameplay: new McbbsContentProvider(
         'https://www.mcbbs.net/forum.php?mod=forumdisplay&fid=39&filter=author&orderby=dateline'
     ),
