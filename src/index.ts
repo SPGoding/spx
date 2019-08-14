@@ -43,6 +43,9 @@ const providers: { [key: string]: ContentProvider } = {
     gameplay: new McbbsContentProvider(
         'https://www.mcbbs.net/forum.php?mod=forumdisplay&fid=39&filter=author&orderby=dateline'
     ),
+    qanda: new McbbsContentProvider(
+        'https://www.mcbbs.net/forum-qanda-1.html'
+    ),
     version: new JsonContentProvider(
         'https://launchermeta.mojang.com/mc/game/version_manifest.json',
         json => {

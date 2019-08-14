@@ -144,7 +144,7 @@ export const converters = {
         const url = resolveUrl(anchor.href)
         let ans
         if (url) {
-            ans = `[url=${url}][color=#008000]${converters.rescure(anchor)}[/color][/url]`
+            ans = `[url=${url}][color=#388d40]${converters.rescure(anchor)}[/color][/url]`
         } else {
             ans = converters.rescure(anchor)
         }
@@ -260,7 +260,7 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[size=2][color=Silver]${inner}[/color][/size]\n${replaceHalfToFull(inner)}\n`
+        let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${replaceHalfToFull(inner)}\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
