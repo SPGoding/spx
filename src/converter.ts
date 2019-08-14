@@ -172,7 +172,10 @@ export const converters = {
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
             ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
-        } if (ele.classList.contains('article-social')) {
+        } else if (ele.classList.contains('video')) {
+            // Video.
+            ans = '【此处有一个视频】\n'
+        } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
         }
