@@ -6,7 +6,7 @@ import {
     getRandomInt,
     getBeginning,
     getEnding,
-    StringStringMap,
+    StringStringArrayMap,
     getArticleType,
     ManifestVersion,
     getVersionType
@@ -17,7 +17,7 @@ import { JSDOM } from 'jsdom'
 import { ContentProvider, JsonContentProvider, McbbsContentProvider, Content } from './content-provider'
 
 //#region Detection
-const lastResults: StringStringMap = {}
+const lastResults: StringStringArrayMap = {}
 
 const providers: { [key: string]: ContentProvider } = {
     article: new JsonContentProvider(
@@ -28,10 +28,10 @@ const providers: { [key: string]: ContentProvider } = {
             const url = `https://www.minecraft.net${json.article_grid[0].article_url}`
             const src = await rp(url)
             const html = new JSDOM(src).window.document
-            let addition = convertMCAriticleToBBCode(html, url)
+            let addition = convertMCAriticleToBBCode(html, url, undefined)
             const articleType = getArticleType(html)
             if (articleType === 'News') {
-                const version = lastResults.version
+                const version = lastResults.version[1]
                 const versionType = getVersionType(versions, version)
                 const beginning = getBeginning(versionType, version, versions)
                 const ending = getEnding(versionType)
@@ -58,6 +58,8 @@ const providers: { [key: string]: ContentProvider } = {
 
 const configPath = path.join(__dirname, './config.json')
 const cachePath = path.join(__dirname, './cache.json')
+const bugsPath = path.join(__dirname, './bugs.json')
+export const bugs: { [id: string]: string } = {}
 let httpPort: number | undefined
 let ip: string | undefined
 let password: string | undefined
@@ -92,6 +94,13 @@ let cert: Buffer | undefined
             lastResults[key] = cache[key]
         }
     }
+
+    if (fs.existsSync(bugsPath)) {
+        const result = fs.readJsonSync(bugsPath)
+        for (const key in result) {
+            bugs[key] = result[key]
+        }
+    }
 })()
 
 /**
@@ -118,10 +127,14 @@ async function main() {
             let msg: string = ''
             if (!lastResults[key]) {
                 msg = `Initialized ${key}: ${content.id}.`
-            } else if (lastResults[key] !== content.id) {
+                lastResults[key] = [content.id]
+            } else if (lastResults[key].indexOf(content.id) === -1) {
                 msg = `Detected new ${key}: ${content.id}.`
+                lastResults[key].push(content.id)
+                if (lastResults[key].length > 3) {
+                    lastResults[key].shift()
+                }
             }
-            lastResults[key] = content.id
             if (msg) {
                 const lastResultsJson = JSON.stringify(lastResults, undefined, 4)
                 console.log(msg)
@@ -182,6 +195,7 @@ wsServer.on('request', request => {
     connection.on('message', async data => {
         if (data.utf8Data) {
             const args = data.utf8Data.split(', ')
+            args[1] = args.slice(1).join(', ')
             switch (args[0]) {
                 case 'read':
                     if (verifiedIps.indexOf(connection.remoteAddress) !== -1) {
@@ -209,6 +223,24 @@ wsServer.on('request', request => {
                             connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong password.' } }))
                             connection.close()
                         }
+                    } else if (args[1].slice(0, 3) === 'MC-') {
+                        if (verifiedIps.indexOf(connection.remoteAddress) !== -1) {
+                            const seg = args[1].split(' ')
+                            const id = seg[0]
+                            const description = seg.slice(1).join(' ')
+                            if (description) {
+                                console.log(`Added bug ${id}: ${description}.`)
+                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Added ${id}: ${description}.` } }))
+                                bugs[id] = description
+                            } else {
+                                console.log(`Removed bug ${id}.`)
+                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Removed ${id}.` } }))
+                                delete bugs[id]
+                            }
+                            fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
+                        } else {
+                            connection.close()
+                        }
                     } else {
                         try {
                             const uri = args[1].split(' ')[0]
@@ -218,7 +250,7 @@ wsServer.on('request', request => {
                             let bbcode = convertMCAriticleToBBCode(html, uri, translator)
                             const articleType = getArticleType(html)
                             if (articleType === 'News') {
-                                const version = lastResults.version
+                                const version = lastResults.version[1]
                                 const versionType = getVersionType(versions, version)
                                 const beginning = getBeginning(versionType, version, versions)
                                 const ending = getEnding(versionType)

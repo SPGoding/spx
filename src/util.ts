@@ -3,8 +3,8 @@ const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 
 
 const AFVersions = ['3D Shareware v1.34']
 
-export type StringStringMap = {
-    [key: string]: string
+export type StringStringArrayMap = {
+    [key: string]: string[]
 }
 
 export type ManifestVersion = { id: string, type: 'snapshot' | 'release', [key: string]: any }

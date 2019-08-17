@@ -57,6 +57,8 @@
                 if (url.value.slice(0, 7) === 'verify ') {
                     localStorage.setItem('lastRequest', url.value)
                     webSocket.send(`request, ${url.value}`)
+                } else if (url.value.slice(0, 3) === 'MC-') {
+                    webSocket.send(`request, ${url.value}`)
                 } else {
                     webSocket.send(`request, ${url.value} ${translator.value}`)
                 }

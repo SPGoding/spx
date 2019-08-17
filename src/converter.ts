@@ -1,3 +1,5 @@
+import { bugs } from '.'
+
 /*
  * @author SPGoding
  */
@@ -248,7 +250,7 @@ export const converters = {
     },
     li: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        const ans = `[*][color=Silver]${inner}[/color]\n[*]${replaceHalfToFull(inner)}\n`
+        const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${replaceHalfToFull(translateBugs(inner))}\n`
 
         return ans
     },
@@ -361,4 +363,17 @@ function removeLastLinebreak(str: string) {
         return str.slice(0, -1)
     }
     return str
+}
+
+function translateBugs(str: string) {
+    if (str.slice(0, 39) === '[url=https://bugs.mojang.com/browse/MC-') {
+        const id = str.slice(36, str.indexOf(']'))
+        if (bugs[id]) {
+            return `${str.slice(0, str.indexOf('[/color][/url]- ') + 16)}${bugs[id]}`
+        } else {
+            return str
+        }
+    } else {
+        return str
+    }
 }
