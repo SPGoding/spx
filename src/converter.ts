@@ -52,7 +52,7 @@ export function getContent(html: Document) {
     // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Remove 'GET THE SNAPSHOT' for releasing
-    const index = ans.lastIndexOf('[color=Silver]GET THE SNAPSHOT[/color][/b][/size]')
+    const index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
     if (index !== -1) {
         ans = ans.slice(0, index)
     }

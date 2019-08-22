@@ -1,5 +1,5 @@
-const nextMainRelease = '1.14.4'
-const featureList = '[url=http://www.mcbbs.net/thread-853453-1-1.html]Minecraft 1.14（村庄与掠夺更新）特性列表[/url]'
+const nextMainRelease = '1.15'
+const featureList = '[url=http://www.mcbbs.net/thread-??????-1-1.html]Minecraft 1.15（这是什么更新）特性列表[/url]'
 
 const AFVersions = ['3D Shareware v1.34']
 
