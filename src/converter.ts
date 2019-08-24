@@ -105,6 +105,8 @@ export const converters = {
                 return converters.h2(node as HTMLElement)
             case 'H3':
                 return converters.h3(node as HTMLElement)
+            case 'I':
+                return converters.i(node as HTMLElement)
             case 'IMG':
                 return converters.img(node as HTMLImageElement)
             case 'LI':
@@ -127,6 +129,7 @@ export const converters = {
                 return ((node as Text).textContent as string)
                     .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
             case 'BUTTON':
+            case 'NAV':
             case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
             case 'svg':
             case 'SCRIPT':
@@ -254,6 +257,11 @@ export const converters = {
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+
+        return ans
+    },
+    i: (ele: HTMLElement) => {
+        const ans = `[i]${converters.rescure(ele)}[/i]`
 
         return ans
     },
