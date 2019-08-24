@@ -82,11 +82,14 @@ export const converters = {
             case 'B':
             case 'STRONG':
                 return converters.strong(node as HTMLElement)
+            case 'BLOCKQUOTE':
+                return converters.blockquote(node as HTMLQuoteElement)
             case 'BR':
                 return converters.br()
             case 'CODE':
                 return converters.code(node as HTMLElement)
             case 'DIV':
+            case 'SECTION':
                 return converters.div(node as HTMLElement)
             case 'DD':
                 return converters.dd(node as HTMLElement)
@@ -123,9 +126,14 @@ export const converters = {
             case '#text':
                 return ((node as Text).textContent as string)
                     .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
-            default:
+            case 'BUTTON':
+            case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
+            case 'svg':
+            case 'SCRIPT':
                 return node.textContent ? node.textContent : ''
-            // throw `Unknown type: '${node.nodeName}'.`
+            default:
+                console.log(`Unknown type: '${node.nodeName}'.`)
+                return node.textContent ? node.textContent : ''
         }
     },
     /**
@@ -150,6 +158,14 @@ export const converters = {
         } else {
             ans = converters.rescure(anchor)
         }
+
+        return ans
+    },
+    blockquote: (ele: HTMLQuoteElement) => {
+        const prefix = '[quote]'
+        const suffix = '[/quote]'
+        const inner = converters.rescure(ele)
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n${replaceHalfToFull(inner)}${suffix}\n`
 
         return ans
     },
@@ -221,7 +237,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -229,7 +245,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -237,7 +253,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -271,8 +287,8 @@ export const converters = {
         return ans
     },
     span: (ele: HTMLElement) => {
-        const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
-        const suffix = '[/font][/backcolor]'
+        const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif][color=#7824c5]"
+        const suffix = '[/color][/font][/backcolor]'
         const ans = converters.rescure(ele)
 
         if (ele.classList.contains('bedrock-server')) {
