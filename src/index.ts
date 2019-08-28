@@ -1,3 +1,4 @@
+import * as constants from 'constants'
 import * as fs from 'fs-extra'
 import * as https from 'https'
 import * as path from 'path'
@@ -153,7 +154,10 @@ const verifiedIps: string[] = []
 const wsPort = getRandomInt(49152, 65535)
 
 const httpsServer = https
-    .createServer({ key, cert }, async (req, res) => {
+    .createServer({
+        key, cert,
+        secureOptions: constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1
+    }, async (req, res) => {
         try {
             req.on('error', e => {
                 console.error(e.message)
