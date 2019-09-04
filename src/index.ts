@@ -243,7 +243,7 @@ wsServer.on('request', request => {
                             connection.close()
                         }
                     } else {
-                        try {
+                        // try {
                             const uri = args[1].split(' ')[0]
                             const translator = args[1].split(' ')[1] ? args[1].split(' ')[1] : undefined
                             const src = await rp(uri)
@@ -268,10 +268,10 @@ wsServer.on('request', request => {
                             if (verifiedIps.indexOf(connection.remoteAddress) === -1) {
                                 connection.close()
                             }
-                        } catch (e) {
-                            connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong URI.' } }))
-                            connection.close()
-                        }
+                        // } catch (e) {
+                        //     connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong URI.' } }))
+                        //     connection.close()
+                        // }
                     }
                     break
                 default:

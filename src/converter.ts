@@ -133,10 +133,18 @@ export const converters = {
             case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
             case 'svg':
             case 'SCRIPT':
-                return node.textContent ? node.textContent : ''
+                if (node) {
+                    return node.textContent ? node.textContent : ''
+                } else {
+                    return ''
+                }
             default:
                 console.log(`Unknown type: '${node.nodeName}'.`)
-                return node.textContent ? node.textContent : ''
+                if (node) {
+                    return node.textContent ? node.textContent : ''
+                } else {
+                    return ''
+                }
         }
     },
     /**
