@@ -64,8 +64,12 @@ export function getCounts(versions: ManifestVersion[], version: string): [number
  * @returns `News` or `Insider`
  */
 export function getArticleType(html: Document) {
+    try {
     const type = html.getElementsByClassName('article-category__text')[0].textContent as string
-    return type
+    return type}
+    catch (ignored) {
+        return 'News'
+    }
 }
 
 /**
