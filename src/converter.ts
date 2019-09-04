@@ -126,8 +126,12 @@ export const converters = {
             case 'UL':
                 return converters.ul(node as HTMLElement)
             case '#text':
-                return ((node as Text).textContent as string)
-                    .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+                if (node) {
+                    return ((node as Text).textContent as string)
+                        .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+                } else {
+                    return ''
+                }
             case 'BUTTON':
             case 'NAV':
             case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
