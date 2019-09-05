@@ -233,9 +233,12 @@ wsServer.on('request', request => {
                                 console.log(`Added bug ${id}: ${description}.`)
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Added ${id}: ${description}.` } }))
                                 bugs[id] = description
-                            } else {
+                            } else if (description.toLowerCase() === 'r') {
                                 console.log(`Removed bug ${id}.`)
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Removed ${id}.` } }))
+                                delete bugs[id]
+                            } else {
+                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `${id}: ${bugs[id]}` } }))
                                 delete bugs[id]
                             }
                             fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
