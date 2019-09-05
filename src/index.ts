@@ -229,14 +229,14 @@ wsServer.on('request', request => {
                             const seg = args[1].split(' ')
                             const id = seg[0]
                             const description = seg.slice(1).join(' ')
-                            if (description) {
-                                console.log(`Added bug ${id}: ${description}.`)
-                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Added ${id}: ${description}.` } }))
-                                bugs[id] = description
-                            } else if (description.toLowerCase() === 'r') {
+                            if (description && description.toLowerCase() === 'r') {
                                 console.log(`Removed bug ${id}.`)
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Removed ${id}.` } }))
                                 delete bugs[id]
+                            } else if (description) {
+                                console.log(`Added bug ${id}: ${description}.`)
+                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Added ${id}: ${description}.` } }))
+                                bugs[id] = description
                             } else {
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `${id}: ${bugs[id]}` } }))
                             }
