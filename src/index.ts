@@ -239,7 +239,6 @@ wsServer.on('request', request => {
                                 delete bugs[id]
                             } else {
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `${id}: ${bugs[id]}` } }))
-                                delete bugs[id]
                             }
                             fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
                         } else {
