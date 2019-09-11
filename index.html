@@ -26,8 +26,9 @@
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
         <p id="status">Connecting...</p>
-        <p id="verifiedStatus" style="color:darkgray">You are NOT verified.</p>
-        <input type="button" value="Activate Sound" id="read" /><br />
+        <p id="verifiedStatus" style="color:darkgray">You are not verified.</p>
+        <p style="color:rgb(255, 0, 140)">Powered by <a href="https://github.com/SPGoding">@SPGoding</a></p>
+        <input type="button" value="Mark As Read" id="read" disabled /><br />
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
     <script type="text/javascript">
@@ -70,16 +71,9 @@
         }
 
         read.onclick = () => {
-            if (read.value !== 'Mark As Read') {
-                read.value = 'Mark As Read'
-                if (output.innerHTML === '') {
-                    read.disabled = true
-                }
-            } else {
-                output.innerHTML = ''
-                read.disabled = true
-                webSocket.send('read')
-            }
+            output.innerHTML = ''
+            read.disabled = true
+            webSocket.send('read')
         }
 
         webSocket.onopen = () => {
