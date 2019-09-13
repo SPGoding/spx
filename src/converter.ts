@@ -133,6 +133,8 @@ export const converters = {
                     return ''
                 }
             case 'BUTTON':
+            case 'CITE':
+            case 'H5':
             case 'NAV':
             case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
             case 'svg':
@@ -223,7 +225,7 @@ export const converters = {
     dl: (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n【原文：[url=${info.url}]${info.title}[/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com]博文转换器[/url]】`
+        const ans = `\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=#ff008c]博文转换器[/color][/url]】`
 
         return ans
     },
