@@ -209,7 +209,7 @@ export const converters = {
             ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
         } else if (ele.classList.contains('video')) {
             // Video.
-            ans = '【此处有一个视频】\n'
+            ans = '\n[media]含https的视频链接[/media]\n'
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
