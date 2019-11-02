@@ -225,7 +225,7 @@ export const converters = {
     dl: (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=#ff008c]博文转换器[/color][/url]】`
+        const ans = `\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=#ff008c]博文转换器[/color][/url]】`
 
         return ans
     },
@@ -254,7 +254,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -262,7 +262,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -270,7 +270,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.toUpperCase()}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -355,11 +355,11 @@ export const converters = {
  */
 export function replaceHalfToFull(input: string) {
     const mappings = [
-        [/,[\s$]/g, '，'],
-        [/![\s$]/g, '！'],
-        [/\.\.\.[\s$]/g, '…'],
-        [/\.[\s$]/g, '。'],
-        [/\?[\s$]/g, '？'],
+        [/,(\s|$)/g, '，'],
+        [/!(\s|$)/g, '！'],
+        [/\.\.\.(\s|$)/g, '…'],
+        [/\.(\s|$)/g, '。'],
+        [/\?(\s|$)/g, '？'],
         [/ \- /g, ' —— ']
     ]
 
