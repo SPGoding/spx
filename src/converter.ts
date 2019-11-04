@@ -49,8 +49,8 @@ export function getContent(html: Document) {
     if (serverUrls) {
         serverUrl = serverUrls[0]
     }
-    // Remove the text after '【作者：xxx，发布日期：xxx，译者：xxx】'
-    ans = ans.slice(0, ans.lastIndexOf('】') + 1)
+    // Remove the text after '脱裤子放屁'
+    ans = ans.slice(0, ans.lastIndexOf('脱裤子放屁') + 5)
     // Remove 'GET THE SNAPSHOT' for releasing
     const index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
     if (index !== -1) {
@@ -223,9 +223,10 @@ export const converters = {
         return ans
     },
     dl: (ele: HTMLElement) => {
+        const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=#ff008c]博文转换器[/color][/url]】`
+        const ans = `${grass}\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=#ff008c]博文转换器[/color][/url]】\n↑兄弟你的博文转换器真tm难用，下次不用了，看上去好像自动帮你排好版了，但是实际上糊上自己的译文之后就没有了，真要加超链接和变色的时候还是得自己重新设置格式，脱裤子放屁`
 
         return ans
     },
