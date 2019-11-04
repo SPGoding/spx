@@ -26,9 +26,9 @@
         <input type="button" value="Request" id="request" />
         <div id="output"></div>
         <p id="status">Connecting...</p>
-        <p id="verifiedStatus" style="color:darkgray">You are not verified.</p>
-        <p style="color:rgb(255, 0, 140)">Powered by <a href="https://github.com/SPGoding">@SPGoding</a></p>
-        <input type="button" value="Mark As Read" id="read" disabled /><br />
+        <p id="verifiedStatus" style="color:darkgray">You are using a trial account.</p>
+        <p style="color:rgb(255, 0, 140)">by <a href="https://github.net/@SPGoding">@SPGoding</a></p>
+        <input type="button" value="Clear" id="read" disabled /><br />
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
     <script type="text/javascript">
@@ -55,16 +55,20 @@
 
         request.onclick = () => {
             if (url.value) {
-                if (url.value.slice(0, 7) === 'verify ') {
+                if (url.value.startsWith('verify ')) {
                     localStorage.setItem('lastRequest', url.value)
                     webSocket.send(`request, ${url.value}`)
-                } else if (url.value.slice(0, 3) === 'MC-') {
+                    url.value = ''
+                } else if (url.value.startsWith('MC-')) {
                     webSocket.send(`request, ${url.value}`)
-                } else {
+                    url.value = ''
+                } else if (url.value.startsWith('https://www.minecraft.net/zh-hans/article/')) {
                     webSocket.send(`request, ${url.value} ${translator.value}`)
+                    url.value = ''
+                } else {
+                    alert('Expected ‘verify’, ‘MC-’ or ‘https://www.minecraft.net/zh-hans/article/’ at the beginning.')
                 }
                 localStorage.setItem('translator', translator.value)
-                url.value = ''
             } else {
                 alert('Please input URI')
             }
@@ -73,7 +77,6 @@
         read.onclick = () => {
             output.innerHTML = ''
             read.disabled = true
-            webSocket.send('read')
         }
 
         webSocket.onopen = () => {
@@ -96,7 +99,7 @@
                     return
                 case 'verify':
                     isVerified = true
-                    verifiedStatus.innerHTML = 'Hi, my master!'
+                    verifiedStatus.innerHTML = 'Hi, SPGlove / Ricoding!'
                     verifiedStatus.style = 'color: green;'
                     return
                 default:

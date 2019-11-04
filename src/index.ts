@@ -24,22 +24,22 @@ const providers: { [key: string]: ContentProvider } = {
     article: new JsonContentProvider(
         'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news&lang=/content/minecraft-net/language-masters/zh-hans',
         json => `https://www.minecraft.net${json.article_grid[0].article_url}`,
-        json => json.article_grid[0].default_tile.title,
-        async json => {
-            const url = `https://www.minecraft.net${json.article_grid[0].article_url}`
-            const src = await rp(url)
-            const html = new JSDOM(src).window.document
-            let addition = convertMCAriticleToBBCode(html, url, undefined)
-            const articleType = getArticleType(html)
-            if (articleType === 'News') {
-                const version = lastResults.version[1]
-                const versionType = getVersionType(versions, version)
-                const beginning = getBeginning(versionType, version, versions)
-                const ending = getEnding(versionType)
-                addition = beginning + addition + ending
-            }
-            return addition
-        }
+        json => json.article_grid[0].default_tile.title
+        // async json => {
+        //     const url = `https://www.minecraft.net${json.article_grid[0].article_url}`
+        //     const src = await rp(url)
+        //     const html = new JSDOM(src).window.document
+        //     let addition = convertMCAriticleToBBCode(html, url, undefined)
+        //     const articleType = getArticleType(html)
+        //     if (articleType === 'News') {
+        //         const version = lastResults.version[1]
+        //         const versionType = getVersionType(versions, version)
+        //         const beginning = getBeginning(versionType, version, versions)
+        //         const ending = getEnding(versionType)
+        //         addition = beginning + addition + ending
+        //     }
+        //     return addition
+        // }
     ),
     gameplay: new McbbsContentProvider(
         'https://www.mcbbs.net/forum.php?mod=forumdisplay&fid=39&filter=author&orderby=dateline'
@@ -198,13 +198,6 @@ wsServer.on('request', request => {
             const args = data.utf8Data.split(', ')
             args[1] = args.slice(1).join(', ')
             switch (args[0]) {
-                case 'read':
-                    if (verifiedIps.indexOf(connection.remoteAddress) !== -1) {
-                        notifications.splice(0, notifications.length)
-                        announce('read', { id: '', text: '' }, true)
-                        console.log('Marked as read.')
-                    }
-                    break
                 case 'request':
                     if (versions.length === 0) {
                         await getVersions()
@@ -216,6 +209,9 @@ wsServer.on('request', request => {
                             connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: '', text: '' } }))
                             console.log(`Verified: ${connection.remoteAddress}.`)
                             if (notifications.length > 0) {
+                                if (notifications.length > 10) {
+                                    notifications.splice(0, notifications.length - 10)
+                                }
                                 for (const i of notifications) {
                                     connection.sendUTF(JSON.stringify(i))
                                 }

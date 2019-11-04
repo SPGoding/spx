@@ -226,7 +226,7 @@ export const converters = {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=#ff008c]博文转换器[/color][/url]】\n↑兄弟你的博文转换器真tm难用，下次不用了，看上去好像自动帮你排好版了，但是实际上糊上自己的译文之后就没有了，真要加超链接和变色的时候还是得自己重新设置格式，脱裤子放屁`
+        const ans = `${grass}\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【真 tm 难用：[url=https://spgoding.com][color=#ff008c]脱裤子放屁[/color][/url]】\n`
 
         return ans
     },
