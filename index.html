@@ -42,6 +42,7 @@
         const verifiedStatus = document.getElementById('verifiedStatus')
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
+        let playSound = false
         let isVerified = false
 
         const clipboardJS = new ClipboardJS('.copy')
@@ -77,6 +78,7 @@
         read.onclick = () => {
             output.innerHTML = ''
             read.disabled = true
+            playSound = true
         }
 
         webSocket.onopen = () => {
@@ -106,8 +108,10 @@
                     append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
             }
-            const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
-            speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+            if (playSound) {
+                const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
+                speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+            }
             if (json.value.addition) {
                 append += ` - <button class="copy" data-clipboard-text="${
                     json.value.addition
