@@ -209,8 +209,8 @@ wsServer.on('request', request => {
                             connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: '', text: '' } }))
                             console.log(`Verified: ${connection.remoteAddress}.`)
                             if (notifications.length > 0) {
-                                if (notifications.length > 10) {
-                                    notifications.splice(0, notifications.length - 10)
+                                if (notifications.length > 20) {
+                                    notifications.splice(0, notifications.length - 20)
                                 }
                                 for (const i of notifications) {
                                     connection.sendUTF(JSON.stringify(i))
