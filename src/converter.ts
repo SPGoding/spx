@@ -276,7 +276,7 @@ export const converters = {
         return ans
     },
     i: (ele: HTMLElement) => {
-        const ans = `[i]${converters.rescure(ele)}[/i]`
+        const ans = `[font=楷体, 楷体_GB2312]${converters.rescure(ele)}[/font]`
 
         return ans
     },
