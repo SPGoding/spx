@@ -49,8 +49,8 @@ export function getContent(html: Document) {
     if (serverUrls) {
         serverUrl = serverUrls[0]
     }
-    // Remove the text after '脱裤子放屁'
-    ans = ans.slice(0, ans.lastIndexOf('脱裤子放屁') + 5)
+    // Remove the text after '脱裤子放屁】'
+    ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Remove 'GET THE SNAPSHOT' for releasing
     const index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
     if (index !== -1) {
@@ -416,3 +416,4 @@ function translateBugs(str: string) {
         return str
     }
 }
+

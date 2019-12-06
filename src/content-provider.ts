@@ -28,7 +28,7 @@ export class JsonContentProvider implements ContentProvider {
                 addition: await this.additionGetter(json)
             }
         } catch (ex) {
-            throw `Error occurred while getting content: \n${ex.stack}`
+            throw `Error occurred JsonContentProvider#getContent from ${this.url}: \n${ex.stack}`
         }
     }
 }
@@ -50,7 +50,7 @@ export class HtmlContentProvider implements ContentProvider {
                 addition: await this.additionGetter(webCode)
             }
         } catch (ex) {
-            throw `Error occurred while getting content: \n${ex.stack}`
+            throw `Error occurred HtmlContentProvider#getContent from ${this.url}: \n${ex.stack}`
         }
     }
 }
@@ -80,7 +80,7 @@ export class McbbsContentProvider extends HtmlContentProvider {
                 addition: await this.additionGetter(webCode)
             }
         } catch (ex) {
-            throw `Error occurred while getting content: \n${ex.stack}`
+            throw `Error occurred McbbsContentProvider#getContent from ${this.url}: \n${ex.stack}`
         }
     }
 }

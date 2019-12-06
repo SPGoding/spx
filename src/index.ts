@@ -248,7 +248,7 @@ wsServer.on('request', request => {
                             const html = new JSDOM(src).window.document
                             let bbcode = convertMCAriticleToBBCode(html, uri, translator)
                             const articleType = getArticleType(html)
-                            if (articleType === 'News') {
+                            if (articleType === 'NEWS') {
                                 const version = lastResults.version[1]
                                 const versionType = getVersionType(versions, version)
                                 const beginning = getBeginning(versionType, version, versions)
@@ -262,7 +262,7 @@ wsServer.on('request', request => {
                                 addition: bbcode, id: uri,
                                 text: uri.replace('https://www.minecraft.net/zh-hans/article/', '')
                             }
-                            await connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
+                            connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
                             if (verifiedIps.indexOf(connection.remoteAddress) === -1) {
                                 connection.close()
                             }
