@@ -226,7 +226,7 @@ export const converters = {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【真 tm 难用：[url=https://spgoding.com][color=#ff008c]脱裤子放屁[/color][/url]】\n`
+        const ans = `${grass}\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【技术支持：[url=https://spgoding.com][color=Silver][u]SPX[/u][/color][/url]】\n`
 
         return ans
     },
