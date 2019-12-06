@@ -1,5 +1,4 @@
 const nextMainRelease = '1.15'
-const featureList = '[url=http://www.mcbbs.net/thread-??????-1-1.html]Minecraft 1.15（嗡嗡蜂群更新）特性列表[/url]'
 
 const AFVersions = ['3D Shareware v1.34']
 
@@ -139,9 +138,6 @@ export function getEnding(type: 'snapshot' | 'pre_release' | 'release') {
 [tr][td][color=#D10A0A][align=center]Mac/OSX[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/Minecraft.dmg]https://launcher.mojang.com/download/Minecraft.dmg[/url][/align][/td][/tr]
 [tr][td][color=#D10A0A][align=center]Linux/其他[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/Minecraft.tar.gz]https://launcher.mojang.com/download/Minecraft.tar.gz[/url][/align][/td][/tr]
 [/table][/align]
-[align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]关于本次更新的详细内容，请关注 ${featureList}的更新。[/b][/align][/td][/tr]
-[/table][/align]
 [align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]预览版的下载方式以及运行说明[/b][/color][/size][/align][/td][/tr]
 [tr][td=15%][color=#D10A0A][align=center]对于正版用户[/align][/color][/td][td][align=center]官方启动器是跟进最及时、运行最稳定的启动器，每次启动均会自动检查并下载启动器最新版本。Java版的启动器下载地址在上文已经提供。[/align][/td][/tr]
@@ -170,9 +166,6 @@ export function getEnding(type: 'snapshot' | 'pre_release' | 'release') {
 [tr][td][color=#D10A0A][align=center]Windows[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/MinecraftInstaller.msi]https://launcher.mojang.com/download/MinecraftInstaller.msi[/url][/align][/td][/tr]
 [tr][td][color=#D10A0A][align=center]Mac/OSX[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/Minecraft.dmg]https://launcher.mojang.com/download/Minecraft.dmg[/url][/align][/td][/tr]
 [tr][td][color=#D10A0A][align=center]Linux/其他[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/Minecraft.tar.gz]https://launcher.mojang.com/download/Minecraft.tar.gz[/url][/align][/td][/tr]
-[/table][/align]
-[align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]关于本次更新的详细内容，请关注 ${featureList}的更新。[/b][/align][/td][/tr]
 [/table][/align]
 [align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]预览版的下载方式以及运行说明[/b][/color][/size][/align][/td][/tr]
@@ -203,9 +196,6 @@ export function getEnding(type: 'snapshot' | 'pre_release' | 'release') {
 [tr][td][color=#D10A0A][align=center]Windows[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/MinecraftInstaller.msi]https://launcher.mojang.com/download/MinecraftInstaller.msi[/url][/align][/td][/tr]
 [tr][td][color=#D10A0A][align=center]Mac/OSX[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/Minecraft.dmg]https://launcher.mojang.com/download/Minecraft.dmg[/url][/align][/td][/tr]
 [tr][td][color=#D10A0A][align=center]Linux/其他[/align][/color][/td][td][align=center][url=https://launcher.mojang.com/download/Minecraft.tar.gz]https://launcher.mojang.com/download/Minecraft.tar.gz[/url][/align][/td][/tr]
-[/table][/align]
-[align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]关于此主版本号的全部更新内容，请关注 ${featureList}的更新。[/b][/align][/td][/tr]
 [/table][/align]
 [align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]正式版的下载方式以及运行说明[/b][/color][/size][/align][/td][/tr]
