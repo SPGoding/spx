@@ -132,6 +132,8 @@ export const converters = {
                 return converters.h2(node as HTMLElement)
             case 'H3':
                 return converters.h3(node as HTMLElement)
+            case 'H4':
+                return converters.h4(node as HTMLElement)
             case 'I':
                 return converters.i(node as HTMLElement)
             case 'IMG':
@@ -299,6 +301,14 @@ export const converters = {
     },
     h3: (ele: HTMLElement) => {
         const prefix = '[size=4][b]'
+        const suffix = '[/b][/size]'
+        const inner = converters.rescure(ele)
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+
+        return ans
+    },
+    h4: (ele: HTMLElement) => {
+        const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
