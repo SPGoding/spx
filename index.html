@@ -63,11 +63,11 @@
                 } else if (url.value.startsWith('MC-')) {
                     webSocket.send(`request, ${url.value}`)
                     url.value = ''
-                } else if (url.value.startsWith('https://www.minecraft.net/zh-hans/article/')) {
+                } else if (url.value.startsWith('https://www.minecraft.net/en-us/article/')) {
                     webSocket.send(`request, ${url.value} ${translator.value}`)
                     url.value = ''
                 } else {
-                    alert('Expected ‘verify’, ‘MC-’ or ‘https://www.minecraft.net/zh-hans/article/’ at the beginning.')
+                    alert('Expected ‘verify’, ‘MC-’ or ‘https://www.minecraft.net/en-us/article/’ at the beginning.')
                 }
                 localStorage.setItem('translator', translator.value)
             } else {

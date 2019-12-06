@@ -22,7 +22,7 @@ const lastResults: StringStringArrayMap = {}
 
 const providers: { [key: string]: ContentProvider } = {
     article: new JsonContentProvider(
-        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news&lang=/content/minecraft-net/language-masters/zh-hans',
+        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news&lang=/content/minecraft-net/language-masters/en-us',
         json => `https://www.minecraft.net${json.article_grid[0].article_url}`,
         json => json.article_grid[0].default_tile.title
         // async json => {
@@ -260,7 +260,7 @@ wsServer.on('request', request => {
                             }
                             const content = {
                                 addition: bbcode, id: uri,
-                                text: uri.replace('https://www.minecraft.net/zh-hans/article/', '')
+                                text: uri.replace('https://www.minecraft.net/en-us/article/', '')
                             }
                             connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
                             if (verifiedIps.indexOf(connection.remoteAddress) === -1) {
