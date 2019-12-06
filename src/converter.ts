@@ -52,7 +52,7 @@ export function getContent(html: Document) {
     if (serverUrls) {
         serverUrl = serverUrls[0]
     }
-    // Remove the text after '脱裤子放屁】'
+    // Remove the text after '】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
     // Remove 'GET THE SNAPSHOT/PRE-RELEASE/RELEASE' for releasing
     let index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
@@ -81,14 +81,19 @@ export function getContent(html: Document) {
     let author = `${info.author} 沃·兹基硕德`
     const mappings = [
         ['Duncan Geere', '邓肯·吉尔'],
-        ['Nova Barlow', '诺瓦·巴洛']
+        ['Nova Barlow', '诺瓦·巴洛'],
+        ['Adrian Östergård', '阿德里安·奥斯特加德']
     ]
     for (const [en, zh] of mappings) {
         if (info.author.toLowerCase() === en.toLowerCase()) {
             author = `${info.author} ${zh}`
         }
     }
-    ans = ans.replace(authorPlaceholder, author)
+    if (serverUrl) {
+        ans = ans.replace(authorPlaceholder, '')
+    } else {
+        ans = ans.replace(authorPlaceholder, author)
+    }
 
     return ans
 }
