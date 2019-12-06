@@ -7,8 +7,11 @@ import { bugs } from '.'
 const info = {
     translator: '',
     url: '',
-    title: ''
+    title: '',
+    author: ''
 }
+
+const authorPlaceholder = 'ZwlxWhO3srVHUb0nvmCyA09CuuzJwGLlWxm4rgiTlzV2jFiTANdbt5WF5cn0Fb1oKgeeeCG3IZuc4jAIkbNczYf7FB3UbwB6NdCxLzyZbfLC5McRV0r4fZGdALwlDmT7F2SbBdXG1eQjBqSFxrwLv0lLl6pm0TBYRhzrPCtNnSPrUWjlcaVqb4iP3FK82hkBhSlYezAbTtuSNzNNLrLDcIVi2xd8WGwRc2AffU96v7QQgYAE91AsLq7FNMoCCZEY'
 
 export function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
     info.url = articleUrl
@@ -67,6 +70,19 @@ export function getContent(html: Document) {
 [tr][td][align=center][url=${serverUrl}]Minecraft server.jar[/url][/align][/td][/tr]
 [/table][/align]`
     }
+
+    // Replace the author.
+    let author = `${info.author} 沃·兹基硕德`
+    const mappings = [
+        ['Duncan Geere', '邓肯·吉尔'],
+        ['Nova Barlow', '诺瓦·巴洛']
+    ]
+    for (const [en, zh] of mappings) {
+        if (info.author.toLowerCase() === en.toLowerCase()) {
+            author = `${info.author} ${zh}`
+        }
+    }
+    ans = ans.replace(authorPlaceholder, author)
 
     return ans
 }
@@ -217,32 +233,35 @@ export const converters = {
 
         return ans
     },
-    dt: (ele: HTMLElement) => {
-        const ans = `${converters.rescure(ele)}：`
+    dt: (_ele: HTMLElement) => {
+        // const ans = `${converters.rescure(ele)}：`
 
-        return ans
+        // return ans
+        return ''
     },
     dl: (ele: HTMLElement) => {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n【原文：[url=${info.url}][color=#388d40]${info.title}[/color][/url]】\n【${converters.rescure(ele)}译者：${info.translator}】\n【本文排版借助了：[url=https://spgoding.com][color=Silver][u]SPX[/u][/color][/url]】\n`
-
+        const ans = `${grass}\n\n${converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
         return ans
     },
     dd: (ele: HTMLElement) => {
-        let ans = converters.rescure(ele)
+        let ans = ''
 
         if (ele.classList.contains('pubDate')) {
+            // Published:
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
-            // Use `.slice(0, 10)` to get '2019-03-08'.
             const date = ele.attributes.getNamedItem('data-value')
             if (date) {
-                ans = date.value.slice(0, 10)
+                ans = `【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]】`
+            } else {
+                ans = '【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】'
             }
+        } else {
+            // Written by:
+            info.author = converters.rescure(ele)
         }
-
-        ans += '，'
 
         return ans
     },
@@ -304,7 +323,7 @@ export const converters = {
         let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${replaceHalfToFull(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n\n`
         }
 
         return ans
@@ -356,6 +375,9 @@ export const converters = {
  */
 export function replaceHalfToFull(input: string) {
     const mappings = [
+        [/Taking Inventory: /gi, '背包盘点：'],
+        [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
+        [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
         [/,(\s|$)/g, '，'],
         [/!(\s|$)/g, '！'],
         [/\.\.\.(\s|$)/g, '…'],
