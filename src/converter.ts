@@ -54,8 +54,14 @@ export function getContent(html: Document) {
     }
     // Remove the text after '脱裤子放屁】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
-    // Remove 'GET THE SNAPSHOT' for releasing
-    const index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
+    // Remove 'GET THE SNAPSHOT/PRE-RELEASE/RELEASE' for releasing
+    let index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
+    if (index === -1) {
+        index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the pre-release[/color][/b][/size]')
+    }
+    if (index === -1) {
+        index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the release[/color][/b][/size]')
+    }
     if (index !== -1) {
         ans = ans.slice(0, index)
     }
@@ -219,7 +225,7 @@ export const converters = {
         let ans = converters.rescure(ele)
 
         if (ele.classList.contains('text-center')) {
-            ans = `[align=center]${ans}[/align]`
+            ans = `[align=center]${ans}[/align]\n`
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
             ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
@@ -323,7 +329,7 @@ export const converters = {
         let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${replaceHalfToFull(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n\n`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
         }
 
         return ans
