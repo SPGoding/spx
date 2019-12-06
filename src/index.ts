@@ -22,28 +22,13 @@ const lastResults: StringStringArrayMap = {}
 
 const providers: { [key: string]: ContentProvider } = {
     article: new JsonContentProvider(
-        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tagsPath=minecraft:article/insider,minecraft:article/news&lang=/content/minecraft-net/language-masters/en-us',
+        'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?lang=/content/minecraft-net/language-masters/en-us',
         json => `https://www.minecraft.net${json.article_grid[0].article_url}`,
         json => json.article_grid[0].default_tile.title
-        // async json => {
-        //     const url = `https://www.minecraft.net${json.article_grid[0].article_url}`
-        //     const src = await rp(url)
-        //     const html = new JSDOM(src).window.document
-        //     let addition = convertMCAriticleToBBCode(html, url, undefined)
-        //     const articleType = getArticleType(html)
-        //     if (articleType === 'News') {
-        //         const version = lastResults.version[1]
-        //         const versionType = getVersionType(versions, version)
-        //         const beginning = getBeginning(versionType, version, versions)
-        //         const ending = getEnding(versionType)
-        //         addition = beginning + addition + ending
-        //     }
-        //     return addition
-        // }
     ),
-    gameplay: new McbbsContentProvider(
-        'https://www.mcbbs.net/forum.php?mod=forumdisplay&fid=39&filter=author&orderby=dateline'
-    ),
+    // gameplay: new McbbsContentProvider(
+    //     'https://www.mcbbs.net/forum.php?mod=forumdisplay&fid=39&filter=author&orderby=dateline'
+    // ),
     version: new JsonContentProvider(
         'https://launchermeta.mojang.com/mc/game/version_manifest.json',
         json => {
