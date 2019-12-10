@@ -78,7 +78,7 @@ export function getContent(html: Document) {
     }
 
     // Replace the author.
-    let author = `${info.author} 沃·兹基硕德`
+    let author = `${info.author} 中·文名`
     const mappings = [
         ['Duncan Geere', '邓肯·吉尔'],
         ['Nova Barlow', '诺瓦·巴洛'],
@@ -211,7 +211,7 @@ export const converters = {
         const prefix = '[quote]'
         const suffix = '[/quote]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n${replaceHalfToFull(inner)}${suffix}\n`
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n${translateMachinely(inner)}${suffix}\n`
 
         return ans
     },
@@ -267,9 +267,9 @@ export const converters = {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             const date = ele.attributes.getNamedItem('data-value')
             if (date) {
-                ans = `【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]】`
+                ans = `[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]】[/b]`
             } else {
-                ans = '【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】'
+                ans = '[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b]'
             }
         } else {
             // Written by:
@@ -287,7 +287,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -295,7 +295,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -303,7 +303,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -311,7 +311,7 @@ export const converters = {
         const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
         const inner = converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${replaceHalfToFull(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
@@ -329,7 +329,7 @@ export const converters = {
     },
     li: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${replaceHalfToFull(translateBugs(inner))}\n`
+        const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner))}\n`
 
         return ans
     },
@@ -341,10 +341,10 @@ export const converters = {
     },
     p: (ele: HTMLElement) => {
         const inner = converters.rescure(ele)
-        let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${replaceHalfToFull(inner)}\n`
+        let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${replaceHalfToFull(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
         }
 
         return ans
@@ -394,11 +394,12 @@ export const converters = {
 /**
  * Replace all half-shape characters to full-shape characters.
  */
-export function replaceHalfToFull(input: string) {
+export function translateMachinely(input: string) {
     const mappings = [
         [/Taking Inventory: /gi, '背包盘点：'],
         [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
         [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
+        [/Image credit:/gi, '图片来源：'],
         [/,(\s|$)/g, '，'],
         [/!(\s|$)/g, '！'],
         [/\.\.\.(\s|$)/g, '…'],
