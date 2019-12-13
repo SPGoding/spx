@@ -116,6 +116,9 @@ export function getBeginning(type: 'snapshot' | 'pre_release' | 'release', versi
         case 'release':
         default:
             return `[align=center][table=80%,#EDFBFF]
+[tr][td][align=center][b][color=Red]Minecraft Java版[/color]是指Windows、Mac OS与Linux平台上，使用Java语言开发的Minecraft版本。[/b][/align][/td][/tr]
+[/table][/align]
+[align=center][table=80%,#EDFBFF]
 [tr][td][align=center][color=red]正式版[/color]是Minecraft Java版经过一段时间的预览版测试后得到的稳定版本，也是众多材质、Mod与服务器插件会逐渐跟进的版本。官方启动器也会第一时间进行推送。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
