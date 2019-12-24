@@ -350,12 +350,17 @@ export const converters = {
         return ans
     },
     span: (ele: HTMLElement) => {
-        const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif][color=#7824c5]"
-        const suffix = '[/color][/font][/backcolor]'
         const ans = converters.rescure(ele)
 
         if (ele.classList.contains('bedrock-server')) {
             // Is inline code.
+            const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif][color=#7824c5]"
+            const suffix = '[/color][/font][/backcolor]'
+            return `${prefix}${ans}${suffix}`
+        } else if (ele.classList.contains('strikethrough')) {
+            // Is strikethrough text.
+            const prefix = '[s]'
+            const suffix = '[/s]'
             return `${prefix}${ans}${suffix}`
         }
 
