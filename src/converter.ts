@@ -316,7 +316,7 @@ export const converters = {
         return ans
     },
     i: (ele: HTMLElement) => {
-        const ans = `[font=楷体, 楷体_GB2312]${converters.rescure(ele)}[/font]`
+        const ans = `[i]${converters.rescure(ele)}[/i]`
 
         return ans
     },
@@ -405,6 +405,15 @@ export function translateMachinely(input: string) {
         [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
         [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
         [/Image credit:/gi, '图片来源：'],
+        [/CC BY:/gi, '知识共享 署名'],
+        [/CC BY-NC:/gi, '知识共享 署名-非商业性使用'],
+        [/CC BY-ND:/gi, '知识共享 署名-禁止演绎'],
+        [/CC BY-SA:/gi, '知识共享 署名-相同方式共享'],
+        [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
+        [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
+        [/Public Domain:/gi, '共有领域'],
+        [/\[i\]:/gi, '[font=楷体,楷体_GB2312]'],
+        [/\[\/i\]:/gi, '[/font]'],
         [/,(\s|$)/g, '，'],
         [/!(\s|$)/g, '！'],
         [/\.\.\.(\s|$)/g, '…'],
