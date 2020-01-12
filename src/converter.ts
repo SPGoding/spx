@@ -1,3 +1,4 @@
+import * as rp from 'request-promise-native'
 import { bugs } from '.'
 
 /*
@@ -13,13 +14,13 @@ const info = {
 
 const authorPlaceholder = 'ZwlxWhO3srVHUb0nvmCyA09CuuzJwGLlWxm4rgiTlzV2jFiTANdbt5WF5cn0Fb1oKgeeeCG3IZuc4jAIkbNczYf7FB3UbwB6NdCxLzyZbfLC5McRV0r4fZGdALwlDmT7F2SbBdXG1eQjBqSFxrwLv0lLl6pm0TBYRhzrPCtNnSPrUWjlcaVqb4iP3FK82hkBhSlYezAbTtuSNzNNLrLDcIVi2xd8WGwRc2AffU96v7QQgYAE91AsLq7FNMoCCZEY'
 
-export function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
+export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
     info.url = articleUrl
     info.title = html.title.split(' | ').slice(0, -1).join(' | ')
     info.translator = translator
 
     const heroImage = getHeroImage(html)
-    const content = getContent(html)
+    const content = await getContent(html)
 
     const ans = `${heroImage}${content}`
 
@@ -42,7 +43,7 @@ export function getHeroImage(html: Document) {
  * Get the content of an article as the form of a BBCode string.
  * @param html An HTML Document.
  */
-export function getContent(html: Document) {
+export async function getContent(html: Document) {
     const rootDiv = html.getElementsByClassName('article-body')[0] as HTMLElement
     let ans = converters.rescure(rootDiv)
 
@@ -77,23 +78,27 @@ export function getContent(html: Document) {
 [/table][/align]`
     }
 
-    // Replace the author.
-    let author = `${info.author} 中·文名`
-    const mappings = [
-        ['Duncan Geere', '邓肯·吉尔'],
-        ['Nova Barlow', '诺瓦·巴洛'],
-        ['Adrian Östergård', '阿德里安·奥斯特加德']
-    ]
-    for (const [en, zh] of mappings) {
-        if (info.author.toLowerCase() === en.toLowerCase()) {
-            author = `${info.author} ${zh}`
+    // Replace the author placeholder.
+    if (!serverUrl) {
+        try {
+            const nameSegs = info.author.split(' ')
+            // Special thanks to bimuyu.
+            const apiUri = `https://www.bimuyu.com/name-translator/api/search_multiple?query=${JSON.stringify(nameSegs)}`
+            const result: { id: number, name: string, translation: string }[] = JSON.parse(await rp(apiUri))
+            for (const { name, translation } of result) {
+                const index = nameSegs.indexOf(name)
+                if (index !== -1) {
+                    nameSegs[index] = translation
+                }
+            }
+            const authorName = `${info.author} ${nameSegs.join('·')}`
+            ans = ans.replace(authorPlaceholder, authorName)
+        } catch (err) {
+            console.error(err)
         }
     }
-    if (serverUrl) {
-        ans = ans.replace(authorPlaceholder, '')
-    } else {
-        ans = ans.replace(authorPlaceholder, author)
-    }
+
+    ans = ans.replace(authorPlaceholder, '')
 
     return ans
 }
