@@ -23,7 +23,7 @@
     "devDependencies": {
         "@types/fs-extra": "^8.0.0",
         "@types/jsdom": "^12.2.3",
-        "@types/mocha": "^5.2.7",
+        "@types/mocha": "^7.0.0",
         "@types/node": "^13.0.0",
         "@types/power-assert": "^1.5.0",
         "@types/request": "^2.48.1",
