@@ -12,20 +12,13 @@ export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * Math.floor(max - min)) + min
 }
 
-export function getVersionType(versions: ManifestVersion[], version: string): 'snapshot' | 'pre_release' | 'release' {
-    const manifestVersion = versions.filter(ver => ver.id === version)[0]
-
-    if (manifestVersion) {
-        if (manifestVersion.type === 'snapshot') {
-            if (manifestVersion.id.toLowerCase().indexOf('pre') !== -1) {
-                return 'pre_release'
-            }
-            return 'snapshot'
-        } else {
-            return 'release'
-        }
-    } else {
+export function getVersionType(version: string): 'snapshot' | 'pre_release' | 'release' {
+    if (version.toLowerCase().startsWith('pre')) {
+        return 'pre_release'
+    } else if (version.match(/^\d\dw\d\d[a-z]$/i)) {
         return 'snapshot'
+    } else {
+        return 'release'
     }
 }
 

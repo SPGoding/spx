@@ -12,9 +12,13 @@ const info = {
     author: ''
 }
 
+let isVerified = false
+
 const authorPlaceholder = 'ZwlxWhO3srVHUb0nvmCyA09CuuzJwGLlWxm4rgiTlzV2jFiTANdbt5WF5cn0Fb1oKgeeeCG3IZuc4jAIkbNczYf7FB3UbwB6NdCxLzyZbfLC5McRV0r4fZGdALwlDmT7F2SbBdXG1eQjBqSFxrwLv0lLl6pm0TBYRhzrPCtNnSPrUWjlcaVqb4iP3FK82hkBhSlYezAbTtuSNzNNLrLDcIVi2xd8WGwRc2AffU96v7QQgYAE91AsLq7FNMoCCZEY'
 
-export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
+export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', verified = false) {
+    isVerified = verified
+
     info.url = articleUrl
     info.title = html.title.split(' | ').slice(0, -1).join(' | ')
     info.translator = translator
@@ -468,7 +472,7 @@ function removeLastLinebreak(str: string) {
 }
 
 function translateBugs(str: string) {
-    if (str.slice(0, 39) === '[url=https://bugs.mojang.com/browse/MC-') {
+    if (isVerified && str.startsWith('[url=https://bugs.mojang.com/browse/MC-')) {
         const id = str.slice(36, str.indexOf(']'))
         if (bugs[id]) {
             return `${str.slice(0, str.indexOf('[/color][/url]- ') + 16)}${bugs[id]}`
@@ -479,4 +483,3 @@ function translateBugs(str: string) {
         return str
     }
 }
-

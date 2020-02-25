@@ -206,7 +206,7 @@ wsServer.on('request', request => {
                             connection.close()
                         }
                     } else if (args[1].slice(0, 3) === 'MC-') {
-                        if (verifiedIps.indexOf(connection.remoteAddress) !== -1) {
+                        if (verifiedIps.includes(connection.remoteAddress)) {
                             const seg = args[1].split(' ')
                             const id = seg[0]
                             const description = seg.slice(1).join(' ')
@@ -231,11 +231,11 @@ wsServer.on('request', request => {
                             const translator = args[1].split(' ')[1] ? args[1].split(' ')[1] : undefined
                             const src = await rp(uri)
                             const html = new JSDOM(src).window.document
-                            let bbcode = await convertMCAriticleToBBCode(html, uri, translator)
+                            let bbcode = await convertMCAriticleToBBCode(html, uri, translator, verifiedIps.includes(connection.remoteAddress))
                             const articleType = getArticleType(html)
                             if (articleType === 'NEWS') {
                                 const version = lastResults.version[1]
-                                const versionType = getVersionType(versions, version)
+                                const versionType = getVersionType(version)
                                 const beginning = getBeginning(versionType, version, versions)
                                 const ending = getEnding(versionType)
                                 bbcode =
