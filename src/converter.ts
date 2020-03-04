@@ -334,6 +334,9 @@ export const converters = {
         if (img.alt === 'Author image') {
             ans = ''
         }
+        if (img.classList.contains('attributed-quote__image')) {
+            ans = `[float=left][img]${resolveUrl(img.src)}[/img][/float]`
+        }
         return ans
     },
     li: (ele: HTMLElement) => {
