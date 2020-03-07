@@ -412,7 +412,7 @@ export const converters = {
  * Replace all half-shape characters to full-shape characters.
  */
 export function translateMachinely(input: string) {
-    const mappings = [
+    const mappings: [RegExp, string][] = [
         [/Taking Inventory: /gi, '背包盘点：'],
         [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
         [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
@@ -423,9 +423,9 @@ export function translateMachinely(input: string) {
         [/CC BY-SA:/gi, '知识共享 署名-相同方式共享'],
         [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
-        [/Public Domain:/gi, '共有领域'],
-        [/\[i\]:/gi, '[font=楷体,楷体_GB2312]'],
-        [/\[\/i\]:/gi, '[/font]'],
+        [/Public Domain:/gi, '公有领域'],
+        [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
+        [/\[\/i\]/gi, '[/font]'],
         [/,(\s|$)/g, '，'],
         [/!(\s|$)/g, '！'],
         [/\.\.\.(\s|$)/g, '…'],
@@ -440,7 +440,7 @@ export function translateMachinely(input: string) {
     ]
 
     for (const mapping of mappings) {
-        input = input.replace(mapping[0], mapping[1] as string)
+        input = input.replace(mapping[0], mapping[1])
     }
 
     for (const quoteArray of quoteArrays) {
