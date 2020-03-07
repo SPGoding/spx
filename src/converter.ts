@@ -437,8 +437,9 @@ export function translateMachinely(input: string) {
         [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
+        [/\[float=left\]\[img=64,112\].*?\[\/img\]\[\/float\]/g, ''], // Attributed quote author avatar
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
-        [/\[\/i\]/gi, '[/font]'],
+        [/\[\/i\]/g, '[/font]'],
         [/,(\s|$)/g, '，'],
         [/!(\s|$)/g, '！'],
         [/\.\.\.(\s|$)/g, '…'],
