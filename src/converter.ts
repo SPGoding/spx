@@ -435,7 +435,7 @@ export function translateMachinely(input: string) {
     ]
 
     const quoteArrays = [
-        ['“', '”', '"']
+        ['[font=楷体, 楷体_GB2312]“[/font]', '[font=楷体, 楷体_GB2312]”[/font]', '"']
         // ['『', '』', "'"]
     ]
 
