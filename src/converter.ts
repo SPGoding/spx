@@ -118,10 +118,12 @@ export const converters = {
             case 'B':
             case 'STRONG':
                 return converters.strong(node as HTMLElement)
-            case 'BLOCKQUOTE':
-                return converters.blockquote(node as HTMLQuoteElement)
+            // case 'BLOCKQUOTE':
+            // return converters.blockquote(node as HTMLQuoteElement)
             case 'BR':
                 return converters.br()
+            case 'CITE':
+                return converters.cite(node as HTMLElement)
             case 'CODE':
                 return converters.code(node as HTMLElement)
             case 'DIV':
@@ -170,8 +172,8 @@ export const converters = {
                 } else {
                     return ''
                 }
+            case 'BLOCKQUOTE':
             case 'BUTTON':
-            case 'CITE':
             case 'H5':
             case 'NAV':
             case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
@@ -229,6 +231,14 @@ export const converters = {
 
         return ans
     },
+    cite: (ele: HTMLElement) => {
+        const prefix = '\n—— '
+        const suffix = ''
+
+        const ans = `${prefix}${converters.rescure(ele)}${suffix}`
+
+        return ans
+    },
     code: (ele: HTMLElement) => {
         const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
         const suffix = '[/font][/backcolor]'
@@ -248,6 +258,9 @@ export const converters = {
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[media]含https的视频链接[/media]\n'
+        } else if (ele.classList.contains('attributed-quote')) {
+            // Attributed quote.
+            ans = converters.blockquote(ele as any)
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -333,9 +346,9 @@ export const converters = {
         let ans = `\n\n[align=center][img]${resolveUrl(img.src)}[/img][/align]\n`
         if (img.alt === 'Author image') {
             ans = ''
-        }
-        if (img.classList.contains('attributed-quote__image')) {
-            ans = `[float=left][img]${resolveUrl(img.src)}[/img][/float]`
+        } else if (img.classList.contains('attributed-quote__image')) {
+            // Attributed quote author avatar.
+            ans = `[float=left][img=64,112]${resolveUrl(img.src)}[/img][/float]`
         }
         return ans
     },
