@@ -58,6 +58,10 @@
 
         request.onclick = () => {
             if (url.value) {
+                const linkRegex = /^https:\/\/www\.minecraft\.net\/.+\/article\//
+                if (url.value.match(linkRegex)) {
+                    url.value = url.value.replace(linkRegex, 'https://www.minecraft.net/en-us/article/')
+                }
                 if (url.value.startsWith('verify ')) {
                     localStorage.setItem('lastRequest', url.value)
                     webSocket.send(`request, ${url.value}`)

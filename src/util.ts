@@ -1,4 +1,4 @@
-const nextMainRelease = '1.15'
+const nextMainRelease = '1.16'
 
 const AFVersions = ['3D Shareware v1.34']
 
