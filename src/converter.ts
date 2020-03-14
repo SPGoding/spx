@@ -36,7 +36,10 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
  * @param html An HTML Document.
  */
 export function getHeroImage(html: Document) {
-    const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement
+    const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
+    if (!img) {
+        return '[postbg]bg3.png[/postbg]'
+    }
     const src = img.src
     const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img][/align]`
 
