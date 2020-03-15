@@ -15,3 +15,5 @@ The collected data is stored at our server logs.
 No. We do not share any of the data with any third parties. Even China's government can't ask us for any of your personal information.
 
 We use [the name translation API by 比目鱼](https://www.bimuyu.com/name-translator/) to translate the original author names of Minecraft.net blogs, however these actions are taken on our server, thus no personal information of our users are transferred to 比目鱼 or their server.
+
+However, we do use GitHub's services to download [articles data](https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv) at your browser. Please check GitHub's [privacy](https://github.com/site/privacy).
