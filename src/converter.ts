@@ -258,8 +258,7 @@ export const converters = {
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[media]含https的视频链接[/media]\n'
-        } else if (ele.classList.contains('attributed-quote')) {
-            // Attributed quote.
+        } else if (ele.classList.contains('quote') || ele.classList.contains('attributed-quote')) {
             ans = converters.blockquote(ele as any)
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
