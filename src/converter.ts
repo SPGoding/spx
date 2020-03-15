@@ -14,12 +14,12 @@ const info = {
 
 const authorPlaceholder = 'ZwlxWhO3srVHUb0nvmCyA09CuuzJwGLlWxm4rgiTlzV2jFiTANdbt5WF5cn0Fb1oKgeeeCG3IZuc4jAIkbNczYf7FB3UbwB6NdCxLzyZbfLC5McRV0r4fZGdALwlDmT7F2SbBdXG1eQjBqSFxrwLv0lLl6pm0TBYRhzrPCtNnSPrUWjlcaVqb4iP3FK82hkBhSlYezAbTtuSNzNNLrLDcIVi2xd8WGwRc2AffU96v7QQgYAE91AsLq7FNMoCCZEY'
 
-export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
+export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', articleType: 'CULTURE' | 'INSIDER' | 'NEWS') {
     info.url = articleUrl
     info.title = html.title.split(' | ').slice(0, -1).join(' | ')
     info.translator = translator
 
-    const heroImage = getHeroImage(html)
+    const heroImage = getHeroImage(html, articleType)
     const content = await getContent(html)
 
     const ans = `${heroImage}${content}`
@@ -31,13 +31,14 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
  * Get the hero image (head image) of an article as the form of a BBCode string.
  * @param html An HTML Document.
  */
-export function getHeroImage(html: Document) {
+export function getHeroImage(html: Document, articleType: 'CULTURE' | 'INSIDER' | 'NEWS') {
+    const category = `[align=center][backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
-        return '[postbg]bg3.png[/postbg]'
+        return `[postbg]bg3.png[/postbg]\n${category}\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img][/align]`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img][/align]\n${category}\n`
 
     return ans
 }

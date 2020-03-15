@@ -231,8 +231,8 @@ wsServer.on('request', request => {
                             const translator = args[1].split(' ')[1] ? args[1].split(' ')[1] : undefined
                             const src = await rp(uri)
                             const html = new JSDOM(src).window.document
-                            let bbcode = await convertMCAriticleToBBCode(html, uri, translator)
                             const articleType = getArticleType(html)
+                            let bbcode = await convertMCAriticleToBBCode(html, uri, translator, articleType)
                             if (articleType === 'NEWS') {
                                 const version = lastResults.version[1]
                                 const versionType = getVersionType(version)

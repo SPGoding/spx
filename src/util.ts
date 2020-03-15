@@ -53,13 +53,15 @@ export function getCounts(versions: ManifestVersion[], version: string): [number
 
 /**
  * Returns the type of the article.
- * @returns `NEWS` or `INSIDER`
+ * @returns `CULTURE`, `NEWS`, or `INSIDER`
  */
-export function getArticleType(html: Document): 'INSIDER' | 'NEWS' {
+export function getArticleType(html: Document): 'INSIDER' | 'NEWS' | 'CULTURE' {
     try {
         const type = html.getElementsByClassName('article-category__text')[0].textContent as string
         if (type.toUpperCase() === 'NEWS') {
             return 'NEWS'
+        } else if (type.toUpperCase() === 'CULTURE') {
+            return 'CULTURE'
         }
     } catch (ex) {
         console.log(`Error occurred #getArticleType: ${ex.stack}`)
