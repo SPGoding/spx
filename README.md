@@ -6,12 +6,11 @@
 
 A powerful tool for SPGoding's personal use.
 
-## Functions
+## Features
 
-- Show notifications when new questions are asked in [MCBBS](http://www.mcbbs.net).
 - Show notifications when new Minecraft versions are released.
 - Show notifications when new Minecraft INSIDER or NEWS articles are posted.
-- Show the CPU's temperature of the raspberry pi.
+- Convert Minecraft.net articles to MCBBS BBCodes.
 
 ## Special Thanks To
 
