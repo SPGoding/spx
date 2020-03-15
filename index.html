@@ -180,7 +180,7 @@
 
         request.onclick = () => {
             if (url.value) {
-                const linkRegex = /^https:\/\/www\.minecraft\.net\/.+\/article\//
+                const linkRegex = /^https:\/\/(?:www\.)?minecraft\.net\/.+\/article\//
                 if (url.value.match(linkRegex)) {
                     url.value = url.value.replace(linkRegex, 'https://www.minecraft.net/en-us/article/')
                 }
