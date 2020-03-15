@@ -117,7 +117,7 @@
     <div id="root">
         <input type="text" placeholder="Article URL" id="url" style="width: 512px; max-width: 100%;" /><br />
         <input type="text" placeholder="Translator" id="translator" /><br />
-        <input type="button" value="Request" id="request" />
+        <input type="button" value="Request" id="request" style="display: none;" />
         <div id="output"></div>
         <input type="button" value="Clear" id="read" style="display: none;" /><br>
         <div class="lds-facebook" id="progressBar">
@@ -203,6 +203,10 @@
         read.onclick = () => {
             output.innerHTML = ''
             read.style.display = 'none'
+        }
+
+        webSocket.onopen = () => {
+            request.style.display = ''
         }
 
         webSocket.onmessage = event => {
@@ -359,7 +363,7 @@
 
         webSocket.onclose = () => {
             read.style.display = 'none'
-            request.disabled = true
+            request.style.display = 'none'
             url.disabled = true
         }
     </script>
