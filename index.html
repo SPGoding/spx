@@ -162,6 +162,9 @@
         const webSocket = new WebSocket(wsURL)
         let isVerified = false
 
+        let hasWebSocketDone = false
+        let hasArticlesDone = false
+
         const categories = []
         let articles = []
 
@@ -207,6 +210,10 @@
 
         webSocket.onopen = () => {
             request.style.display = ''
+            hasWebSocketDone = true
+            if (hasArticlesDone && hasWebSocketDone) {
+                progressBar.style.display = 'none'
+            }
         }
 
         webSocket.onmessage = event => {
@@ -266,6 +273,7 @@
                             }
                             articles.push(cols)
                         }
+                        hasArticlesDone = true
                         updateCategoriesView()
                         updateArticlesView()
                     } else {
@@ -352,7 +360,9 @@
                 innerHTML += '</table>'
 
                 articlesTable.innerHTML = innerHTML
-                progressBar.style.display = 'none'
+                if (hasArticlesDone && hasWebSocketDone) {
+                    progressBar.style.display = 'none'
+                }
                 filters.style.display = ''
             }, 0)
         }
