@@ -50,6 +50,10 @@ let interval: number | undefined
 let key: Buffer | undefined
 let cert: Buffer | undefined
 
+const FetchInterval = 30 * 60 * 1000
+let articles: string
+let lastFetchTime: number
+
 (function loadConfiguration() {
 
     if (fs.existsSync(configPath)) {
@@ -103,6 +107,10 @@ async function main() {
     try {
         if (versions.length === 0) {
             await getVersions()
+        }
+        if (!articles || (new Date().getTime() - lastFetchTime) >= FetchInterval) {
+            articles = await rp('https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', { encoding: 'utf8' })
+            lastFetchTime = new Date().getTime()
         }
         for (const key in providers) {
             const provider = providers[key]
@@ -177,6 +185,8 @@ wsServer.on('request', request => {
 
     connections.push(connection)
     console.log(`${connection.remoteAddress} connected.`)
+
+    connection.sendUTF(JSON.stringify({ type: 'articles', value: { id: '', text: articles } }))
 
     connection.on('message', async data => {
         if (data.utf8Data) {
