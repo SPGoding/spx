@@ -164,6 +164,7 @@
 
         let hasWebSocketDone = false
         let hasArticlesDone = false
+        let hasRequestDone = true
 
         const categories = []
         let articles = []
@@ -180,6 +181,7 @@
 
         request.onclick = () => {
             if (url.value) {
+                hasRequestDone = false
                 const linkRegex = /^https:\/\/(?:www\.)?minecraft\.net\/.+\/article\//
                 if (url.value.match(linkRegex)) {
                     url.value = url.value.replace(linkRegex, 'https://www.minecraft.net/en-us/article/')
@@ -195,6 +197,8 @@
                     webSocket.send(`request, ${url.value} ${translator.value}`)
                     url.value = ''
                 } else {
+                    hasRequestDone = true
+                    hideProgressBar()
                     alert('Expected ‘verify’, ‘MC-’ or ‘https://www.minecraft.net/en-us/article/’ at the beginning.')
                 }
                 localStorage.setItem('translator', translator.value)
@@ -211,9 +215,7 @@
         webSocket.onopen = () => {
             request.style.display = ''
             hasWebSocketDone = true
-            if (hasArticlesDone && hasWebSocketDone) {
-                progressBar.style.display = 'none'
-            }
+            hideProgressBar()
         }
 
         webSocket.onmessage = event => {
@@ -226,13 +228,19 @@
                     playSound = true
                     break
                 case 'bbcode':
+                    hasRequestDone = true
+                    hideProgressBar()
                     append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
                 case 'read':
+                    hasRequestDone = true
+                    hideProgressBar()
                     output.innerHTML = ""
                     read.style.display = 'none'
                     return
                 case 'verify':
+                    hasRequestDone = true
+                    hideProgressBar()
                     isVerified = true
                     translator.style.color = 'green'
                     translator.style.fontWeight = 'bold'
@@ -287,6 +295,12 @@
         function requestBBCodeFor(link) {
             url.value = link
             request.onclick()
+        }
+
+        function hideProgressBar() {
+            if (hasArticlesDone && hasWebSocketDone) {
+                progressBar.style.display = 'none'
+            }
         }
 
         function updateCategoriesView() {
@@ -360,9 +374,7 @@
                 innerHTML += '</table>'
 
                 articlesTable.innerHTML = innerHTML
-                if (hasArticlesDone && hasWebSocketDone) {
-                    progressBar.style.display = 'none'
-                }
+                hideProgressBar()
                 filters.style.display = ''
             }, 0)
         }
