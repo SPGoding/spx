@@ -32,13 +32,13 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
  * @param html An HTML Document.
  */
 export function getHeroImage(html: Document, articleType: 'CULTURE' | 'INSIDER' | 'NEWS') {
-    const category = `[align=center][backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
+    const category = `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
-        return `[postbg]bg3.png[/postbg]\n${category}\n`
+        return `[postbg]bg3.png[/postbg]\n[align=center]${category}\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img][/align]\n${category}\n`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n${category}\n`
 
     return ans
 }
@@ -254,7 +254,7 @@ export const converters = {
             ans = `[align=center]${ans}[/align]\n`
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
-            ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
+            ans = `[align=center][b][color=Silver]${ans.replace(/\n/, '')}[/color]\n${translateMachinely(ans.replace(/\n/, ''))}[/b][/align]\n`
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[media]含https的视频链接[/media]\n'

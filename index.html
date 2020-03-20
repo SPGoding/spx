@@ -13,7 +13,7 @@
             padding: 2px 16px;
             font-size: 20px;
             margin: auto;
-            min-width: 512px;
+            min-width: 256px;
             max-width: 75%;
         }
 
@@ -183,10 +183,6 @@
             if (url.value) {
                 hasRequestDone = false
                 progressBar.style.display = ''
-                const linkRegex = /^https:\/\/(?:www\.)?minecraft\.net\/.+\/article\//
-                if (url.value.match(linkRegex)) {
-                    url.value = url.value.replace(linkRegex, 'https://www.minecraft.net/en-us/article/')
-                }
                 if (url.value.startsWith('verify ')) {
                     localStorage.setItem('lastRequest', url.value)
                     webSocket.send(`request, ${url.value}`)
@@ -194,13 +190,9 @@
                 } else if (url.value.startsWith('MC-')) {
                     webSocket.send(`request, ${url.value}`)
                     url.value = ''
-                } else if (url.value.startsWith('https://www.minecraft.net/en-us/article/')) {
+                } else {
                     webSocket.send(`request, ${url.value} ${translator.value}`)
                     url.value = ''
-                } else {
-                    hasRequestDone = true
-                    hideProgressBar()
-                    alert('Expected ‘verify’, ‘MC-’ or ‘https://www.minecraft.net/en-us/article/’ at the beginning.')
                 }
                 localStorage.setItem('translator', translator.value)
             } else {
@@ -247,6 +239,8 @@
                     translator.style.fontWeight = 'bold'
                     return
                 default:
+                    hasRequestDone = true
+                    hideProgressBar()
                     append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                     break
             }
@@ -286,7 +280,7 @@
                         updateCategoriesView()
                         updateArticlesView()
                     } else {
-                        alert('Error! ' + xhr.status)
+                        articlesTable.innerHTML = `博文录加载失败，错误代码：${xhr.status}`
                     }
                 }
             }

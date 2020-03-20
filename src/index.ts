@@ -238,10 +238,7 @@ wsServer.on('request', request => {
                                 const versionType = getVersionType(version)
                                 const beginning = getBeginning(versionType, version, versions)
                                 const ending = getEnding(versionType)
-                                bbcode =
-                                    beginning +
-                                    bbcode +
-                                    ending
+                                bbcode = `${beginning}${bbcode}${ending}`
                             }
                             const content = {
                                 addition: bbcode, id: uri,
