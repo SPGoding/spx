@@ -38,7 +38,7 @@ export function getHeroImage(html: Document, articleType: 'CULTURE' | 'INSIDER' 
         return `[postbg]bg3.png[/postbg]\n[align=center]${category}\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n${category}\n`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]r\n${category}\n`
 
     return ans
 }

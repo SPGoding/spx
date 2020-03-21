@@ -262,7 +262,7 @@
 
         function getArticles() {
             const xhr = new XMLHttpRequest()
-            xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
+            xhr.open('GET', 'https://gitee.com/kakagou/minecraft.net-translations/raw/master/rawtable.csv', true)
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
