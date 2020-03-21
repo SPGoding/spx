@@ -262,12 +262,7 @@
 
         function getArticles() {
             const xhr = new XMLHttpRequest()
-            // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
-            xhr.open(
-                'GET',
-                'https://cors-anywhere.herokuapp.com/' + 'https://gitee.com/kakagou/minecraft.net-translations/raw/master/rawtable.csv',
-                true
-            )
+            xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
