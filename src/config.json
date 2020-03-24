@@ -1,1 +1,1 @@
-{"ip":"localhost","httpPort":80,"interval":20000,"keyFile":null,"certFile":null,"password":null}
+{"ip":"localhost","httpPort":80,"interval":20000,"keyFile":null,"certFile":null,"ownerPassword":null,"vipPassword":null}

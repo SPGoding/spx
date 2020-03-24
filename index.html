@@ -160,7 +160,6 @@
         const filters = document.getElementById('filters')
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
-        let isVerified = false
 
         let hasWebSocketDone = false
         let hasArticlesDone = false
@@ -234,9 +233,13 @@
                 case 'verify':
                     hasRequestDone = true
                     hideProgressBar()
-                    isVerified = true
-                    translator.style.color = 'green'
-                    translator.style.fontWeight = 'bold'
+                    if (json.value.id === 'owner') {
+                        translator.style.color = 'gold'
+                        translator.style.fontWeight = 'bold'
+                    } else {
+                        translator.style.color = 'green'
+                        translator.style.fontWeight = 'bold'
+                    }
                     return
                 default:
                     hasRequestDone = true

@@ -45,7 +45,8 @@ const bugsPath = path.join(__dirname, './bugs.json')
 export const bugs: { [id: string]: string } = {}
 let httpPort: number | undefined
 let ip: string | undefined
-let password: string | undefined
+let ownerPassword: string | undefined
+let vipPassword: string | undefined
 let interval: number | undefined
 let key: Buffer | undefined
 let cert: Buffer | undefined;
@@ -57,11 +58,12 @@ let cert: Buffer | undefined;
         ip = config.ip
         httpPort = config.httpPort
         interval = config.interval
-        password = config.password
+        ownerPassword = config.ownerPassword
+        vipPassword = config.vipPassword
         key = fs.readFileSync(config.keyFile)
         cert = fs.readFileSync(config.certFile)
-        if (!ip || !httpPort || !interval || !key || !cert || !password) {
-            throw ("Expected 'httpPort', 'interval', 'ip', 'keyFile', 'certFile' and 'password' in './config.json'.")
+        if (!ip || !httpPort || !interval || !key || !cert || !ownerPassword || !vipPassword) {
+            throw ("Expected 'httpPort', 'interval', 'ip', 'keyFile', 'certFile', 'ownerPassword', and 'vipPassword' in './config.json'.")
         }
     } else {
         ip = 'localhost'
@@ -135,7 +137,8 @@ async function main() {
 
 //#region Notification
 const connections: connection[] = []
-const verifiedIps: string[] = []
+const ownerIps: string[] = []
+const vipIps: string[] = []
 const wsPort = getRandomInt(49152, 65535)
 
 const httpsServer = https
@@ -189,10 +192,23 @@ wsServer.on('request', request => {
                     }
                     if (args[1].slice(0, 7) === 'verify ') {
                         const pwd = args[1].slice(7)
-                        if (password === pwd) {
-                            verifiedIps.push(connection.remoteAddress)
-                            connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: '', text: '' } }))
-                            console.log(`Verified: ${connection.remoteAddress}.`)
+                        if (ownerPassword === pwd) {
+                            ownerIps.push(connection.remoteAddress)
+                            vipIps.push(connection.remoteAddress)
+                            connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: 'owner', text: '' } }))
+                            console.log(`Verified owner: ${connection.remoteAddress}.`)
+                            if (notifications.length > 0) {
+                                if (notifications.length > 20) {
+                                    notifications.splice(0, notifications.length - 20)
+                                }
+                                for (const i of notifications) {
+                                    connection.sendUTF(JSON.stringify(i))
+                                }
+                            }
+                        } else if (vipPassword === pwd) {
+                            vipIps.push(connection.remoteAddress)
+                            connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: 'vip', text: '' } }))
+                            console.log(`Verified VIP: ${connection.remoteAddress}.`)
                             if (notifications.length > 0) {
                                 if (notifications.length > 20) {
                                     notifications.splice(0, notifications.length - 20)
@@ -206,7 +222,7 @@ wsServer.on('request', request => {
                             connection.close()
                         }
                     } else if (args[1].slice(0, 3) === 'MC-') {
-                        if (verifiedIps.includes(connection.remoteAddress)) {
+                        if (ownerIps.includes(connection.remoteAddress)) {
                             const seg = args[1].split(' ')
                             const id = seg[0]
                             const description = seg.slice(1).join(' ')
@@ -245,7 +261,7 @@ wsServer.on('request', request => {
                                 text: uri.replace('https://www.minecraft.net/en-us/article/', '')
                             }
                             connection.sendUTF(JSON.stringify({ type: 'bbcode', value: content }))
-                            if (verifiedIps.indexOf(connection.remoteAddress) === -1) {
+                            if (!vipIps.includes(connection.remoteAddress)) {
                                 connection.close()
                             }
                         } catch (e) {
@@ -265,13 +281,14 @@ wsServer.on('request', request => {
     connection.on('close', () => {
         console.log(`${connection.remoteAddress} disconnected.`)
         connections.splice(connections.indexOf(connection), 1)
-        verifiedIps.splice(verifiedIps.indexOf(connection.remoteAddress), 1)
+        ownerIps.splice(ownerIps.indexOf(connection.remoteAddress), 1)
+        vipIps.splice(vipIps.indexOf(connection.remoteAddress), 1)
     })
 })
 
-function announce(type: string, value: Content, forVerified: boolean) {
+function announce(type: string, value: Content, forVip: boolean) {
     connections.forEach(v => {
-        if (!forVerified || verifiedIps.indexOf(v.remoteAddress) !== -1) {
+        if (!forVip || vipIps.includes(v.remoteAddress)) {
             v.sendUTF(JSON.stringify({ type, value }))
         }
     })
