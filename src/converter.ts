@@ -22,7 +22,7 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
     const heroImage = getHeroImage(html, articleType)
     const content = await getContent(html)
 
-    const ans = `${heroImage}${content}`
+    const ans = `${heroImage}${content}[/indent][/indent]`
 
     return ans
 }
@@ -35,10 +35,10 @@ export function getHeroImage(html: Document, articleType: 'CULTURE' | 'INSIDER' 
     const category = `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
-        return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}\n`
+        return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}\n`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}[indent][indent]\n`
 
     return ans
 }
@@ -274,7 +274,7 @@ export const converters = {
         return ''
     },
     dl: (ele: HTMLElement) => {
-        const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img][/indent][/indent]'
+        const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
         const ans = `${grass}\n\n${converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
@@ -368,7 +368,7 @@ export const converters = {
         let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size][indent][indent]`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
         }
 
         return ans
