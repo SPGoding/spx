@@ -1,3 +1,8 @@
+import http = require('http')
+import https = require('https')
+import { imageSize } from 'image-size'
+import { ISizeCalculationResult } from 'image-size/dist/types/interface'
+
 const nextMainRelease = '1.16'
 
 const AFVersions = ['3D Shareware v1.34']
@@ -49,6 +54,26 @@ export function getCounts(versions: ManifestVersion[], version: string): [number
     }
 
     return [snapCount, preCount]
+}
+
+export function getImageDimensions(imgUrl: string) {
+    return new Promise<ISizeCalculationResult>((resolve, reject) => {
+        const lib = imgUrl.startsWith('https://') ? https : http
+        lib.get(imgUrl, response => {
+            const chunks: any[] = []
+            response
+                .on('data', chunk => {
+                    chunks.push(chunk)
+                })
+                .on('end', () => {
+                    const buffer = Buffer.concat(chunks)
+                    resolve(imageSize(buffer))
+                })
+                .on('error', e => {
+                    reject(e)
+                })
+        })
+    })
 }
 
 /**

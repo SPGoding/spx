@@ -1,5 +1,6 @@
 import * as rp from 'request-promise-native'
 import { bugs } from '.'
+import { getImageDimensions } from './util'
 
 /*
  * @author SPGoding
@@ -49,7 +50,7 @@ export function getHeroImage(html: Document, articleType: 'CULTURE' | 'INSIDER' 
  */
 export async function getContent(html: Document) {
     const rootDiv = html.getElementsByClassName('article-body')[0] as HTMLElement
-    let ans = converters.rescure(rootDiv)
+    let ans = await converters.rescure(rootDiv)
 
     // Get the server URL if it exists.
     const serverUrls = ans.match(/(https:\/\/launcher.mojang.com\/.+\/server.jar)/)
@@ -111,7 +112,7 @@ export const converters = {
     /**
      * Converts a ChildNode to a BBCode string according to the type of the node.
      */
-    convert: (node: ChildNode): string => {
+    convert: async (node: ChildNode): Promise<string> => {
         switch (node.nodeName) {
             case 'A':
                 return converters.a(node as HTMLAnchorElement)
@@ -196,59 +197,59 @@ export const converters = {
     /**
      * Convert child nodes of an HTMLElement to a BBCode string.
      */
-    rescure: (ele: HTMLElement) => {
+    rescure: async (ele: HTMLElement) => {
         let ans = ''
 
-        ele.childNodes.forEach(child => {
-            ans += converters.convert(child)
-        })
+        for (const child of Array.from(ele.childNodes)) {
+            ans += await converters.convert(child)
+        }
 
         ans = removeLastLinebreak(ans)
 
         return ans
     },
-    a: (anchor: HTMLAnchorElement) => {
+    a: async (anchor: HTMLAnchorElement) => {
         const url = resolveUrl(anchor.href)
         let ans
         if (url) {
             ans = `[url=${url}][color=#388d40]${converters.rescure(anchor)}[/color][/url]`
         } else {
-            ans = converters.rescure(anchor)
+            ans = await converters.rescure(anchor)
         }
 
         return ans
     },
-    blockquote: (ele: HTMLQuoteElement) => {
+    blockquote: async (ele: HTMLQuoteElement) => {
         const prefix = '[quote]'
         const suffix = '[/quote]'
-        const inner = converters.rescure(ele)
+        const inner = await converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n${translateMachinely(inner)}${suffix}\n`
 
         return ans
     },
-    br: () => {
+    br: async () => {
         const ans = '\n'
 
         return ans
     },
-    cite: (ele: HTMLElement) => {
+    cite: async (ele: HTMLElement) => {
         const prefix = '\n—— '
         const suffix = ''
 
-        const ans = `${prefix}${converters.rescure(ele)}${suffix}`
+        const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
 
         return ans
     },
-    code: (ele: HTMLElement) => {
+    code: async (ele: HTMLElement) => {
         const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
         const suffix = '[/font][/backcolor]'
 
-        const ans = `${prefix}${converters.rescure(ele)}${suffix}`
+        const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
 
         return ans
     },
-    div: (ele: HTMLElement) => {
-        let ans = converters.rescure(ele)
+    div: async (ele: HTMLElement) => {
+        let ans = await converters.rescure(ele)
 
         if (ele.classList.contains('text-center')) {
             ans = `[align=center]${ans}[/align]\n`
@@ -259,7 +260,7 @@ export const converters = {
             // Video.
             ans = '\n[align=center][media]含https的视频链接[/media][/align]\n'
         } else if (ele.classList.contains('quote') || ele.classList.contains('attributed-quote')) {
-            ans = converters.blockquote(ele as any)
+            ans = await converters.blockquote(ele as any)
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -267,20 +268,20 @@ export const converters = {
 
         return ans
     },
-    dt: (_ele: HTMLElement) => {
+    dt: async (_ele: HTMLElement) => {
         // const ans = `${converters.rescure(ele)}：`
 
         // return ans
         return ''
     },
-    dl: (ele: HTMLElement) => {
+    dl: async (ele: HTMLElement) => {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n${converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `${grass}\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
         return ans
     },
-    dd: (ele: HTMLElement) => {
+    dd: async (ele: HTMLElement) => {
         let ans = ''
 
         if (ele.classList.contains('pubDate')) {
@@ -294,77 +295,113 @@ export const converters = {
             }
         } else {
             // Written by:
-            info.author = converters.rescure(ele)
+            info.author = await converters.rescure(ele)
         }
 
         return ans
     },
-    em: (ele: HTMLElement) => {
-        const ans = `[i]${converters.rescure(ele)}[/i]`
+    em: async (ele: HTMLElement) => {
+        const ans = `[i]${await converters.rescure(ele)}[/i]`
 
         return ans
     },
-    h1: (ele: HTMLElement) => {
+    h1: async (ele: HTMLElement) => {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
-        const inner = converters.rescure(ele)
+        const inner = await converters.rescure(ele)
         const ans = `${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
-    h2: (ele: HTMLElement) => {
+    h2: async (ele: HTMLElement) => {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
-        const inner = converters.rescure(ele)
+        const inner = await converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
-    h3: (ele: HTMLElement) => {
+    h3: async (ele: HTMLElement) => {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
-        const inner = converters.rescure(ele)
+        const inner = await converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
-    h4: (ele: HTMLElement) => {
+    h4: async (ele: HTMLElement) => {
         const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
-        const inner = converters.rescure(ele)
+        const inner = await converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
 
         return ans
     },
-    i: (ele: HTMLElement) => {
-        const ans = `[i]${converters.rescure(ele)}[/i]`
+    i: async (ele: HTMLElement) => {
+        const ans = `[i]${await converters.rescure(ele)}[/i]`
 
         return ans
     },
-    img: (img: HTMLImageElement) => {
-        let ans = `\n\n[align=center][img]${resolveUrl(img.src)}[/img][/align]\n`
+    img: async (img: HTMLImageElement) => {
         if (img.alt === 'Author image') {
-            ans = ''
-        } else if (img.classList.contains('attributed-quote__image')) {
-            // Attributed quote author avatar.
-            ans = `[float=left][img=64,112]${resolveUrl(img.src)}[/img][/float]`
+            return ''
         }
+
+        let prefix: string | undefined
+        const imgUrl = resolveUrl(img.src)
+
+        try {
+            const result = await getImageDimensions(imgUrl)
+            let w: number | undefined
+            let h: number | undefined
+            if (result && result.height && result.width) {
+                w = result.width
+                h = result.height
+            } else if (result && result.images && result.images[0].height && result.images[0].width) {
+                w = result.images[0].width
+                h = result.images[0].height
+            }
+
+            if (w && h && !img.classList.contains('attributed-quote__image')) {
+                // Normal images.
+                w = Math.round(w * 0.7)
+                h = Math.round(h * 0.7)
+            }
+
+            prefix = w && h ? `[img=${w},${h}]` : '[img]'
+        } catch (e) {
+            console.error(e)
+            console.error(imgUrl)
+        }
+
+        if (prefix === undefined) {
+            prefix = '[img]'
+        }
+
+        let ans: string
+        if (img.classList.contains('attributed-quote__image')) {
+            // Attributed quote author avatar.
+            ans = `[float=left]${prefix}${imgUrl}[/img][/float]`
+        } else {
+            ans = `\n\n[align=center]${prefix}${imgUrl}[/img][/align]\n`
+        }
+
         return ans
     },
-    li: (ele: HTMLElement) => {
-        const inner = converters.rescure(ele)
+    li: async (ele: HTMLElement) => {
+        const inner = await converters.rescure(ele)
         const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner))}\n`
 
         return ans
     },
-    ol: (ele: HTMLElement) => {
-        const inner = converters.rescure(ele)
+    ol: async (ele: HTMLElement) => {
+        const inner = await converters.rescure(ele)
         const ans = `\n[list=1]\n${inner}[/list]\n`
 
         return ans
     },
-    p: (ele: HTMLElement) => {
-        const inner = converters.rescure(ele)
+    p: async (ele: HTMLElement) => {
+        const inner = await converters.rescure(ele)
         let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n`
 
         if (ele.classList.contains('lead')) {
@@ -373,8 +410,8 @@ export const converters = {
 
         return ans
     },
-    span: (ele: HTMLElement) => {
-        const ans = converters.rescure(ele)
+    span: async (ele: HTMLElement) => {
+        const ans = await converters.rescure(ele)
 
         if (ele.classList.contains('bedrock-server')) {
             // Is inline code.
@@ -390,30 +427,30 @@ export const converters = {
 
         return ans
     },
-    strong: (ele: HTMLElement) => {
-        const ans = `[b]${converters.rescure(ele)}[/b]`
+    strong: async (ele: HTMLElement) => {
+        const ans = `[b]${await converters.rescure(ele)}[/b]`
 
         return ans
     },
-    tbody: (ele: HTMLElement) => {
+    tbody: async (ele: HTMLElement) => {
         // The `NodeName` of `HTMLTableElement` and `HTMLTableSectionElement` are all 'TBODY'.
         // So I use `ele.childNodes[0]` to skip `HTMLTableSectionElement`.
-        const ans = `\n[table]\n${converters.rescure(ele.childNodes[0] as HTMLElement)}[/table]\n`
+        const ans = `\n[table]\n${await converters.rescure(ele.childNodes[0] as HTMLElement)}[/table]\n`
 
         return ans
     },
-    td: (ele: HTMLElement) => {
-        const ans = `[td]${converters.rescure(ele)}[/td]`
+    td: async (ele: HTMLElement) => {
+        const ans = `[td]${await converters.rescure(ele)}[/td]`
 
         return ans
     },
-    tr: (ele: HTMLElement) => {
-        const ans = `[tr]${converters.rescure(ele)}[/tr]\n`
+    tr: async (ele: HTMLElement) => {
+        const ans = `[tr]${await converters.rescure(ele)}[/tr]\n`
 
         return ans
     },
-    ul: (ele: HTMLElement) => {
-        const inner = converters.rescure(ele)
+    ul: async (ele: HTMLElement) => {
+        const inner = await converters.rescure(ele)
         const ans = `\n[list]\n${inner}[/list]\n`
 
         return ans
