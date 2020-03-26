@@ -362,12 +362,6 @@ export const converters = {
                 h = result.images[0].height
             }
 
-            if (w && h && !img.classList.contains('attributed-quote__image')) {
-                // Normal images.
-                w = Math.round(w * 0.7)
-                h = Math.round(h * 0.7)
-            }
-
             prefix = w && h ? `[img=${w},${h}]` : '[img]'
         } catch (e) {
             console.error(e)
@@ -386,7 +380,7 @@ export const converters = {
             ans = `\n\n[align=center]${prefix}${imgUrl}[/img][/align]\n`
         }
 
-        return ans
+        return `[/indent][/indent]${ans}[indent][indent]`
     },
     li: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
