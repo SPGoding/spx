@@ -212,7 +212,7 @@ export const converters = {
         const url = resolveUrl(anchor.href)
         let ans
         if (url) {
-            ans = `[url=${url}][color=#388d40]${converters.rescure(anchor)}[/color][/url]`
+            ans = `[url=${url}][color=#388d40]${await converters.rescure(anchor)}[/color][/url]`
         } else {
             ans = await converters.rescure(anchor)
         }
