@@ -278,7 +278,7 @@ export const converters = {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `${grass}\n\n${await converters.rescure(ele)}\n[/indent][/indent]【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】[indent][indent]\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
