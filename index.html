@@ -163,6 +163,8 @@
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
 
+        const MiscArtCategory = '🤔 MISC'
+
         let hasWebSocketDone = false
         let hasArticlesDone = false
         let hasRequestDone = true
@@ -281,8 +283,8 @@
                             if (!categories.includes(category)) {
                                 categories.push(category)
                             }
-                            if (!artCategories.includes(artCategory || 'MISC')) {
-                                artCategories.push(artCategory || 'MISC')
+                            if (!artCategories.includes(artCategory || MiscArtCategory)) {
+                                artCategories.push(artCategory || MiscArtCategory)
                             }
                             articles.push(cols)
                         }
@@ -370,7 +372,7 @@
 
                     if (!(
                         filteredCategories.includes(category) &&
-                        (filteredArtCategories.includes(artCategory || 'MISC')) &&
+                        (filteredArtCategories.includes(artCategory || MiscArtCategory)) &&
                         filteredEmeralded.includes(isEmeralded) &&
                         filteredTranslated.includes(isTranslated))
                     ) {
