@@ -156,8 +156,8 @@ const httpsServer = https
                 console.error(e.message)
             })
             res.setHeader('Content-Type', "text/html;charset='utf-8'")
-            // html = (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
-            html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
+            html = (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
+            // html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
             res.end(html)
         } catch (e) {
             console.error(e)

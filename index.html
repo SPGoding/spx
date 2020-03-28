@@ -146,14 +146,16 @@
             <div id="categoryCheckboxes" class="checkboxContainer"></div>
             <div id="artCategoryCheckboxes" class="checkboxContainer"></div>
             <div class="checkboxContainer">
-                <span onclick="updateCheckbox.bind(this)();" id="showTranslatedArticle"
-                    class="checkbox">Translated</span><span onclick="updateCheckbox.bind(this)();"
-                    id="showUntranslatedArticle" class="checkbox">Untranslated</span>
+                <span onclick="updateCheckbox.bind(this)();" id="showTranslatedArticle" class="checkbox"
+                    data-value="translationStatusTranslated">Translated</span><span onclick="updateCheckbox.bind(this)();"
+                    id="showUntranslatedArticle" class="checkbox"
+                    data-value="translationStatusUntranslated">Untranslated</span>
             </div>
             <div class="checkboxContainer">
-                <span onclick="updateCheckbox.bind(this)();" id="showEmeraldedArticle"
-                    class="checkbox unchecked">Emeralded</span><span onclick="updateCheckbox.bind(this)();"
-                    id="showUnemeraldedArticle" class="checkbox">Unemeralded</span>
+                <span onclick="updateCheckbox.bind(this)();" id="showEmeraldedArticle" class="checkbox"
+                    data-value="emeralationStatusEmeralded">Emeralded</span><span onclick="updateCheckbox.bind(this)();"
+                    id="showUnemeraldedArticle" class="checkbox"
+                    data-value="emeralationStatusUnemeralded">Unemeralded</span>
             </div>
             <table id="articles"></table>
         </div>
@@ -307,7 +309,7 @@
                             articles.push(cols)
                         }
                         hasArticlesDone = true
-                        updateCategoriesView()
+                        updateCheckboxes()
                         updateArticlesView()
                     } else {
                         articlesTable.innerHTML = `博文录加载失败，错误代码：${xhr.status}`
@@ -328,12 +330,28 @@
             }
         }
 
-        function updateCategoriesView() {
-            function addOption(parent, cat) {
+        function updateCheckboxes() {
+            if (isUncheckedInStorage('translationStatusTranslated')) {
+                showTranslatedArticle.classList.add('unchecked')
+            }
+            if (isUncheckedInStorage('translationStatusUntranslated')) {
+                showUntranslatedArticle.classList.add('unchecked')
+            }
+            if (isUncheckedInStorage('emeralationStatusEmeralded')) {
+                showEmeraldedArticle.classList.add('unchecked')
+            }
+            if (isUncheckedInStorage('emeralationStatusUnemeralded')) {
+                showUnemeraldedArticle.classList.add('unchecked')
+            }
+
+            function addCheckbox(parent, cat) {
                 const span = document.createElement('span')
                 span.classList.add('checkbox')
                 span.dataset.value = cat
                 span.onclick = updateCheckbox.bind(span)
+                if (isUncheckedInStorage(cat)) {
+                    span.classList.add('unchecked')
+                }
                 const txt = document.createTextNode(cat.toUpperCase())
                 span.appendChild(txt)
                 parent.appendChild(span)
@@ -341,20 +359,26 @@
 
             categoryCheckboxes.innerHTML = ''
             for (const cat of categories.sort()) {
-                addOption(categoryCheckboxes, cat)
+                addCheckbox(categoryCheckboxes, cat)
             }
 
             artCategoryCheckboxes.innerText = ''
             for (const cat of artCategories.sort()) {
-                addOption(artCategoryCheckboxes, cat)
+                addCheckbox(artCategoryCheckboxes, cat)
             }
+        }
+
+        function isUncheckedInStorage(value) {
+            return localStorage.getItem(`checkboxes.${value}`) === 'unchecked'
         }
 
         function updateCheckbox() {
             if (this.classList.contains('unchecked')) {
                 this.classList.remove('unchecked')
+                localStorage.removeItem(`checkboxes.${this.dataset.value}`)
             } else {
                 this.classList.add('unchecked')
+                localStorage.setItem(`checkboxes.${this.dataset.value}`, 'unchecked')
             }
             updateArticlesView()
         }
@@ -368,7 +392,6 @@
 
                 const filteredCategories = []
                 for (const span of categoryCheckboxes.children) {
-                    console.log(span)
                     if (!span.classList.contains('unchecked')) {
                         filteredCategories.push(span.dataset.value)
                     }
