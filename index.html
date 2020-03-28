@@ -281,8 +281,8 @@
                             if (!categories.includes(category)) {
                                 categories.push(category)
                             }
-                            if (artCategory && !artCategories.includes(artCategory)) {
-                                artCategories.push(artCategory)
+                            if (!artCategories.includes(artCategory || 'MISC')) {
+                                artCategories.push(artCategory || 'MISC')
                             }
                             articles.push(cols)
                         }
@@ -370,7 +370,7 @@
 
                     if (!(
                         filteredCategories.includes(category) &&
-                        (!artCategory || filteredArtCategories.includes(artCategory)) &&
+                        (filteredArtCategories.includes(artCategory || 'MISC')) &&
                         filteredEmeralded.includes(isEmeralded) &&
                         filteredTranslated.includes(isTranslated))
                     ) {
