@@ -29,6 +29,23 @@
             margin: 0.3em;
         }
 
+        span.checkbox {
+            margin: 0.25em;
+            padding: 0.05em;
+            cursor: pointer;
+            background-color: rgb(210, 255, 241);
+            border-style: dashed;
+        }
+
+        span.checkbox.unchecked {
+            background-color: transparent;
+            color: rgb(170, 170, 170);
+        }
+
+        div.checkboxContainer {
+            margin-top: 0.5em;
+        }
+
         #articles {
             margin: 1em auto;
             font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
@@ -119,23 +136,24 @@
         <input type="text" placeholder="Translator" id="translator" /><br />
         <input type="button" value="Request" id="request" style="display: none;" />
         <div id="output"></div>
-        <input type="button" value="Clear" id="read" style="display: none;" /><br>
+        <input type="button" value="Clear" id="read" style="display: none;" />
         <div class="lds-facebook" id="progressBar">
             <div></div>
             <div></div>
             <div></div>
         </div>
         <div id="filters" style="display: none;">
-            <div id="categoryCheckboxes"></div>
-            <div id="artCategoryCheckboxes"></div>
-            <div>
-                <input type="checkbox" onchange="updateArticlesView();" id="showTranslatedArticle" checked>Translated
-                <input type="checkbox" onchange="updateArticlesView();" id="showUntranslatedArticle"
-                    checked>Untranslated
+            <div id="categoryCheckboxes" class="checkboxContainer"></div>
+            <div id="artCategoryCheckboxes" class="checkboxContainer"></div>
+            <div class="checkboxContainer">
+                <span onclick="updateCheckbox.bind(this)();" id="showTranslatedArticle"
+                    class="checkbox">Translated</span><span onclick="updateCheckbox.bind(this)();"
+                    id="showUntranslatedArticle" class="checkbox">Untranslated</span>
             </div>
-            <div>
-                <input type="checkbox" onchange="updateArticlesView();" id="showEmeraldedArticle">Emeralded
-                <input type="checkbox" onchange="updateArticlesView();" id="showUnemeraldedArticle" checked>Unemeralded
+            <div class="checkboxContainer">
+                <span onclick="updateCheckbox.bind(this)();" id="showEmeraldedArticle"
+                    class="checkbox unchecked">Emeralded</span><span onclick="updateCheckbox.bind(this)();"
+                    id="showUnemeraldedArticle" class="checkbox">Unemeralded</span>
             </div>
             <table id="articles"></table>
         </div>
@@ -163,7 +181,7 @@
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
 
-        const MiscArtCategory = '🤔 MISC'
+        const MiscArtCategory = '其他'
 
         let hasWebSocketDone = false
         let hasArticlesDone = false
@@ -311,26 +329,34 @@
         }
 
         function updateCategoriesView() {
+            function addOption(parent, cat) {
+                const span = document.createElement('span')
+                span.classList.add('checkbox')
+                span.dataset.value = cat
+                span.onclick = updateCheckbox.bind(span)
+                const txt = document.createTextNode(cat.toUpperCase())
+                span.appendChild(txt)
+                parent.appendChild(span)
+            }
+
             categoryCheckboxes.innerHTML = ''
             for (const cat of categories.sort()) {
-                const checkbox = document.createElement('input')
-                checkbox.value = cat
-                checkbox.type = 'checkbox'
-                checkbox.checked = 'checked'
-                checkbox.onchange = updateArticlesView
-                categoryCheckboxes.appendChild(checkbox)
-                categoryCheckboxes.appendChild(document.createTextNode(`[${cat.toUpperCase()}] `))
+                addOption(categoryCheckboxes, cat)
             }
+
             artCategoryCheckboxes.innerText = ''
             for (const cat of artCategories.sort()) {
-                const checkbox = document.createElement('input')
-                checkbox.value = cat
-                checkbox.type = 'checkbox'
-                checkbox.checked = 'checked'
-                checkbox.onchange = updateArticlesView
-                artCategoryCheckboxes.appendChild(checkbox)
-                artCategoryCheckboxes.appendChild(document.createTextNode(`{${cat.toUpperCase()}} `))
+                addOption(artCategoryCheckboxes, cat)
             }
+        }
+
+        function updateCheckbox() {
+            if (this.classList.contains('unchecked')) {
+                this.classList.remove('unchecked')
+            } else {
+                this.classList.add('unchecked')
+            }
+            updateArticlesView()
         }
 
         function updateArticlesView() {
@@ -341,27 +367,28 @@
                 let innerHTML = '<table id="articles"><tr><th>Time</th><th>Category</th><th>Origin</th><th>Translation</th><th>Status</th><th>Take</th></tr>'
 
                 const filteredCategories = []
-                for (const checkbox of categoryCheckboxes.childNodes) {
-                    if (checkbox.checked) {
-                        filteredCategories.push(checkbox.value)
+                for (const span of categoryCheckboxes.children) {
+                    console.log(span)
+                    if (!span.classList.contains('unchecked')) {
+                        filteredCategories.push(span.dataset.value)
                     }
                 }
 
                 const filteredArtCategories = []
-                for (const checkbox of artCategoryCheckboxes.childNodes) {
-                    if (checkbox.checked) {
-                        filteredArtCategories.push(checkbox.value)
+                for (const span of artCategoryCheckboxes.children) {
+                    if (!span.classList.contains('unchecked')) {
+                        filteredArtCategories.push(span.dataset.value)
                     }
                 }
 
                 const filteredTranslated = [
-                    ...showTranslatedArticle.checked ? [true] : [],
-                    ...showUntranslatedArticle.checked ? [false] : []
+                    ...!showTranslatedArticle.classList.contains('unchecked') ? [true] : [],
+                    ...!showUntranslatedArticle.classList.contains('unchecked') ? [false] : []
                 ]
 
                 const filteredEmeralded = [
-                    ...showEmeraldedArticle.checked ? [true] : [],
-                    ...showUnemeraldedArticle.checked ? [false] : []
+                    ...!showEmeraldedArticle.classList.contains('unchecked') ? [true] : [],
+                    ...!showUnemeraldedArticle.classList.contains('unchecked') ? [false] : []
                 ]
 
                 for (const [time, title, link, trTitle, trLink, _, emeralded, cat] of articles) {

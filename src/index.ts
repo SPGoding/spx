@@ -141,6 +141,8 @@ const ownerIps: string[] = []
 const vipIps: string[] = []
 const wsPort = getRandomInt(49152, 65535)
 
+let html: string
+
 const httpsServer = https
     .createServer({
         key, cert,
@@ -154,8 +156,8 @@ const httpsServer = https
                 console.error(e.message)
             })
             res.setHeader('Content-Type', "text/html;charset='utf-8'")
-            let html = await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })
-            html = html.replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
+            // html = (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
+            html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
             res.end(html)
         } catch (e) {
             console.error(e)
