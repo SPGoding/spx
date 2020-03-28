@@ -127,6 +127,7 @@
         </div>
         <div id="filters" style="display: none;">
             <div id="categoryCheckboxes"></div>
+            <div id="artCategoryCheckboxes"></div>
             <div>
                 <input type="checkbox" onchange="updateArticlesView();" id="showTranslatedArticle" checked>Translated
                 <input type="checkbox" onchange="updateArticlesView();" id="showUntranslatedArticle"
@@ -152,6 +153,7 @@
         const status = document.getElementById('status')
         const articlesTable = document.getElementById('articles')
         const categoryCheckboxes = document.getElementById('categoryCheckboxes')
+        const artCategoryCheckboxes = document.getElementById('artCategoryCheckboxes')
         const showTranslatedArticle = document.getElementById('showTranslatedArticle')
         const showUntranslatedArticle = document.getElementById('showUntranslatedArticle')
         const showEmeraldedArticle = document.getElementById('showEmeraldedArticle')
@@ -166,6 +168,7 @@
         let hasRequestDone = true
 
         const categories = []
+        const artCategories = []
         let articles = []
 
         const clipboardJS = new ClipboardJS('.copy')
@@ -274,8 +277,12 @@
                         for (const row of rows) {
                             // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
                             const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
-                            if (!categories.includes(cols[7])) {
-                                categories.push(cols[7])
+                            const [category, artCategory] = cols[7].split(':')
+                            if (!categories.includes(category)) {
+                                categories.push(category)
+                            }
+                            if (artCategory && !artCategories.includes(artCategory)) {
+                                artCategories.push(artCategory)
                             }
                             articles.push(cols)
                         }
@@ -312,6 +319,16 @@
                 categoryCheckboxes.appendChild(checkbox)
                 categoryCheckboxes.appendChild(document.createTextNode(`[${cat.toUpperCase()}] `))
             }
+            artCategoryCheckboxes.innerText = ''
+            for (const cat of artCategories.sort()) {
+                const checkbox = document.createElement('input')
+                checkbox.value = cat
+                checkbox.type = 'checkbox'
+                checkbox.checked = 'checked'
+                checkbox.onchange = updateArticlesView
+                artCategoryCheckboxes.appendChild(checkbox)
+                artCategoryCheckboxes.appendChild(document.createTextNode(`{${cat.toUpperCase()}} `))
+            }
         }
 
         function updateArticlesView() {
@@ -328,6 +345,13 @@
                     }
                 }
 
+                const filteredArtCategories = []
+                for (const checkbox of artCategoryCheckboxes.childNodes) {
+                    if (checkbox.checked) {
+                        filteredArtCategories.push(checkbox.value)
+                    }
+                }
+
                 const filteredTranslated = [
                     ...showTranslatedArticle.checked ? [true] : [],
                     ...showUntranslatedArticle.checked ? [false] : []
@@ -338,12 +362,15 @@
                     ...showUnemeraldedArticle.checked ? [false] : []
                 ]
 
-                for (const [time, title, link, trTitle, trLink, _, emeralded, category] of articles) {
+                for (const [time, title, link, trTitle, trLink, _, emeralded, cat] of articles) {
                     const isEmeralded = emeralded === '1'
                     const isTranslated = trLink !== '-'
 
+                    const [category, artCategory] = cat.split(':')
+
                     if (!(
                         filteredCategories.includes(category) &&
+                        (!artCategory || filteredArtCategories.includes(artCategory)) &&
                         filteredEmeralded.includes(isEmeralded) &&
                         filteredTranslated.includes(isTranslated))
                     ) {
@@ -361,7 +388,7 @@
 
                     innerHTML += '<tr>'
                     innerHTML += `<td>${time}</td>`
-                    innerHTML += `<td>${category.toUpperCase()}</td>`
+                    innerHTML += `<td>${cat.toUpperCase()}</td>`
                     innerHTML += `<td><a href="${link}" target="_blank">${title}</a></td>`
                     innerHTML += `<td>${isTranslated ? `<a href="${trLink}" target="_blank">${trTitle}</a>` : 'N/A'}</td>`
                     innerHTML += `<td><img src="${isEmeralded ? 'https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png' : 'https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png'}"></td>`
