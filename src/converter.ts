@@ -15,7 +15,7 @@ const info = {
 
 const authorPlaceholder = 'ZwlxWhO3srVHUb0nvmCyA09CuuzJwGLlWxm4rgiTlzV2jFiTANdbt5WF5cn0Fb1oKgeeeCG3IZuc4jAIkbNczYf7FB3UbwB6NdCxLzyZbfLC5McRV0r4fZGdALwlDmT7F2SbBdXG1eQjBqSFxrwLv0lLl6pm0TBYRhzrPCtNnSPrUWjlcaVqb4iP3FK82hkBhSlYezAbTtuSNzNNLrLDcIVi2xd8WGwRc2AffU96v7QQgYAE91AsLq7FNMoCCZEY'
 
-export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', articleType: 'CULTURE' | 'INSIDER' | 'NEWS') {
+export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', articleType: string) {
     info.url = articleUrl
     info.title = html.title.split(' | ').slice(0, -1).join(' | ')
     info.translator = translator
@@ -32,7 +32,7 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
  * Get the hero image (head image) of an article as the form of a BBCode string.
  * @param html An HTML Document.
  */
-export function getHeroImage(html: Document, articleType: 'CULTURE' | 'INSIDER' | 'NEWS') {
+export function getHeroImage(html: Document, articleType: string) {
     const category = `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {

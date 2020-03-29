@@ -88,11 +88,6 @@ let cert: Buffer | undefined;
     }
 })()
 
-/**
- * All notifications that still aren't read by clients.
- */
-const notifications: { type: string; value: Content }[] = []
-
 const versions: ManifestVersion[] = []
 
 setInterval(main, interval)
@@ -125,7 +120,6 @@ async function main() {
                 console.log(msg)
                 console.log(lastResultsJson)
                 announce(key, content, true)
-                notifications.push({ type: key, value: content })
                 fs.writeFileSync(cachePath, lastResultsJson, { encoding: 'utf8' })
             }
         }
@@ -199,26 +193,10 @@ wsServer.on('request', request => {
                             vipIps.push(connection.remoteAddress)
                             connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: 'owner', text: '' } }))
                             console.log(`Verified owner: ${connection.remoteAddress}.`)
-                            if (notifications.length > 0) {
-                                if (notifications.length > 20) {
-                                    notifications.splice(0, notifications.length - 20)
-                                }
-                                for (const i of notifications) {
-                                    connection.sendUTF(JSON.stringify(i))
-                                }
-                            }
                         } else if (vipPassword === pwd) {
                             vipIps.push(connection.remoteAddress)
                             connection.sendUTF(JSON.stringify({ type: 'verify', value: { id: 'vip', text: '' } }))
                             console.log(`Verified VIP: ${connection.remoteAddress}.`)
-                            if (notifications.length > 0) {
-                                if (notifications.length > 20) {
-                                    notifications.splice(0, notifications.length - 20)
-                                }
-                                for (const i of notifications) {
-                                    connection.sendUTF(JSON.stringify(i))
-                                }
-                            }
                         } else {
                             connection.sendUTF(JSON.stringify({ type: 'error', value: { id: '#', text: 'Wrong password.' } }))
                             connection.close()

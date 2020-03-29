@@ -8,8 +8,6 @@ A powerful tool for SPGoding's personal use.
 
 ## Features
 
-- Show notifications when new Minecraft versions are released.
-- Show notifications when new Minecraft INSIDER or NEWS articles are posted.
 - Convert Minecraft.net articles to MCBBS BBCodes.
 
 ## Special Thanks To
