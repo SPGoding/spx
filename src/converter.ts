@@ -231,7 +231,7 @@ export const converters = {
         return ans
     },
     cite: async (ele: HTMLElement) => {
-        const prefix = '\n—— '
+        const prefix = '—— '
         const suffix = ''
 
         const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
@@ -258,7 +258,7 @@ export const converters = {
             // Video.
             ans = '\n[/indent][/indent][align=center][media]含https的视频链接[/media][/align][indent][indent]\n'
         } else if (ele.classList.contains('quote') || ele.classList.contains('attributed-quote')) {
-            ans = `\n[quote]${ans}[/quote]`
+            ans = `\n[quote]\n${ans}\n[/quote]\n`
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -307,7 +307,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `[/indent][/indent]${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}[indent][indent]\n\n`
+        const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -315,7 +315,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -323,7 +323,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -331,7 +331,7 @@ export const converters = {
         const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -515,9 +515,9 @@ export function resolveUrl(url: string) {
 }
 
 function removeLastLinebreak(str: string) {
-    if (str.slice(-1) === '\n') {
-        return str.slice(0, -1)
-    }
+    // if (str.slice(-1) === '\n') {
+    //     return str.slice(0, -1)
+    // }
     return str
 }
 
