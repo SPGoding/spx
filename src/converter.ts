@@ -221,8 +221,7 @@ export const converters = {
     blockquote: async (ele: HTMLQuoteElement) => {
         const prefix = ''
         const suffix = ''
-        const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n${translateMachinely(inner)}${suffix}\n`
+        const ans = `\n${prefix}${await converters.rescure(ele)}${suffix}\n`
 
         return ans
     },
@@ -259,7 +258,7 @@ export const converters = {
             // Video.
             ans = '\n[/indent][/indent][align=center][media]含https的视频链接[/media][/align][indent][indent]\n'
         } else if (ele.classList.contains('quote') || ele.classList.contains('attributed-quote')) {
-            ans = `[quote]${ans}[/quote]`
+            ans = `\n[quote]${ans}[/quote]`
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -277,7 +276,7 @@ export const converters = {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n${await converters.rescure(ele)}\n[/indent][/indent]【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】[indent][indent]\n`
+        const ans = `${grass}\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】[indent][indent]\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -288,9 +287,9 @@ export const converters = {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             const date = ele.attributes.getNamedItem('data-value')
             if (date) {
-                ans = `[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b][indent][indent]`
+                ans = `[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b]`
             } else {
-                ans = '[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b][indent][indent]'
+                ans = '[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b]'
             }
         } else {
             // Written by:
@@ -376,10 +375,10 @@ export const converters = {
             // Attributed quote author avatar.
             ans = `[float=left]${prefix}${imgUrl}[/img][/float]`
         } else {
-            ans = `\n\n[align=center]${prefix}${imgUrl}[/img][/align]\n`
+            ans = `\n\n[/indent][/indent][align=center]${prefix}${imgUrl}[/img][/align][indent][indent]\n`
         }
 
-        return `[/indent][/indent]${ans}[indent][indent]`
+        return `${ans}`
     },
     li: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
