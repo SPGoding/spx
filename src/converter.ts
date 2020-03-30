@@ -250,10 +250,10 @@ export const converters = {
         let ans = await converters.rescure(ele)
 
         if (ele.classList.contains('text-center')) {
-            ans = `[align=center]${ans}[/align]\n`
+            ans = `[/indent][/indent][align=center]${ans}[/align][indent][indent]\n`
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
-            ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
+            ans = `[/indent][/indent][align=center][b]${ans.replace(/\n/, '')}[/b][/align][indent][indent]\n`
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[/indent][/indent][align=center][media]含https的视频链接[/media][/align][indent][indent]\n'
