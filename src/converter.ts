@@ -221,7 +221,7 @@ export const converters = {
     blockquote: async (ele: HTMLQuoteElement) => {
         const prefix = ''
         const suffix = ''
-        const ans = `\n${prefix}${await converters.rescure(ele)}${suffix}\n`
+        const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
 
         return ans
     },
@@ -307,7 +307,7 @@ export const converters = {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -315,7 +315,7 @@ export const converters = {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -323,7 +323,7 @@ export const converters = {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -331,7 +331,7 @@ export const converters = {
         const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
         const inner = await converters.rescure(ele)
-        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n`
+        const ans = `\n${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
@@ -360,6 +360,12 @@ export const converters = {
                 h = result.images[0].height
             }
 
+            if (w && h && img.classList.contains('attributed-quote__image')) {
+                const newH = Math.min(h, 92)
+                w = newH / h * w
+                h = newH
+            }
+
             prefix = w && h ? `[img=${w},${h}]` : '[img]'
         } catch (e) {
             console.error(e)
@@ -373,7 +379,7 @@ export const converters = {
         let ans: string
         if (img.classList.contains('attributed-quote__image')) {
             // Attributed quote author avatar.
-            ans = `[float=left]${prefix}${imgUrl}[/img][/float]`
+            ans = `\n[float=left]${prefix}${imgUrl}[/img][/float]`
         } else {
             ans = `\n\n[/indent][/indent][align=center]${prefix}${imgUrl}[/img][/align][indent][indent]\n`
         }
@@ -394,10 +400,10 @@ export const converters = {
     },
     p: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
-        let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n`
+        let ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n`
         }
 
         return ans
@@ -465,7 +471,6 @@ export function translateMachinely(input: string) {
         [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
-        [/\[float=left\]\[img=64,112\].*?\[\/img\]\[\/float\]/g, ''], // Attributed quote author avatar
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
         [/\[\/i\]/g, '[/font]'],
         [/,(\s|$)/g, '，'],
