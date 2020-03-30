@@ -362,7 +362,7 @@ export const converters = {
 
             if (w && h && img.classList.contains('attributed-quote__image')) {
                 const newH = Math.min(h, 92)
-                w = newH / h * w
+                w = Math.round(newH / h * w)
                 h = newH
             }
 
@@ -403,7 +403,7 @@ export const converters = {
         let ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n\n`
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n\n`
         }
 
         return ans
