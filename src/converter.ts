@@ -23,7 +23,7 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
     const heroImage = getHeroImage(html, articleType)
     const content = await getContent(html)
 
-    const ans = `${heroImage}${content}`
+    const ans = `${heroImage}${content}[/indent][/indent]`
 
     return ans
 }
@@ -36,10 +36,10 @@ export function getHeroImage(html: Document, articleType: string) {
     const category = `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
-        return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}\n`
+        return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}\n`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}[indent][indent]\n`
 
     return ans
 }
@@ -119,8 +119,8 @@ export const converters = {
             case 'B':
             case 'STRONG':
                 return converters.strong(node as HTMLElement)
-            // case 'BLOCKQUOTE':
-            // return converters.blockquote(node as HTMLQuoteElement)
+            case 'BLOCKQUOTE':
+            return converters.blockquote(node as HTMLQuoteElement)
             case 'BR':
                 return converters.br()
             case 'CITE':
@@ -129,7 +129,7 @@ export const converters = {
                 return converters.code(node as HTMLElement)
             case 'DIV':
             case 'SECTION':
-                return converters.div(node as HTMLElement)
+                return converters.div(node as HTMLDivElement)
             case 'DD':
                 return converters.dd(node as HTMLElement)
             case 'DL':
@@ -173,7 +173,6 @@ export const converters = {
                 } else {
                     return ''
                 }
-            case 'BLOCKQUOTE':
             case 'BUTTON':
             case 'H5':
             case 'NAV':
@@ -220,8 +219,8 @@ export const converters = {
         return ans
     },
     blockquote: async (ele: HTMLQuoteElement) => {
-        const prefix = '[quote]'
-        const suffix = '[/quote]'
+        const prefix = ''
+        const suffix = ''
         const inner = await converters.rescure(ele)
         const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n${translateMachinely(inner)}${suffix}\n`
 
@@ -248,7 +247,7 @@ export const converters = {
 
         return ans
     },
-    div: async (ele: HTMLElement) => {
+    div: async (ele: HTMLDivElement) => {
         let ans = await converters.rescure(ele)
 
         if (ele.classList.contains('text-center')) {
@@ -258,9 +257,9 @@ export const converters = {
             ans = `[align=center][b]${ans.replace(/\n/, '')}[/b][/align]\n`
         } else if (ele.classList.contains('video')) {
             // Video.
-            ans = '\n[align=center][media]含https的视频链接[/media][/align]\n'
+            ans = '\n[/indent][/indent][align=center][media]含https的视频链接[/media][/align][indent][indent]\n'
         } else if (ele.classList.contains('quote') || ele.classList.contains('attributed-quote')) {
-            ans = await converters.blockquote(ele as any)
+            ans = `[quote]${ans}[/quote]`
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
@@ -278,7 +277,7 @@ export const converters = {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `${grass}\n\n${await converters.rescure(ele)}\n[/indent][/indent]【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】[indent][indent]\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -289,9 +288,9 @@ export const converters = {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             const date = ele.attributes.getNamedItem('data-value')
             if (date) {
-                ans = `[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b]`
+                ans = `[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b][indent][indent]`
             } else {
-                ans = '[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b]'
+                ans = '[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b][indent][indent]'
             }
         } else {
             // Written by:
@@ -380,7 +379,7 @@ export const converters = {
             ans = `\n\n[align=center]${prefix}${imgUrl}[/img][/align]\n`
         }
 
-        return `${ans}`
+        return `[/indent][/indent]${ans}[indent][indent]`
     },
     li: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
@@ -396,7 +395,7 @@ export const converters = {
     },
     p: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
-        let ans = `\n[indent][indent][size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}[/indent][/indent]\n`
+        let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
