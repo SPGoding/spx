@@ -304,8 +304,8 @@ export const converters = {
         return ans
     },
     h1: async (ele: HTMLElement) => {
-        const prefix = '[size=6][b]'
-        const suffix = '[/b][/size]'
+        const prefix = '[/indent][/indent]size=6][b]'
+        const suffix = '[/b][/size][indent][indent]'
         const inner = await converters.rescure(ele)
         const ans = `${prefix}[color=Silver]${inner}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
