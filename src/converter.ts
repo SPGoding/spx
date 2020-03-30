@@ -23,7 +23,7 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
     const heroImage = getHeroImage(html, articleType)
     const content = await getContent(html)
 
-    const ans = `${heroImage}${content}[/indent][/indent]`
+    const ans = `${heroImage}${content}`
 
     return ans
 }
@@ -36,10 +36,10 @@ export function getHeroImage(html: Document, articleType: string) {
     const category = `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
-        return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
+        return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}[indent][indent]\n`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}\n`
 
     return ans
 }
@@ -278,7 +278,7 @@ export const converters = {
         const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n${await converters.rescure(ele)}\n[/indent][/indent]【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】[indent][indent]\n`
+        const ans = `${grass}\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -289,9 +289,9 @@ export const converters = {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             const date = ele.attributes.getNamedItem('data-value')
             if (date) {
-                ans = `[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b][indent][indent]`
+                ans = `[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b]`
             } else {
-                ans = '[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b][indent][indent]'
+                ans = '[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b]'
             }
         } else {
             // Written by:
@@ -380,7 +380,7 @@ export const converters = {
             ans = `\n\n[align=center]${prefix}${imgUrl}[/img][/align]\n`
         }
 
-        return `[/indent][/indent]${ans}[indent][indent]`
+        return `${ans}`
     },
     li: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
@@ -396,7 +396,7 @@ export const converters = {
     },
     p: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
-        let ans = `\n[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n`
+        let ans = `\n[indent][indent][size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}[/indent][/indent]\n`
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]`
