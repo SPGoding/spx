@@ -39,7 +39,7 @@ export function getHeroImage(html: Document, articleType: string) {
         return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
     }
     const src = img.src
-    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n\n${category}[indent][indent]\n`
+    const ans = `[postbg]bg3.png[/postbg][align=center][img=1200,513]${resolveUrl(src)}[/img]\n${category}[indent][indent]\n`
 
     return ans
 }
@@ -256,7 +256,7 @@ export const converters = {
             ans = `[/indent][/indent][align=center][b]${ans.replace(/\n/, '')}[/b][/align][indent][indent]\n`
         } else if (ele.classList.contains('video')) {
             // Video.
-            ans = '\n[/indent][/indent][align=center][media]含https的视频链接[/media][/align][indent][indent]\n'
+            ans = '\n[/indent][/indent][align=center]【请将此处替换为含https的视频链接[media]XXX[/media]】[/align][indent][indent]\n'
         } else if (ele.classList.contains('quote') || ele.classList.contains('attributed-quote')) {
             ans = `\n[quote]\n${ans}\n[/quote]\n`
         } else if (ele.classList.contains('article-social')) {
@@ -401,7 +401,7 @@ export const converters = {
         const inner = await converters.rescure(ele)
 
         let endding
-        if (ele.classList.contains('what-block')) {
+        if (ele.classList.contains('what-block') || (ele.parentElement && ele.parentElement.classList.contains('end-with-block'))) {
             endding = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         } else {
             endding = '\n\n'
