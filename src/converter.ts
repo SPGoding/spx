@@ -262,9 +262,10 @@ export const converters = {
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
-        } else if (ele.classList.contains('end-with-block')) {
-            ans = ans.trimRight() + '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         }
+        //  else if (ele.classList.contains('end-with-block')) {
+        //     ans = ans.trimRight() + '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
+        // }
 
         return ans
     },
