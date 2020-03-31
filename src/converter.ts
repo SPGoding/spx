@@ -262,6 +262,8 @@ export const converters = {
         } else if (ele.classList.contains('article-social')) {
             // End of the content.
             ans = ''
+        } else if (ele.classList.contains('end-with-block')) {
+            ans = ans.trimRight() + '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         }
 
         return ans
@@ -400,19 +402,12 @@ export const converters = {
     p: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
 
-        let endding
-        if (ele.classList.contains('what-block') || (ele.parentElement && ele.parentElement.classList.contains('end-with-block'))) {
-            endding = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
-        } else {
-            endding = '\n\n'
-        }
-
         let ans
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n\n`
         } else {
-            ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}${endding}`
+            ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n\n`
         }
 
         return ans
