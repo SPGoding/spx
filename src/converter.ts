@@ -120,7 +120,7 @@ export const converters = {
             case 'STRONG':
                 return converters.strong(node as HTMLElement)
             case 'BLOCKQUOTE':
-            return converters.blockquote(node as HTMLQuoteElement)
+                return converters.blockquote(node as HTMLQuoteElement)
             case 'BR':
                 return converters.br()
             case 'CITE':
@@ -273,10 +273,9 @@ export const converters = {
         return ''
     },
     dl: async (ele: HTMLElement) => {
-        const grass = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `${grass}\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】[indent][indent]\n`
+        const ans = `\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -287,9 +286,9 @@ export const converters = {
             // `pubDate` is like '2019-03-08T10:00:00.876+0000'.
             const date = ele.attributes.getNamedItem('data-value')
             if (date) {
-                ans = `[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b]`
+                ans = `[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 ${date.value.slice(0, 4)} 年 ${date.value.slice(5, 7)} 月 ${date.value.slice(8, 10)} 日发布的 ${info.title}[/u][/color][/url]；原作者 ${info.author}】[/b]`
             } else {
-                ans = '[/indent][/indent][b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b]'
+                ans = '[b]【${info.translator} 译自[url=${info.url}][color=#388d40][u]官网 哪 年 哪 月 哪 日发布的 ${info.title}[/u][/color][/url]】[/b]'
             }
         } else {
             // Written by:
@@ -400,10 +399,20 @@ export const converters = {
     },
     p: async (ele: HTMLElement) => {
         const inner = await converters.rescure(ele)
-        let ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n\n`
+
+        let endding
+        if (ele.classList.contains('what-block')) {
+            endding = '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
+        } else {
+            endding = '\n\n'
+        }
+
+        let ans
 
         if (ele.classList.contains('lead')) {
             ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n\n`
+        } else {
+            ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}${endding}`
         }
 
         return ans
@@ -461,6 +470,7 @@ export const converters = {
 export function translateMachinely(input: string) {
     const mappings: [RegExp, string][] = [
         [/Taking Inventory: /gi, '背包盘点：'],
+        [/Minecraft Snapshot /gi, 'Minecraft 快照 '],
         [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
         [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
         [/Image credit:/gi, '图片来源：'],
@@ -471,27 +481,29 @@ export function translateMachinely(input: string) {
         [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
+        [/“/g, '[font=楷体,楷体_GB2312]“[/font]'],
+        [/”/g, '[font=楷体,楷体_GB2312]”[/font]'],
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
         [/\[\/i\]/g, '[/font]'],
-        [/,(\s|$)/g, '，'],
-        [/!(\s|$)/g, '！'],
-        [/\.\.\.(\s|$)/g, '…'],
-        [/\.(\s|$)/g, '。'],
-        [/\?(\s|$)/g, '？'],
-        [/ \- /g, ' —— ']
-    ]
-
-    const quoteArrays = [
-        ['[font=楷体, 楷体_GB2312]“[/font]', '[font=楷体, 楷体_GB2312]”[/font]', '"']
-        // ['『', '』', "'"]
+        [/,( |$)/g, '，'],
+        [/!( |$)/g, '！'],
+        [/\.\.\.( |$)/g, '…'],
+        [/\.( |$)/g, '。'],
+        [/\?( |$)/g, '？'],
+        [/( |^)\-( |$)/g, ' —— ']
     ]
 
     for (const mapping of mappings) {
         input = input.replace(mapping[0], mapping[1])
     }
 
+    const quoteArrays: [string, string, RegExp][] = [
+        ['[font=楷体,楷体_GB2312]“[/font]', '[font=楷体,楷体_GB2312]”[/font]', /"/]
+        // ['『', '』', "'"]
+    ]
+
     for (const quoteArray of quoteArrays) {
-        const splited = input.split(new RegExp(quoteArray[2], 'g'))
+        const splited = input.split(quoteArray[2])
         input = ''
         for (let i = 0; i < splited.length - 1; i++) {
             const element = splited[i]
