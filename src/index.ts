@@ -3,15 +3,7 @@ import * as fs from 'fs-extra'
 import * as https from 'https'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
-import {
-    getRandomInt,
-    getBeginning,
-    getEnding,
-    StringStringArrayMap,
-    getArticleType,
-    ManifestVersion,
-    getVersionType
-} from './util'
+import { getRandomInt, getBeginning, getEnding, StringStringArrayMap, getArticleType, ManifestVersion, getVersionType } from './util'
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 import { JSDOM } from 'jsdom'
@@ -44,12 +36,13 @@ const cachePath = path.join(__dirname, './cache.json')
 const bugsPath = path.join(__dirname, './bugs.json')
 export const bugs: { [id: string]: string } = {}
 let httpPort: number | undefined
+let wsPort: number | undefined
 let ip: string | undefined
 let ownerPassword: string | undefined
 let vipPassword: string | undefined
 let interval: number | undefined
 let key: Buffer | undefined
-let cert: Buffer | undefined;
+let cert: Buffer | undefined
 
 (function loadConfiguration() {
 
@@ -57,13 +50,14 @@ let cert: Buffer | undefined;
         const config = fs.readJsonSync(configPath)
         ip = config.ip
         httpPort = config.httpPort
+        wsPort = config.wsPort
         interval = config.interval
         ownerPassword = config.ownerPassword
         vipPassword = config.vipPassword
         key = fs.readFileSync(config.keyFile)
         cert = fs.readFileSync(config.certFile)
-        if (!ip || !httpPort || !interval || !key || !cert || !ownerPassword || !vipPassword) {
-            throw ("Expected 'httpPort', 'interval', 'ip', 'keyFile', 'certFile', 'ownerPassword', and 'vipPassword' in './config.json'.")
+        if (!ip || !httpPort || !wsPort || !interval || !key || !cert || !ownerPassword || !vipPassword) {
+            throw ("Expected 'ip', 'httpPort', 'wsPort, 'interval', 'keyFile', 'certFile', 'ownerPassword', and 'vipPassword' in './config.json'.")
         }
     } else {
         ip = 'localhost'
@@ -133,7 +127,6 @@ async function main() {
 const connections: connection[] = []
 const ownerIps: string[] = []
 const vipIps: string[] = []
-const wsPort = getRandomInt(49152, 65535)
 
 let html: string
 
