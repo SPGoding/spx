@@ -86,17 +86,7 @@ export async function getContent(html: Document) {
     // Replace the author placeholder.
     if (!serverUrl) {
         try {
-            const nameSegs = info.author.split(' ')
-            // Special thanks to bimuyu.
-            const apiUri = `https://www.bimuyu.com/name-translator/api/search_multiple?query=${JSON.stringify(nameSegs)}`
-            const result: { id: number, name: string, translation: string }[] = JSON.parse(await rp(apiUri))
-            for (const { name, translation } of result) {
-                const index = nameSegs.indexOf(name)
-                if (index !== -1) {
-                    nameSegs[index] = translation
-                }
-            }
-            const authorName = `${info.author} ${nameSegs.join('·')}`
+            const authorName = info.author
             ans = ans.replace(authorPlaceholder, authorName)
         } catch (err) {
             console.error(err)

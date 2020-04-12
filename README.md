@@ -12,5 +12,4 @@ A powerful tool for SPGoding's personal use.
 
 ## Special Thanks To
 
-- [Bimuyu](https://www.bimuyu.com/name-translator) - provides an awesome API to translate English names to Chinese names.
 - [RicoloveFeng](https://github.com/RicoloveFeng) - maintains [minecraft.net-translations](https://github.com/RicoloveFeng/minecraft.net-translations/blob/master/rawtable.csv).
