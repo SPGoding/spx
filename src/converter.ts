@@ -13,8 +13,6 @@ const info = {
     author: ''
 }
 
-const authorPlaceholder = 'ZwlxWhO3srVHUb0nvmCyA09CuuzJwGLlWxm4rgiTlzV2jFiTANdbt5WF5cn0Fb1oKgeeeCG3IZuc4jAIkbNczYf7FB3UbwB6NdCxLzyZbfLC5McRV0r4fZGdALwlDmT7F2SbBdXG1eQjBqSFxrwLv0lLl6pm0TBYRhzrPCtNnSPrUWjlcaVqb4iP3FK82hkBhSlYezAbTtuSNzNNLrLDcIVi2xd8WGwRc2AffU96v7QQgYAE91AsLq7FNMoCCZEY'
-
 export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', articleType: string) {
     info.url = articleUrl
     info.title = html.title.split(' | ').slice(0, -1).join(' | ')
@@ -82,18 +80,6 @@ export async function getContent(html: Document) {
 [tr][td][align=center][url=${serverUrl}]Minecraft server.jar[/url][/align][/td][/tr]
 [/table][/align]`
     }
-
-    // Replace the author placeholder.
-    if (!serverUrl) {
-        try {
-            const authorName = info.author
-            ans = ans.replace(authorPlaceholder, authorName)
-        } catch (err) {
-            console.error(err)
-        }
-    }
-
-    ans = ans.replace(authorPlaceholder, '')
 
     return ans
 }
@@ -396,7 +382,7 @@ export const converters = {
         let ans
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n[size=3][color=DimGray]${authorPlaceholder}[/color][/size]\n\n`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n`
         } else {
             ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n\n`
         }

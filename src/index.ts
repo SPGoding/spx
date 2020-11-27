@@ -1,9 +1,9 @@
 import * as constants from 'constants'
 import * as fs from 'fs-extra'
-import * as https from 'https'
+import * as http from 'http'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
-import { getRandomInt, getBeginning, getEnding, StringStringArrayMap, getArticleType, ManifestVersion, getVersionType } from './util'
+import { getBeginning, getEnding, StringStringArrayMap, getArticleType, ManifestVersion, getVersionType } from './util'
 import { convertMCAriticleToBBCode } from './converter'
 import { server as WSServer, connection } from 'websocket'
 import { JSDOM } from 'jsdom'
@@ -41,8 +41,8 @@ let ip: string | undefined
 let ownerPassword: string | undefined
 let vipPassword: string | undefined
 let interval: number | undefined
-let key: Buffer | undefined
-let cert: Buffer | undefined
+// let key: Buffer | undefined
+// let cert: Buffer | undefined
 
 (function loadConfiguration() {
 
@@ -54,10 +54,11 @@ let cert: Buffer | undefined
         interval = config.interval
         ownerPassword = config.ownerPassword
         vipPassword = config.vipPassword
-        key = fs.readFileSync(config.keyFile)
-        cert = fs.readFileSync(config.certFile)
-        if (!ip || !httpPort || !wsPort || !interval || !key || !cert || !ownerPassword || !vipPassword) {
-            throw ("Expected 'ip', 'httpPort', 'wsPort, 'interval', 'keyFile', 'certFile', 'ownerPassword', and 'vipPassword' in './config.json'.")
+        // key = fs.readFileSync(config.keyFile)
+        // cert = fs.readFileSync(config.certFile)
+        if (!ip || !httpPort || !wsPort || !interval || /* !key || !cert || */ !ownerPassword || !vipPassword) {
+            // throw ("Expected 'ip', 'httpPort', 'wsPort, 'interval', 'keyFile', 'certFile', 'ownerPassword', and 'vipPassword' in './config.json'.")
+            throw ("Expected 'ip', 'httpPort', 'wsPort, 'interval', 'ownerPassword', and 'vipPassword' in './config.json'.")
         }
     } else {
         ip = 'localhost'
@@ -130,11 +131,8 @@ const vipIps: string[] = []
 
 let html: string
 
-const httpsServer = https
-    .createServer({
-        key, cert,
-        secureOptions: constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1
-    }, async (req, res) => {
+const httpServer = http
+    .createServer(async (req, res) => {
         try {
             req.on('error', e => {
                 console.error(e.message)
@@ -152,12 +150,14 @@ const httpsServer = https
     })
     .listen(httpPort)
 console.log(`HTTPS server is running at ${ip}:${httpPort}`)
-httpsServer.on('error', e => {
+httpServer.on('error', e => {
     console.error(e.message)
 })
 
 const wsServer = new WSServer({
-    httpServer: https.createServer({ key, cert }).listen(wsPort)
+    httpServer: http
+        .createServer()
+        .listen(wsPort)
 })
 console.log(`WebSocket server is running at ${ip}:${wsPort}`)
 wsServer.on('request', request => {
