@@ -1,13 +1,12 @@
-import * as constants from 'constants'
 import * as fs from 'fs-extra'
 import * as http from 'http'
+import { JSDOM } from 'jsdom'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
-import { getBeginning, getEnding, StringStringArrayMap, getArticleType, ManifestVersion, getVersionType } from './util'
+import { connection, server as WSServer } from 'websocket'
+import { Content, ContentProvider, JsonContentProvider } from './content-provider'
 import { convertMCAriticleToBBCode } from './converter'
-import { server as WSServer, connection } from 'websocket'
-import { JSDOM } from 'jsdom'
-import { ContentProvider, JsonContentProvider, McbbsContentProvider, Content } from './content-provider'
+import { getArticleType, getBeginning, getEnding, getVersionType, ManifestVersion, StringStringArrayMap } from './util'
 
 //#region Detection
 const lastResults: StringStringArrayMap = {}
@@ -142,7 +141,7 @@ const httpServer = http
             })
             res.setHeader('Content-Type', "text/html;charset='utf-8'")
             // html = (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
-            html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
+            html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `ws.${ip}`)
             res.end(html)
         } catch (e) {
             console.error(e)
