@@ -141,7 +141,7 @@ const httpServer = http
             })
             res.setHeader('Content-Type', "text/html;charset='utf-8'")
             // html = (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}:${wsPort}`)
-            html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}/ws`)
+            html = html || (await fs.readFile(path.join(__dirname, '../index.html'), { encoding: 'utf8' })).replace(/%replace_as_ws_url%/g, `${ip}/ws/`)
             res.end(html)
         } catch (e) {
             console.error(e)
@@ -158,7 +158,7 @@ const wsServer = new WSServer({
         .createServer()
         .listen(wsPort)
 })
-console.log(`WebSocket server is running at ${ip}/ws (locally listening ${wsPort})`)
+console.log(`WebSocket server is running at ${ip}/ws/ (locally listening ${wsPort})`)
 wsServer.on('request', request => {
     const connection = request.accept()
 
