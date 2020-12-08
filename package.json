@@ -16,30 +16,30 @@
     "homepage": "https://github.com/SPGoding/spx#readme",
     "scripts": {
         "build": "tsc -b",
-        "test": "mocha --opts ./mocha.opts",
+        "test": "mocha",
         "watch": "tsc -b -w",
         "start": "node ./out/index.js"
     },
     "devDependencies": {
-        "@types/fs-extra": "^8.0.0",
+        "@types/fs-extra": "^9.0.4",
         "@types/image-size": "^0.8.0",
         "@types/jsdom": "^16.0.0",
-        "@types/mocha": "^7.0.0",
+        "@types/mocha": "^8.2.0",
         "@types/node": "^14.0.0",
         "@types/power-assert": "^1.5.0",
         "@types/request": "^2.48.1",
         "@types/request-promise-native": "^1.0.16",
         "@types/websocket": "1.0.1",
-        "ts-node": "^8.2.0",
+        "ts-node": "^9.1.1",
         "tslint": "^6.0.0",
-        "typescript": "^3.5.2"
+        "typescript": "^4.1.2"
     },
     "dependencies": {
         "clipboard": "^2.0.4",
-        "fs-extra": "^8.0.0",
-        "image-size": "^0.8.3",
+        "fs-extra": "^9.0.1",
+        "image-size": "^0.9.3",
         "jsdom": "^16.0.0",
-        "mocha": "^8.0.0",
+        "mocha": "^8.2.1",
         "power-assert": "^1.6.1",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.7",

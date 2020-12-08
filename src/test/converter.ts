@@ -2,7 +2,7 @@ import * as assert from 'power-assert'
 import * as fs from 'fs'
 import * as path from 'path'
 import { describe, it } from 'mocha'
-import { getHeroImage, resolveUrl, converters, convertMCAriticleToBBCode, replaceHalfToFull } from '../converter'
+import { getHeroImage, resolveUrl, converters, convertMCAriticleToBBCode, translateMachinely } from '../converter'
 import { JSDOM } from 'jsdom'
 
 const testSrc = fs.readFileSync(path.join(__dirname, './data/article.html'), { encoding: 'utf8' })
@@ -47,7 +47,7 @@ describe('converter Tests', () => {
         })
         it('Should convert "text-center" <div>', () => {
             const ele = new JSDOM('<div class="text-center" id="test">foo</div>').window
-                .document.getElementById('test') as HTMLElement
+                .document.getElementById('test') as HTMLDivElement
 
             const result = converters.div(ele)
 
@@ -175,9 +175,9 @@ describe('converter Tests', () => {
             )
         })
     })
-    describe.only('replaceHalfToFull() Tests', () => {
+    describe.only('translateMachinely() Tests', () => {
         it('Should replace all', () => {
-            const result = replaceHalfToFull('interesting, haha, haha!')
+            const result = translateMachinely('interesting, haha, haha!')
 
             assert.strictEqual(
                 result,
@@ -185,7 +185,7 @@ describe('converter Tests', () => {
             )
         })
         it('Should replace quotes', () => {
-            const result = replaceHalfToFull(`"'haha'"`)
+            const result = translateMachinely(`"'haha'"`)
 
             assert.strictEqual(
                 result,
@@ -194,8 +194,8 @@ describe('converter Tests', () => {
         })
     })
     describe.skip('convertMCAriticleToBBCode() Tests', () => {
-        it('Should return whole BBCode', () => {
-            const result = convertMCAriticleToBBCode(testHtml, '')
+        it('Should return whole BBCode', async () => {
+            const result = await convertMCAriticleToBBCode(testHtml, '', '', '')
 
             fs.writeFileSync(path.join(__dirname, './data/output.txt'), result)
 

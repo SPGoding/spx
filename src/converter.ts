@@ -30,8 +30,8 @@ export async function convertMCAriticleToBBCode(html: Document, articleUrl: stri
  * Get the hero image (head image) of an article as the form of a BBCode string.
  * @param html An HTML Document.
  */
-export function getHeroImage(html: Document, articleType: string) {
-    const category = `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]`
+export function getHeroImage(html: Document, articleType: string = '') {
+    const category = articleType ? `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]` : ''
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
         return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
