@@ -254,7 +254,7 @@ export const converters = {
     dl: async (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
