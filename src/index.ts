@@ -1,3 +1,4 @@
+import { Client, Intents } from 'discord.js'
 import * as fs from 'fs-extra'
 import * as http from 'http'
 import { JSDOM } from 'jsdom'
@@ -6,6 +7,7 @@ import * as rp from 'request-promise-native'
 import { connection, server as WSServer } from 'websocket'
 import { Content, ContentProvider, JsonContentProvider } from './content-provider'
 import { convertMCAriticleToBBCode } from './converter'
+import { DiscordConfig, onMessage } from './discord-bot'
 import { getArticleType, getBeginning, getEnding, getVersionType, ManifestVersion, StringStringArrayMap } from './util'
 
 //#region Detection
@@ -32,7 +34,8 @@ const providers: { [key: string]: ContentProvider } = {
 
 const configPath = path.join(__dirname, './config.json')
 const cachePath = path.join(__dirname, './cache.json')
-const bugsPath = path.join(__dirname, './bugs.json')
+export const logPath = path.join(__dirname, './log.txt')
+export const bugsPath = path.join(__dirname, './bugs.json')
 export const bugs: { [id: string]: string } = {}
 let httpPort: number | undefined
 let wsPort: number | undefined
@@ -40,8 +43,9 @@ let ip: string | undefined
 let ownerPassword: string | undefined
 let vipPassword: string | undefined
 let interval: number | undefined
-// let key: Buffer | undefined
-// let cert: Buffer | undefined
+
+let discordClient: Client | undefined
+let discord: DiscordConfig | undefined
 
 (function loadConfiguration() {
 
@@ -53,10 +57,8 @@ let interval: number | undefined
         interval = config.interval
         ownerPassword = config.ownerPassword
         vipPassword = config.vipPassword
-        // key = fs.readFileSync(config.keyFile)
-        // cert = fs.readFileSync(config.certFile)
-        if (!ip || !httpPort || !wsPort || !interval || /* !key || !cert || */ !ownerPassword || !vipPassword) {
-            // throw ("Expected 'ip', 'httpPort', 'wsPort, 'interval', 'keyFile', 'certFile', 'ownerPassword', and 'vipPassword' in './config.json'.")
+        discord = config.discord
+        if (!ip || !httpPort || !wsPort || !interval || !ownerPassword || !vipPassword) {
             throw ("Expected 'ip', 'httpPort', 'wsPort, 'interval', 'ownerPassword', and 'vipPassword' in './config.json'.")
         }
     } else {
@@ -79,6 +81,25 @@ let interval: number | undefined
         for (const key in result) {
             bugs[key] = result[key]
         }
+    }
+})();
+
+(async function launchDiscordBot() {
+    try {
+        if (discord) {
+            discordClient = new Client({
+                partials: ['MESSAGE', 'USER'],
+                ws: {
+                    intents: Intents.NON_PRIVILEGED
+                }
+            })
+            await discordClient.login(discord.token)
+            discordClient.on('message', onMessage.bind(undefined, discord))
+            console.log('Discord bot launched.')
+        }
+    } catch (e) {
+        console.error(e)
+        process.exit(1)
     }
 })()
 

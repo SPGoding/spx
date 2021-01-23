@@ -30,12 +30,14 @@
         "@types/request": "^2.48.1",
         "@types/request-promise-native": "^1.0.16",
         "@types/websocket": "1.0.1",
+        "@types/ws": "^7.4.0",
         "ts-node": "^9.1.1",
         "tslint": "^6.0.0",
         "typescript": "^4.1.2"
     },
     "dependencies": {
         "clipboard": "^2.0.4",
+        "discord.js": "^12.5.1",
         "fs-extra": "^9.0.1",
         "image-size": "^0.9.3",
         "jsdom": "^16.0.0",
