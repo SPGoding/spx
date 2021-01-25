@@ -19,10 +19,11 @@ export async function onMessage(config: DiscordConfig, message: Message) {
 		const member = await ensureMember(message.member)
 		if (member.roles.cache.has(config.role)) {
 			const content = message.content.trim()
-			if (content.match(/MC-\d+ .*/i)) {
-				const arr = content.split(' ')
-				const id = arr[0]
-				const desc = arr.slice(1).join(' ')
+			const regex = /^\[?(MC-\d+)]?\s*(.*)$/i
+			const matchArr = content.match(regex)
+			if (matchArr) {
+				const id = matchArr[1]
+				const desc = matchArr[2]
 				bugs[id] = desc
 				fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
 				fs.appendFileSync(logPath, `${id}\t${desc}\t${member.user.tag}\t${new Date().toUTCString()}\n`, { encoding: 'utf8' })
