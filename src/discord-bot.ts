@@ -28,8 +28,6 @@ export async function onMessage(config: DiscordConfig, message: Message) {
 				fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
 				fs.appendFileSync(logPath, `${id}\t${desc}\t${member.user.tag}\t${new Date().toUTCString()}\n`, { encoding: 'utf8' })
 				await message.react('✅')
-			} else if (!content.startsWith('//') && !content.startsWith('#') && !content.startsWith(':') && !content.startsWith('<!--')) {
-				await message.react('❌')
 			}
 		}
 
