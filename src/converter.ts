@@ -137,6 +137,7 @@ export const converters = {
                 return converters.table(node as HTMLElement)
             case 'TBODY':
                 return converters.tbody(node as HTMLElement)
+            case 'TH':
             case 'TD':
                 return converters.td(node as HTMLElement)
             case 'TR':
