@@ -1,3 +1,4 @@
 **/node_modules/
 **/out/
+**/*.tsbuildinfo
 src/test/data/output.txt
