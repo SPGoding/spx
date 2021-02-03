@@ -1,4 +1,3 @@
-import * as rp from 'request-promise-native'
 import { bugs } from '.'
 import { getImageDimensions } from './util'
 
@@ -48,7 +47,7 @@ export function getHeroImage(html: Document, articleType: string = '') {
  */
 export async function getContent(html: Document) {
     const rootDiv = html.getElementsByClassName('article-body')[0] as HTMLElement
-    let ans = await converters.rescure(rootDiv)
+    let ans = await converters.recurse(rootDiv)
 
     // Get the server URL if it exists.
     const serverUrls = ans.match(/(https:\/\/launcher.mojang.com\/.+\/server.jar)/)
@@ -134,6 +133,8 @@ export const converters = {
                 return converters.p(node as HTMLElement)
             case 'SPAN':
                 return converters.span(node as HTMLElement)
+            case 'TABLE':
+                return converters.table(node as HTMLElement)
             case 'TBODY':
                 return converters.tbody(node as HTMLElement)
             case 'TD':
@@ -172,7 +173,7 @@ export const converters = {
     /**
      * Convert child nodes of an HTMLElement to a BBCode string.
      */
-    rescure: async (ele: HTMLElement) => {
+    recurse: async (ele: HTMLElement) => {
         let ans = ''
 
         for (const child of Array.from(ele.childNodes)) {
@@ -187,9 +188,9 @@ export const converters = {
         const url = resolveUrl(anchor.href)
         let ans
         if (url) {
-            ans = `[url=${url}][color=#388d40]${await converters.rescure(anchor)}[/color][/url]`
+            ans = `[url=${url}][color=#388d40]${await converters.recurse(anchor)}[/color][/url]`
         } else {
-            ans = await converters.rescure(anchor)
+            ans = await converters.recurse(anchor)
         }
 
         return ans
@@ -197,7 +198,7 @@ export const converters = {
     blockquote: async (ele: HTMLQuoteElement) => {
         const prefix = ''
         const suffix = ''
-        const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
+        const ans = `${prefix}${await converters.recurse(ele)}${suffix}`
 
         return ans
     },
@@ -210,7 +211,7 @@ export const converters = {
         const prefix = '—— '
         const suffix = ''
 
-        const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
+        const ans = `${prefix}${await converters.recurse(ele)}${suffix}`
 
         return ans
     },
@@ -218,12 +219,12 @@ export const converters = {
         const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
         const suffix = '[/font][/backcolor]'
 
-        const ans = `${prefix}${await converters.rescure(ele)}${suffix}`
+        const ans = `${prefix}${await converters.recurse(ele)}${suffix}`
 
         return ans
     },
     div: async (ele: HTMLDivElement) => {
-        let ans = await converters.rescure(ele)
+        let ans = await converters.recurse(ele)
 
         if (ele.classList.contains('text-center')) {
             ans = `[/indent][/indent][align=center]${ans}[/align][indent][indent]\n`
@@ -254,7 +255,7 @@ export const converters = {
     dl: async (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n\n${await converters.rescure(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `\n\n${await converters.recurse(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -271,20 +272,20 @@ export const converters = {
             }
         } else {
             // Written by:
-            info.author = await converters.rescure(ele)
+            info.author = await converters.recurse(ele)
         }
 
         return ans
     },
     em: async (ele: HTMLElement) => {
-        const ans = `[i]${await converters.rescure(ele)}[/i]`
+        const ans = `[i]${await converters.recurse(ele)}[/i]`
 
         return ans
     },
     h1: async (ele: HTMLElement) => {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
@@ -292,7 +293,7 @@ export const converters = {
     h2: async (ele: HTMLElement) => {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
@@ -300,7 +301,7 @@ export const converters = {
     h3: async (ele: HTMLElement) => {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
@@ -308,13 +309,13 @@ export const converters = {
     h4: async (ele: HTMLElement) => {
         const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
 
         return ans
     },
     i: async (ele: HTMLElement) => {
-        const ans = `[i]${await converters.rescure(ele)}[/i]`
+        const ans = `[i]${await converters.recurse(ele)}[/i]`
 
         return ans
     },
@@ -365,19 +366,19 @@ export const converters = {
         return `${ans}`
     },
     li: async (ele: HTMLElement) => {
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner))}\n`
 
         return ans
     },
     ol: async (ele: HTMLElement) => {
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `\n[list=1]\n${inner}[/list]\n`
 
         return ans
     },
     p: async (ele: HTMLElement) => {
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
 
         let ans
 
@@ -390,7 +391,7 @@ export const converters = {
         return ans
     },
     span: async (ele: HTMLElement) => {
-        const ans = await converters.rescure(ele)
+        const ans = await converters.recurse(ele)
 
         if (ele.classList.contains('bedrock-server')) {
             // Is inline code.
@@ -407,29 +408,32 @@ export const converters = {
         return ans
     },
     strong: async (ele: HTMLElement) => {
-        const ans = `[b]${await converters.rescure(ele)}[/b]`
+        const ans = `[b]${await converters.recurse(ele)}[/b]`
+
+        return ans
+    },
+    table: async (ele: HTMLElement) => {
+        const ans = `\n[table]\n${await converters.recurse(ele)}[/table]\n`
 
         return ans
     },
     tbody: async (ele: HTMLElement) => {
-        // The `NodeName` of `HTMLTableElement` and `HTMLTableSectionElement` are all 'TBODY'.
-        // So I use `ele.childNodes[0]` to skip `HTMLTableSectionElement`.
-        const ans = `\n[table]\n${await converters.rescure(ele.childNodes[0] as HTMLElement)}[/table]\n`
+        const ans = await converters.recurse(ele)
 
         return ans
     },
     td: async (ele: HTMLElement) => {
-        const ans = `[td]${await converters.rescure(ele)}[/td]`
+        const ans = `[td]${await converters.recurse(ele)}[/td]`
 
         return ans
     },
     tr: async (ele: HTMLElement) => {
-        const ans = `[tr]${await converters.rescure(ele)}[/tr]\n`
+        const ans = `[tr]${await converters.recurse(ele)}[/tr]\n`
 
         return ans
     },
     ul: async (ele: HTMLElement) => {
-        const inner = await converters.rescure(ele)
+        const inner = await converters.recurse(ele)
         const ans = `\n[list]\n${inner}[/list]\n`
 
         return ans

@@ -68,8 +68,12 @@ export function getImageDimensions(imgUrl: string) {
                     chunks.push(chunk)
                 })
                 .on('end', () => {
-                    const buffer = Buffer.concat(chunks)
-                    resolve(imageSize(buffer))
+                    try {
+                        const buffer = Buffer.concat(chunks)
+                        resolve(imageSize(buffer))
+                    } catch (e) {
+                        console.log('#getImageDimensions', e)
+                    }
                 })
                 .on('error', e => {
                     reject(e)
