@@ -516,7 +516,7 @@ function translateBugs(str: string) {
         const summary = BugCache.getSummary(id)
         const color = BugCache.getColor(id)
         if (summary) {
-            return `[url=https://bugs.mojang.com/browse/${id}][color=${color}]${id}[/color][/url]- ${summary}`
+            return `[url=https://bugs.mojang.com/browse/${id}][color=${color}][b]${id}[/b][/color][/url]- ${summary}`
         } else {
             return str
         }
