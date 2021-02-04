@@ -5,7 +5,7 @@ export interface BugCache {
 	[id: string]: {
 		summary: string,
 		translator?: string,
-		date: number,
+		date: string,
 	}
 }
 
@@ -30,7 +30,7 @@ export namespace BugCache {
 		delete bugs[id]
 	}
 
-	export function set(id: string, summary: string, translator?: string, date = new Date().getTime()) {
+	export function set(id: string, summary: string, translator?: string, date = new Date().toUTCString()) {
 		bugs[id] = { summary, translator, date }
 	}
 
