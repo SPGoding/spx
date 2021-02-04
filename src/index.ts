@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
 import { connection, server as WSServer } from 'websocket'
+import { BugCache } from './bug-cache'
 import { Content, ContentProvider, JsonContentProvider } from './content-provider'
 import { convertMCAriticleToBBCode } from './converter'
 import { DiscordConfig, onMessage } from './discord-bot'
@@ -34,9 +35,6 @@ const providers: { [key: string]: ContentProvider } = {
 
 const configPath = path.join(__dirname, './config.json')
 const cachePath = path.join(__dirname, './cache.json')
-export const logPath = path.join(__dirname, './log.txt')
-export const bugsPath = path.join(__dirname, './bugs.json')
-export const bugs: { [id: string]: string } = {}
 let httpPort: number | undefined
 let wsPort: number | undefined
 let ip: string | undefined
@@ -76,12 +74,7 @@ let discord: DiscordConfig | undefined
         }
     }
 
-    if (fs.existsSync(bugsPath)) {
-        const result = fs.readJsonSync(bugsPath)
-        for (const key in result) {
-            bugs[key] = result[key]
-        }
-    }
+    BugCache.load()
 })();
 
 (async function launchDiscordBot() {
@@ -222,15 +215,15 @@ wsServer.on('request', request => {
                             if (description && description.toLowerCase() === 'r') {
                                 console.log(`Removed bug ${id}.`)
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Removed ${id}.` } }))
-                                delete bugs[id]
+                                BugCache.remove(id)
                             } else if (description) {
                                 console.log(`Added bug ${id}: ${description}.`)
                                 connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `Added ${id}: ${description}.` } }))
-                                bugs[id] = description
+                                BugCache.set(id, description, 'SPGoding')
                             } else {
-                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `${id}: ${bugs[id]}` } }))
+                                connection.sendUTF(JSON.stringify({ type: 'bug', value: { id: '#', text: `${id}: ${BugCache.getSummary(id)}` } }))
                             }
-                            fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
+                            BugCache.save()
                         } else {
                             connection.close()
                         }

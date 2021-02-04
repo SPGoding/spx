@@ -1,6 +1,5 @@
 import { GuildMember, Message } from 'discord.js'
-import * as fs from 'fs'
-import { bugs, bugsPath, logPath } from '.'
+import { BugCache } from './bug-cache'
 
 export interface DiscordConfig {
 	token: string,
@@ -24,9 +23,8 @@ export async function onMessage(config: DiscordConfig, message: Message) {
 			if (matchArr) {
 				const id = matchArr[1]
 				const desc = matchArr[2]
-				bugs[id] = desc
-				fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 4), { encoding: 'utf8' })
-				fs.appendFileSync(logPath, `${id}\t${desc}\t${member.user.tag}\t${new Date().toUTCString()}\n`, { encoding: 'utf8' })
+				BugCache.set(id, desc, member.user.username)
+				BugCache.save()
 				await message.react('✅')
 			}
 		}

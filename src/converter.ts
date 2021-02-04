@@ -1,4 +1,4 @@
-import { bugs } from '.'
+import { BugCache } from './bug-cache'
 import { getImageDimensions } from './util'
 
 /*
@@ -513,8 +513,10 @@ function removeLastLinebreak(str: string) {
 function translateBugs(str: string) {
     if (str.startsWith('[url=https://bugs.mojang.com/browse/MC-')) {
         const id = str.slice(36, str.indexOf(']'))
-        if (bugs[id]) {
-            return `${str.slice(0, str.indexOf('[/color][/url]- ') + 16)}${bugs[id]}`
+        const summary = BugCache.getSummary(id)
+        const color = BugCache.getColor(id)
+        if (summary) {
+            return `[url=https://bugs.mojang.com/browse/${id}][color=${color}]${id}[/color][/url]- ${summary}`
         } else {
             return str
         }
