@@ -122,10 +122,13 @@
 
 <body>
 <div id="root">
-    <input v-model="input.url" placeholder="Article URL" style="width: 512px; max-width: 100%;" type="text"/><br/>
+    <input v-model="input.url" placeholder="Article URL" style="width: 512px; max-width: 100%;" type="text" :disabled="loading.websocket"/><br/>
     <input v-model="input.translator" placeholder="Translator" type="text"/><br/>
-    <input id="request" style="display: none;" type="button" value="Request"/>
-    <div id="output"></div>
+    <input id="request" :style="{display: loading.websocket ? 'none' : 'block' }" type="button" value="Request" @click="request"/>
+    <div id="output">
+        <div v-html="output.append"></div>
+        <button v-if="output.value">Copy BBCode</button>
+    </div>
     <input id="read" style="display: none;" type="button" value="Clear"/>
     <div id="progressBar" :style="{display: loading.filters ? 'block' : 'none'}" class="lds-facebook">
         <div></div>
@@ -134,7 +137,10 @@
     </div>
     <div>
         <h1>Bug Translators</h1>
-        <div id="colorsPreview"></div>
+        <div id="colorsPreview">
+            <span v-for="item in colorsPreview" :style="{color: item.c}">{{item.u}}&nbsp;</span>
+            <code>{{colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")}}</code>
+        </div>
     </div>
     <div id="filters" :style="{display: !loading.filters ? 'block' : 'none'}">
         <h1>Filters</h1>
@@ -202,200 +208,102 @@
 <script type="text/javascript">
     "use strict"
     const read = document.getElementById('read')
-    const request = document.getElementById('request')
     const output = document.getElementById('output')
-    const status = document.getElementById('status')
-    const articlesTable = document.getElementById('articles')
     const colorsPreview = document.getElementById('colorsPreview')
-    const categoryCheckboxes = document.getElementById('categoryCheckboxes')
-    const artCategoryCheckboxes = document.getElementById('artCategoryCheckboxes')
-    const showTranslatedArticle = document.getElementById('showTranslatedArticle')
-    const showUntranslatedArticle = document.getElementById('showUntranslatedArticle')
-    const showEmeraldedArticle = document.getElementById('showEmeraldedArticle')
-    const showUnemeraldedArticle = document.getElementById('showUnemeraldedArticle')
-    const progressBar = document.getElementById('progressBar')
-    const filters = document.getElementById('filters')
     const wsURL = 'wss://%replace_as_ws_url%'
     const webSocket = new WebSocket(wsURL)
     
     const MiscArtCategory = '其他'
     
-    let hasWebSocketDone = false
-    let hasArticlesDone = false
-    let hasRequestDone = true
-    
     const clipboardJS = new ClipboardJS('.copy')
-    
-    request.onclick = () => {
-        if (url.value) {
-            hasRequestDone = false
-            progressBar.style.display = ''
-            if (url.value.startsWith('verify ')) {
-                localStorage.setItem('lastRequest', url.value)
-                webSocket.send(`request, ${url.value}`)
-                url.value = ''
-            } else if (url.value.startsWith('MC-')) {
-                webSocket.send(`request, ${url.value}`)
-                url.value = ''
-            } else {
-                webSocket.send(`request, ${url.value} ${translator.value}`)
-                url.value = ''
-            }
-            localStorage.setItem('translator', translator.value)
-        } else {
-            alert('Please input URI')
-        }
-    }
     
     read.onclick = () => {
         output.innerHTML = ''
         read.style.display = 'none'
     }
-    
-    webSocket.onopen = () => {
-        request.style.display = ''
-        hasWebSocketDone = true
-        hideProgressBar()
-    }
-    
-    webSocket.onmessage = event => {
-        const json = JSON.parse(event.data)
-        let append = ''
-        let playSound = false
-        switch (json.type) {
-            case 'version':
-                append = `VERSION - ${json.value.id}`
-                playSound = true
-                break
-            case 'colors':
-                const colors = json.value
-                const usernames = Object.keys(colors).sort()
-                const resultPreviewArr = []
-                const resultBBCodeArr = []
-                for (const u of usernames) {
-                    resultPreviewArr.push(`<span style="color:${colors[u].color};">${u}</span>`)
-                    resultBBCodeArr.push(`[color=${colors[u].color}]${u}[/color]`)
-                }
-                colorsPreview.innerHTML = `${resultPreviewArr.join('、')}<br><code style="font-size:0.6em;">${resultBBCodeArr.join('、')}</code>`;
-                return
-            case 'bbcode':
-                hasRequestDone = true
-                hideProgressBar()
-                append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                break
-            case 'read':
-                hasRequestDone = true
-                hideProgressBar()
-                output.innerHTML = ""
-                read.style.display = 'none'
-                return
-            case 'verify':
-                hasRequestDone = true
-                hideProgressBar()
-                if (json.value.id === 'owner') {
-                    translator.style.color = 'gold'
-                    translator.style.fontWeight = 'bold'
-                } else {
-                    translator.style.color = 'green'
-                    translator.style.fontWeight = 'bold'
-                }
-                return
-            default:
-                hasRequestDone = true
-                hideProgressBar()
-                append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                break
-        }
-        if (playSound) {
-            const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
-            speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
-        }
-        if (json.value.addition) {
-            append += ` - <button class="copy" data-clipboard-text="${
-                json.value.addition
-                    .replace(/\</g, '&lt;')
-                    .replace(/&/g, '&amp;')
-                    .replace(/"/g, '&#39;')
-            }">Copy BBCode</button>`
-        }
-        output.innerHTML = `${append}<br />${output.innerHTML}`
-        read.style.display = ''
-    }
-    
+
     function requestBBCodeFor(link) {
         url.value = link
         request.onclick()
     }
-    
-    function hideProgressBar() {
-        if (hasArticlesDone && hasWebSocketDone) {
-            progressBar.style.display = 'none'
-        }
-    }
-    
-    function updateArticlesView() {
-        setTimeout(() => {
-            let innerHTML = '<table id="articles"><tr><th>Time</th><th>Category</th><th>Origin</th><th>Translation</th><th>Status</th><th>Take</th></tr>'
-            
-            const filteredTranslated = [
-                ...!showTranslatedArticle.classList.contains('unchecked') ? [true] : [],
-                ...!showUntranslatedArticle.classList.contains('unchecked') ? [false] : []
-            ]
-            
-            const filteredEmeralded = [
-                ...!showEmeraldedArticle.classList.contains('unchecked') ? [true] : [],
-                ...!showUnemeraldedArticle.classList.contains('unchecked') ? [false] : []
-            ]
-            
-            for (const [time, title, link, trTitle, trLink, _, emeralded, cat] of articles) {
-                const isEmeralded = emeralded === '1'
-                const isTranslated = trLink !== '-'
-                
-                const [category, artCategory] = cat.split(':')
-                
-                let operationEmoji
-                if (isEmeralded) {
-                    operationEmoji = '🖤'
-                } else if (isTranslated) {
-                    operationEmoji = '💚'
-                } else {
-                    operationEmoji = '💝'
-                }
-                
-                innerHTML += '<tr>'
-                innerHTML += `<td>${time}</td>`
-                innerHTML += `<td>${cat.toUpperCase()}</td>`
-                innerHTML += `<td><a href="${link}" target="_blank">${title}</a></td>`
-                innerHTML += `<td>${isTranslated ? `<a href="${trLink}" target="_blank">${trTitle}</a>` : 'N/A'}</td>`
-                innerHTML += `<td><img src="${isEmeralded ? 'https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png' : 'https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png'}"></td>`
-                innerHTML += `<td><button type="button" onclick="requestBBCodeFor('${link}')">${operationEmoji}</button></td>`
-                innerHTML += '</tr>'
-            }
-            
-            innerHTML += '</table>'
-            
-            articlesTable.innerHTML = innerHTML
-            hideProgressBar()
-            filters.style.display = ''
-        }, 0)
-    }
-    
-    webSocket.onerror = e => {
-        console.error(e)
-    }
-    
-    webSocket.onclose = () => {
-        read.style.display = 'none'
-        request.style.display = 'none'
-        url.disabled = true
-    }
-    
+
     Vue.config.devtools = true
     new Vue({
         el: '#root',
         vuetify: new Vuetify(),
         mounted() {
             this.getArticles()
+    
+    
+            webSocket.onopen = () => {
+                console.log('onopen')
+                this.loading.websocket = false
+            }
+    
+            webSocket.onmessage = event => {
+                const json = JSON.parse(event.data)
+                let append = ''
+                let playSound = false
+                switch (json.type) {
+                    case 'version':
+                        append = `VERSION - ${json.value.id}`
+                        playSound = true
+                        break
+                    case 'colors':
+                        const colors = json.value
+                        const usernames = Object.keys(colors).sort()
+                        const resultPreviewArr = []
+                        for (const u of usernames) {
+                            resultPreviewArr.push({
+                                c: colors[u].color,
+                                u
+                            })
+                        }
+                        this.colorsPreview = resultPreviewArr
+                        return
+                    case 'bbcode':
+                        append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                        break
+                    case 'read':
+                        output.innerHTML = ""
+                        read.style.display = 'none'
+                        return
+                    case 'verify':
+                        if (json.value.id === 'owner') {
+                            translator.style.color = 'gold'
+                            translator.style.fontWeight = 'bold'
+                        } else {
+                            translator.style.color = 'green'
+                            translator.style.fontWeight = 'bold'
+                        }
+                        return
+                    default:
+                        append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                        break
+                }
+                if (playSound) {
+                    const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
+                    speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+                }
+                if (json.value.addition) {
+                    this.output.value =
+                        json.value.addition
+                            .replace(/\</g, '&lt;')
+                            .replace(/&/g, '&amp;')
+                            .replace(/"/g, '&#39;')
+                }
+                this.output.append = append
+            }
+    
+            webSocket.onerror = e => {
+                console.error(e)
+            }
+    
+            webSocket.onclose = () => {
+                read.style.display = 'none'
+                this.loading.websocket = true
+            }
+    
         },
         beforeMount() {
             if (localStorage.getItem('lastRequest')) {
@@ -446,6 +354,25 @@
             }
         },
         methods: {
+            request(){
+                const val = this.input.url
+                if (val) {
+                    if (val.startsWith('verify ')) {
+                        localStorage.setItem('lastRequest', val)
+                        webSocket.send(`request, ${val}`)
+                        this.input.url = ''
+                    } else if (val.startsWith('MC-')) {
+                        webSocket.send(`request, ${val}`)
+                        this.input.url = ''
+                    } else {
+                        webSocket.send(`request, ${val} ${this.input.translator}`)
+                        this.input.url = ''
+                    }
+                    localStorage.setItem('translator', this.input.translator)
+                } else {
+                    alert('Please input URI')
+                }
+            },
             getArticles() {
                 const xhr = new XMLHttpRequest()
                 xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
@@ -466,7 +393,6 @@
                                 }
                                 articles.push(cols)
                             }
-                            hasArticlesDone = true
                             this.articles = articles
                             this.categories = categories
                             this.artCategories = artCategories
@@ -493,7 +419,8 @@
                 categories: [],
                 artCategories: [],
                 loading: {
-                    filters: true
+                    filters: true,
+                    websocket: true
                 },
                 input: {
                     url: '',
@@ -506,6 +433,11 @@
                     untranslated: true,
                     unemeralded: true,
                     emeralded: true
+                },
+                colorsPreview: [],
+                output: {
+                    append: '',
+                    value: ''
                 }
             }
         }
