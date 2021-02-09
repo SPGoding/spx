@@ -76,6 +76,7 @@ let discord: DiscordConfig | undefined
     }
 
     BugCache.load()
+    ColorCache.load()
 })();
 
 (async function launchDiscordBot() {
