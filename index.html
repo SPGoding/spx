@@ -142,8 +142,12 @@
             <div></div>
             <div></div>
         </div>
-        <div id="colorsPreview"></div>
+        <div>
+            <h1>Bug Translators</h1>
+            <div id="colorsPreview"></div>
+        </div>
         <div id="filters" style="display: none;">
+            <h1>Filters</h1>
             <div id="categoryCheckboxes" class="checkboxContainer"></div>
             <div id="artCategoryCheckboxes" class="checkboxContainer"></div>
             <div class="checkboxContainer">
@@ -158,6 +162,9 @@
                     id="showUnemeraldedArticle" class="checkbox"
                     data-value="emeralationStatusUnemeralded">Unemeralded</span>
             </div>
+        </div>
+        <div>
+            <h1>Articles</h1>
             <table id="articles"></table>
         </div>
     </div>
@@ -255,7 +262,7 @@
                         resultPreviewArr.push(`<span style="color:${colors[u].color};">${u}</span>`)
                         resultBBCodeArr.push(`[color=${colors[u].color}]${u}[/color]`)
                     }
-                    colorsPreview.innerHTML = `${resultPreviewArr.join(', ')}<br><code>${resultBBCodeArr.join(', ')}</code>`;
+                    colorsPreview.innerHTML = `${resultPreviewArr.join('、')}<br><code style="font-size:0.6em;">${resultBBCodeArr.join('、')}</code>`;
                     return
                 case 'bbcode':
                     hasRequestDone = true
