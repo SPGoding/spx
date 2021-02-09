@@ -43,7 +43,7 @@
                             </v-col>
                         </v-row>
                         <v-col
-                            v-if="!loading.websocket"
+                            v-if="!loading.websocket && !loading.wsrequest"
                             class="text-center" cols="12"
                         >
                             <v-btn color="primary" @click="request()">
@@ -56,8 +56,15 @@
                                    @click="navigator.clipboard.writeText(output.value)">复制
                                 BBCode
                             </v-btn>
+                            <v-btn v-if="output.value"
+                                   href="javascript:location.reload()">下一个
+                            </v-btn>
                         </div>
-                        <v-btn v-if="showRead" @click="clear">Clear</v-btn>
+                        <v-btn v-if="showRead" @click="clear">清空</v-btn>
+                        <v-col v-if="loading.wsrequest" cols="12" class="text-center">
+                            <v-progress-circular indeterminate color="primary"
+                            ></v-progress-circular>
+                        </v-col>
                     </v-container>
                 </v-card>
                 <v-card class="ma-3 px-3 my-4 pb-4">
@@ -129,7 +136,7 @@
                     <v-container>
                         <h5 class="text-h5 text-center my-3">文章</h5>
                         <v-card class="mx-3">
-                            <v-simple-table>
+                            <v-simple-table height="500px" fixed-header>
                                 <template v-slot:default>
                                     <thead>
                                     <tr>
@@ -158,7 +165,7 @@
                                                  src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
                                         </td>
                                         <td>
-                                            <v-btn icon @click="requestBBCodeFor(item.link)">
+                                            <v-btn :disabled="output.value !== ''" icon @click="requestBBCodeFor(item.link)">
                                                 <v-icon :color="item.operationColor">mdi-heart</v-icon>
                                             </v-btn>
                                         </td>
@@ -182,6 +189,15 @@
                 </p>
             </v-col>
         </v-footer>
+        <v-snackbar v-model="snackbar">
+            {{ snackbarText }}
+
+            <template v-slot:action="{ attrs }">
+                <v-btn text v-bind="attrs" @click="requestSucceeded = false">
+                    关闭
+                </v-btn>
+            </template>
+        </v-snackbar>
     </v-app>
 </div>
 
@@ -203,7 +219,7 @@
             
             
             webSocket.onopen = () => {
-                console.log('onopen')
+                console.log('[spx] WebSocket Status: onopen')
                 this.loading.websocket = false
             }
             
@@ -211,10 +227,13 @@
                 const json = JSON.parse(event.data)
                 let append = ''
                 let playSound = false
+                this.loading.wsrequest = false
+
                 switch (json.type) {
                     case 'version':
                         append = `VERSION - ${json.value.id}`
                         playSound = true
+                        console.log('[spx] WebSocket Status: onmessage => version')
                         break
                     case 'colors':
                         const colors = json.value
@@ -227,14 +246,19 @@
                             })
                         }
                         this.colorsPreview = resultPreviewArr
+                        console.log('[spx] WebSocket Status: onmessage => colors')
                         return
                     case 'bbcode':
                         append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                        this.snackbarText = 'BBCode 转换成功。'
+                        this.snackbar = true
+                        console.log('[spx] WebSocket Status: onmessage => bbcode')
                         break
                     case 'read':
                         this.output.append = ""
                         this.output.value = ""
                         this.showRead = false
+                        console.log('[spx] WebSocket Status: onmessage => read')
                         return
                     case 'verify':
                         if (json.value.id === 'owner') {
@@ -246,14 +270,17 @@
                                 fontWeight: 'bold'
                             }
                         }
+                        console.log('[spx] WebSocket Status: onmessage => verify')
                         return
                     default:
                         append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                        console.log('[spx] WebSocket Status: onmessage => default')
                         break
                 }
                 if (playSound) {
                     const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
                     speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+                    console.log('[spx] WebSocket Status: onmessage => playsound')
                 }
                 if (json.value.addition) {
                     this.output.value =
@@ -267,11 +294,13 @@
             }
             
             webSocket.onerror = e => {
-                console.error(e)
+                this.snackbarText = "WebSocket 出现错误。"
+                this.snackbar = true
+                console.error(`[spx] WebSocket Status: onerror => ${e}`)
             }
             
             webSocket.onclose = () => {
-                console.log('onclose')
+                console.log('[spx] WebSocket Status: onclose')
                 this.showRead = false
                 this.loading.websocket = true
             }
@@ -351,6 +380,7 @@
                 this.showRead = false
             },
             request(url) {
+                this.loading.wsrequest = true
                 const val = url || this.input.url
                 if (val) {
                     if (val.startsWith('verify ')) {
@@ -366,7 +396,8 @@
                     }
                     localStorage.setItem('translator', this.input.translator)
                 } else {
-                    alert('Please input URI')
+                    this.snackbarText = '请输入请求 URL。'
+                    this.snackbar = true
                 }
             },
             getArticles() {
@@ -395,8 +426,11 @@
                             this.checkboxes = [...new Array(categories.length).keys()]
                             this.artCheckboxes = [...new Array(artCategories.length).keys()]
                             this.loading.filters = false
+                            console.log('[spx] Article table loaded.')
                         } else {
-                            alert(`博文录加载失败，错误代码：${xhr.status}`)
+                            this.snackbarText = `博文录加载失败，错误代码：${xhr.status}`
+                            this.snackbar = true
+                            console.error('[spx] Article table failed loading.')
                         }
                     }
                 }
@@ -410,7 +444,8 @@
                 artCategories: [],
                 loading: {
                     filters: true,
-                    websocket: true
+                    websocket: true,
+                    wsrequest: false,
                 },
                 input: {
                     url: '',
@@ -428,7 +463,9 @@
                     color: 'black',
                     fontWeight: 'normal'
                 },
-                showRead: false
+                showRead: false,
+                snackbar: false,
+                snackbarText: '',
             }
         }
     })
