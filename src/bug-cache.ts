@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
+import { ColorCache } from './color-cache'
 
 export interface BugCache {
 	[id: string]: {
@@ -43,9 +44,13 @@ export namespace BugCache {
 		const translator = bugs[id].translator
 		if (!translator) {
 			return '#388d40'
+		} else if (ColorCache.has(translator)) {
+			return ColorCache.getColor(translator)
 		} else {
-			const c = (hashCode(translator) & 0x00FFFFFF).toString(16)
-			return `${'00000'.slice(0, 6 - c.length)}${c}`
+			const color = (hashCode(translator) & 0x00FFFFFF).toString(16)
+			const hexColor = `#${'00000'.slice(0, 6 - color.length)}${color}`
+			ColorCache.set(translator, hexColor)
+			return hexColor
 		}
 	}
 
