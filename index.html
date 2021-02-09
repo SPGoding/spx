@@ -29,7 +29,7 @@
                 <v-toolbar-title>spx client</v-toolbar-title>
             </v-app-bar>
             <v-container>
-                <v-card class="ma-3 px-3 my-4">
+                <v-card class="ma-3 px-3 my-6">
                     <v-container>
                         <v-row>
                             <v-col xs="12" md="8">
@@ -58,108 +58,115 @@
                         <v-btn v-if="showRead" @click="clear">Clear</v-btn>
                     </v-container>
                 </v-card>
-                <v-card class="ma-3 px-3 my-4 pb-3">
+                <v-card class="ma-3 px-3 my-4 pb-4">
                     <v-container>
-                    <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
-                        <div id="colorsPreview">
-                            <p>
-                                spx 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
-                                协议无偿捐献他们的翻译的翻译者：
-                            </p>
-                            <p>
-                                <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1" style="color: #fff;">{{ item.u }}</v-chip>
-                            </p>
-                            <p>
-                                虽然这不是必要的，但 spx 仍然鼓励您署名他们的贡献：
-                            </p>
-                            <v-row>
-                                <v-col md="11" xs="12">
-                                    <pre style="overflow-x: scroll;"><code>{{ colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、") }}</code></pre>
-                                </v-col>
-                                <v-col md="1" xs="12" class="text-center">
-                                    <v-btn small color="primary"
-                                       @click="navigator.clipboard.writeText(colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
-                                        复制
-                                    </v-btn>
-                                </v-col>
-                            </v-row>
-                        </div>
+                        <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
+                            <div id="colorsPreview">
+                                <p>
+                                    spx 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
+                                    协议无偿捐献他们的翻译的翻译者：
+                                </p>
+                                <p>
+                                    <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1" style="color: #fff;">{{ item.u }}</v-chip>
+                                </p>
+                                <p>
+                                    虽然这不是必要的，但 spx 仍然鼓励您署名他们的贡献：
+                                </p>
+                                <v-row>
+                                    <v-col md="11" xs="12">
+                                        <pre style="overflow-x: scroll;"><code>{{ colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、") }}</code></pre>
+                                    </v-col>
+                                    <v-col md="1" xs="12" class="text-center">
+                                        <v-btn small color="primary"
+                                           @click="navigator.clipboard.writeText(colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+                                            复制
+                                        </v-btn>
+                                    </v-col>
+                                </v-row>
+                            </div>
                     </v-container>
                 </v-card>
-                <div v-if="!loading.filters" id="filters">
-                    <h1>Filters</h1>
-                    <div class="mt-2">
-                        一般分类：
-                        <v-radio-group hide-details row>
-                            <v-checkbox class="mr-2" v-for="item in categories" v-model="checkboxes[item]"
-                                        :label="item.toUpperCase()" hide-details></v-checkbox>
-                        </v-radio-group>
-                    </div>
-                    <div class="mt-2">
-                        创作分类：
-                        <v-radio-group hide-details row>
-                            <v-checkbox class="mr-2" v-for="item in artCategories" v-model="artCheckboxes[item]"
-                                        :label="item.toUpperCase()"
-                                        hide-details></v-checkbox>
-                        </v-radio-group>
-                    </div>
-                    <div class="mt-2">
-                        文章状态：
-                        <v-radio-group hide-details row>
-                            <v-checkbox class="mr-2" v-model="status.translated" hide-details label="已翻译"></v-checkbox>
-                            <v-checkbox class="mr-2" v-model="status.untranslated" hide-details
-                                        label="未翻译"></v-checkbox>
-                            <v-checkbox class="mr-2" v-model="status.emeralded" hide-details label="无悬赏"></v-checkbox>
-                            <v-checkbox class="mr-1" v-model="status.unemeralded" hide-details
-                                        label="悬赏中"></v-checkbox>
-                        </v-radio-group>
-                    </div>
-                </div>
-                <div>
-                    <h1>Articles</h1>
-                    <v-simple-table>
-                        <template v-slot:default>
-                            <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Category</th>
-                                <th>Origin</th>
-                                <th>Translation</th>
-                                <th>Status</th>
-                                <th>Take</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in filteredArticles">
-                                <td>{{ item.time }}</td>
-                                <td>{{ item.category }}</td>
-                                <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
-                                <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{
-                                        item.trTitle
-                                    }}</a>
-                                    <span v-else>N/A</span></td>
-                                <td>
-                                    <img
-                                        v-if="item.isEmeralded"
-                                        src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png">
-                                    <img v-else
-                                         src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
-                                </td>
-                                <td>
-                                    <button @click="requestBBCodeFor(item.link)"><a
-                                        :style="{color: item.operationColor}">
-                                        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                                            <path
-                                                d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"
-                                                fill="currentColor"/>
-                                        </svg>
-                                    </a></button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </template>
-                    </v-simple-table>
-                </div>
+                <v-card class="ma-3 px-3 my-6 pb-4" v-if="!loading.filters" id="filters">
+                    <v-container>
+                        <h5 class="text-h5 text-center my-3">过滤</h5>
+                        <v-row>
+                            <v-col cols="1">一般分类</v-col>
+                            <v-col cols="11">
+                                <v-radio-group class="mt-0" hide-details row>
+                                    <v-checkbox dense class="mt-0 mr-2" v-for="item in categories" v-model="checkboxes[item]"
+                                                :label="item.toUpperCase().replace('-', ' ') || '无'" hide-details></v-checkbox>
+                                </v-radio-group>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="1">创作分类</v-col>
+                            <v-col cols="11">
+                                <v-radio-group class="mt-0" hide-details row>
+                                    <v-checkbox dense class="mt-0 mr-2" v-for="item in artCategories" v-model="artCheckboxes[item]"
+                                                :label="item.toUpperCase().replace('-', ' ') || '无'"
+                                                hide-details></v-checkbox>
+                                </v-radio-group>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="1">文章状态</v-col>
+                            <v-col cols="11">
+                                <v-radio-group class="mt-0" hide-details row>
+                                    <v-checkbox dense class="mt-0 mr-2" v-model="status.translated" hide-details label="已翻译"></v-checkbox>
+                                    <v-checkbox dense class="mt-0 mr-2" v-model="status.untranslated" hide-details
+                                                label="未翻译"></v-checkbox>
+                                    <v-checkbox dense class="mt-0 mr-2" v-model="status.emeralded" hide-details label="无悬赏"></v-checkbox>
+                                    <v-checkbox dense class="mt-0 mr-1" v-model="status.unemeralded" hide-details
+                                                label="悬赏中"></v-checkbox>
+                                </v-radio-group>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-card>
+                <v-card class="ma-3 px-3 my-6 pb-4">
+                    <v-container>
+                        <h5 class="text-h5 text-center my-3">文章</h5>
+                        <v-card class="mx-3">
+                            <v-simple-table>
+                                <template v-slot:default>
+                                    <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>分类</th>
+                                        <th>来源</th>
+                                        <th>译文</th>
+                                        <th>状态</th>
+                                        <th>请求</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="item in filteredArticles">
+                                        <td>{{ item.time }}</td>
+                                        <td>{{ item.category || "无" }}</td>
+                                        <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
+                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{
+                                                item.trTitle
+                                            }}</a>
+                                            <span v-else>N/A</span></td>
+                                        <td>
+                                            <img
+                                                v-if="item.isEmeralded"
+                                                src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png">
+                                            <img v-else
+                                                 src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
+                                        </td>
+                                        <td>
+                                            <v-btn icon @click="requestBBCodeFor(item.link)">
+                                                <v-icon :color="item.operationColor">mdi-heart</v-icon>
+                                            </v-btn>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </template>
+                            </v-simple-table>
+                        </v-card>
+                    </v-container>
+                </v-card>
             </v-container>
         </v-main>
         <v-footer>
@@ -167,9 +174,10 @@
                 class="text-center"
                 cols="12"
             >
-                <p style="text-align: center;"><a href="https://github.com/SPGoding/spx/blob/master/README.md">ABOUT
-                    US</a> &
-                    <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">PRIVACY POLICY</a></p>
+                <p style="text-align: center;">
+                    <a href="https://github.com/SPGoding/spx/blob/master/README.md">关于我们</a> |
+                    <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">隐私政策</a>
+                </p>
             </v-col>
         </v-footer>
     </v-app>
