@@ -162,7 +162,9 @@
     </div>
     <div>
         <h1>Articles</h1>
-        <table id="articles">
+        <v-simple-table>
+            <template v-slot:default>
+            <thead>
             <tr>
                 <th>Time</th>
                 <th>Category</th>
@@ -171,7 +173,25 @@
                 <th>Status</th>
                 <th>Take</th>
             </tr>
-        </table>
+            </thead>
+            <tbody>
+            <tr v-for="item in filteredArticles">
+                <td>{{item.time}}</td>
+                <td>{{item.category}}</td>
+                <td><a :href="item.link" target="_blank">{{item.title}}</a></td>
+                <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{item.trTitle}}</a>
+                <span v-else>N/A</span></td>
+                <td>
+                    <img src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png" v-if="item.isEmeralded">
+                    <img v-else src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
+                </td>
+                <td>
+                    <button>{{item.operationEmoji}}</button>
+                </td>
+            </tr>
+            </tbody>
+            </template>
+        </v-simple-table>
     </div>
 </div>
 <p style="text-align: center;"><a href="https://github.com/SPGoding/spx/blob/master/README.md">ABOUT US</a> &
@@ -317,20 +337,6 @@
         setTimeout(() => {
             let innerHTML = '<table id="articles"><tr><th>Time</th><th>Category</th><th>Origin</th><th>Translation</th><th>Status</th><th>Take</th></tr>'
             
-            const filteredCategories = []
-            for (const span of categoryCheckboxes.children) {
-                if (!span.classList.contains('unchecked')) {
-                    filteredCategories.push(span.dataset.value)
-                }
-            }
-            
-            const filteredArtCategories = []
-            for (const span of artCategoryCheckboxes.children) {
-                if (!span.classList.contains('unchecked')) {
-                    filteredArtCategories.push(span.dataset.value)
-                }
-            }
-            
             const filteredTranslated = [
                 ...!showTranslatedArticle.classList.contains('unchecked') ? [true] : [],
                 ...!showUntranslatedArticle.classList.contains('unchecked') ? [false] : []
@@ -346,15 +352,6 @@
                 const isTranslated = trLink !== '-'
                 
                 const [category, artCategory] = cat.split(':')
-                
-                if (!(
-                    filteredCategories.includes(category) &&
-                    (filteredArtCategories.includes(artCategory || MiscArtCategory)) &&
-                    filteredEmeralded.includes(isEmeralded) &&
-                    filteredTranslated.includes(isTranslated))
-                ) {
-                    continue
-                }
                 
                 let operationEmoji
                 if (isEmeralded) {
@@ -408,7 +405,46 @@
                 this.input.translator.value = localStorage.getItem('translator')
             }
         },
-        computed: {},
+        computed: {
+            filteredArticles(){
+                let categories = Object.keys(this.checkboxes).filter(v => this.checkboxes[v])
+                let artCategories = Object.keys(this.artCheckboxes).filter(v => this.artCheckboxes[v])
+                let result = this.articles.map(v => {
+                    const [time, title, link, trTitle, trLink,,emeralded, cat] = v
+                    const isEmeralded = emeralded === '1'
+                    const isTranslated = trLink !== '-'
+    
+                    const [category, artCategory] = cat.split(':')
+                    let emeraldedMatch = isEmeralded ? this.status.emeralded : this.status.unemeralded
+                    let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
+                    if(!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && emeraldedMatch && translatedMatch)){
+                        return null
+                    }
+                    let operationEmoji
+                    if (isEmeralded) {
+                        operationEmoji = '🖤'
+                    } else if (isTranslated) {
+                        operationEmoji = '💚'
+                    } else {
+                        operationEmoji = '💝'
+                    }
+                    
+                    return {
+                        operationEmoji,
+                        time,
+                        category: cat.toUpperCase(),
+                        link,
+                        title,
+                        trLink,
+                        trTitle,
+                        isTranslated,
+                        isEmeralded
+                    }
+                }).filter(v => v!= null)
+                console.log(result)
+                return result
+            }
+        },
         methods: {
             getArticles() {
                 const xhr = new XMLHttpRequest()
