@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html>
+<!--suppress ALL -->
+<html lang="zh">
 
 <head>
     <title>spx client</title>
@@ -8,14 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
     <meta charset="UTF-8">
-    <style>
-        .fade-enter-active, .fade-leave-active {
-            transition: opacity .5s;
-        }
-        .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-            opacity: 0;
-        }
-    </style>
 </head>
 
 <body>
@@ -32,62 +25,93 @@
         </div>
         </transition>
         <v-main>
+            <v-app-bar color="white">
+                <v-toolbar-title>spx client</v-toolbar-title>
+            </v-app-bar>
             <v-container>
-                <v-card
-                    :class="[!$vuetify.breakpoint.xsOnly ? 'pa-4' : 'pa-0']"
-                    :elevation="$vuetify.breakpoint.xsOnly ? 0 : 2"
-                >
-                <v-text-field v-model="input.url" :disabled="loading.websocket"
-                              placeholder="Article URL"></v-text-field>
-                <v-text-field v-model="input.translator" :style="translatorStyle"
-                              placeholder="Translator"></v-text-field>
-                <v-col
-                    class="text-center"
-                    cols="12"  v-if="!loading.websocket"
-                >
-                    <v-btn color="primary" @click="request()">
-                        Request
-                    </v-btn>
-                </v-col>
-                <div id="output" class="mt-2">
-                    <div v-html="output.append" class="my-2"></div>
-                    <v-btn v-if="output.value" color="primary" @click="navigator.clipboard.writeText(output.value)">Copy
-                        BBCode
-                    </v-btn>
-                </div>
-                <v-btn v-if="showRead" @click="clear">Clear</v-btn>
-                <div>
-                    <h1>Bug Translators</h1>
-                    <div id="colorsPreview">
-                        <span v-for="item in colorsPreview" :style="{color: item.c}">{{ item.u }}&nbsp;</span>
-                        <br/>
-                        <code>{{ colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、") }}</code>
-                    </div>
-                </div>
+                <v-card class="ma-3 px-3 my-4">
+                    <v-container>
+                        <v-row>
+                            <v-col xs="12" md="8">
+                                <v-text-field v-model="input.url" :disabled="loading.websocket"
+                                          placeholder="文章 URL"></v-text-field>
+                            </v-col>
+                            <v-col xs="12" md="4">
+                                <v-text-field v-model="input.translator" :style="translatorStyle"
+                                              placeholder="翻译者"></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-col
+                            class="text-center"
+                            cols="12"  v-if="!loading.websocket"
+                        >
+                            <v-btn color="primary" @click="request()">
+                                请求
+                            </v-btn>
+                        </v-col>
+                        <div id="output" class="mt-2">
+                            <div v-html="output.append" class="my-2"></div>
+                            <v-btn v-if="output.value" color="primary" @click="navigator.clipboard.writeText(output.value)">复制
+                                BBCode
+                            </v-btn>
+                        </div>
+                        <v-btn v-if="showRead" @click="clear">Clear</v-btn>
+                    </v-container>
+                </v-card>
+                <v-card class="ma-3 px-3 my-4 pb-3">
+                    <v-container>
+                    <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
+                        <div id="colorsPreview">
+                            <p>
+                                spx 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
+                                协议无偿捐献他们的翻译的翻译者：
+                            </p>
+                            <p>
+                                <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1" style="color: #fff;">{{ item.u }}</v-chip>
+                            </p>
+                            <p>
+                                虽然这不是必要的，但 spx 仍然鼓励您署名他们的贡献：
+                            </p>
+                            <v-row>
+                                <v-col md="11" xs="12">
+                                    <pre style="overflow-x: scroll;"><code>{{ colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、") }}</code></pre>
+                                </v-col>
+                                <v-col md="1" xs="12" class="text-center">
+                                    <v-btn small color="primary"
+                                       @click="navigator.clipboard.writeText(colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+                                        复制
+                                    </v-btn>
+                                </v-col>
+                            </v-row>
+                        </div>
+                    </v-container>
+                </v-card>
                 <div v-if="!loading.filters" id="filters">
                     <h1>Filters</h1>
                     <div class="mt-2">
-                        <v-radio-group dense hide-details row>
-                            <v-checkbox v-for="item in categories" v-model="checkboxes[item]"
-                                        :label="item.toUpperCase()" dense hide-details></v-checkbox>
+                        一般分类：
+                        <v-radio-group hide-details row>
+                            <v-checkbox class="mr-2" v-for="item in categories" v-model="checkboxes[item]"
+                                        :label="item.toUpperCase()" hide-details></v-checkbox>
                         </v-radio-group>
                     </div>
                     <div class="mt-2">
-                        <v-radio-group dense hide-details row>
-                            <v-checkbox v-for="item in artCategories" v-model="artCheckboxes[item]"
+                        创作分类：
+                        <v-radio-group hide-details row>
+                            <v-checkbox class="mr-2" v-for="item in artCategories" v-model="artCheckboxes[item]"
                                         :label="item.toUpperCase()"
-                                        dense
                                         hide-details></v-checkbox>
                         </v-radio-group>
                     </div>
                     <div class="mt-2">
-                        <v-radio-group dense hide-details row>
-                            <v-checkbox v-model="status.translated" dense hide-details label="Translated"></v-checkbox>
-                            <v-checkbox v-model="status.untranslated" dense hide-details
-                                        label="Untranslated"></v-checkbox>
-                            <v-checkbox v-model="status.emeralded" dense hide-details label="Emeralded"></v-checkbox>
-                            <v-checkbox v-model="status.unemeralded" dense hide-details
-                                        label="Unemeralded"></v-checkbox>
+                        文章状态：
+                        <v-radio-group hide-details row>
+                            <v-checkbox class="mr-2" v-model="status.translated" hide-details label="已翻译"></v-checkbox>
+                            <v-checkbox class="mr-2" v-model="status.untranslated" hide-details
+                                        label="未翻译"></v-checkbox>
+                            <v-checkbox class="mr-2" v-model="status.emeralded" hide-details label="无悬赏"></v-checkbox>
+                            <v-checkbox class="mr-1" v-model="status.unemeralded" hide-details
+                                        label="悬赏中"></v-checkbox>
                         </v-radio-group>
                     </div>
                 </div>
@@ -136,7 +160,6 @@
                         </template>
                     </v-simple-table>
                 </div>
-                </v-card>
             </v-container>
         </v-main>
         <v-footer>
@@ -156,7 +179,7 @@
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
 <script type="text/javascript">
     "use strict"
-    const wsURL = 'wss://%replace_as_ws_url%'
+    const wsURL = '%replace_as_ws_url%'
     const webSocket = new WebSocket(wsURL)
     
     const MiscArtCategory = '其他'
