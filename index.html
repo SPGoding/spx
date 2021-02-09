@@ -9,50 +9,11 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
     <meta charset="UTF-8">
     <style>
-        /* Progress circle */
-        
-        .lds-facebook {
-            display: inline-block;
-            position: relative;
-            width: 80px;
-            height: 80px;
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity .5s;
         }
-        
-        .lds-facebook div {
-            display: inline-block;
-            position: absolute;
-            left: 8px;
-            width: 16px;
-            background: black;
-            animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
-        }
-        
-        .lds-facebook div:nth-child(1) {
-            left: 8px;
-            animation-delay: -0.24s;
-        }
-        
-        .lds-facebook div:nth-child(2) {
-            left: 32px;
-            animation-delay: -0.12s;
-        }
-        
-        .lds-facebook div:nth-child(3) {
-            left: 56px;
-            animation-delay: 0;
-        }
-        
-        @keyframes lds-facebook {
-            0% {
-                top: 8px;
-                height: 64px;
-            }
-            
-            50%,
-            100% {
-                top: 24px;
-                height: 32px;
-            }
+        .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+            opacity: 0;
         }
     </style>
 </head>
@@ -60,8 +21,22 @@
 <body>
 <div id="root">
     <v-app>
+        <transition name="fade">
+        <div v-if="loading.filters" style="top: 0;left: 0;right: 0;bottom: 0;display: flex;z-index: 1000;position: fixed;align-items: center;justify-content: center;background-color: rgba(0, 0, 0, 0.5);-webkit-tap-highlight-color: transparent;">
+            <v-progress-circular
+                :size="70"
+                :width="7"
+                color="white"
+                indeterminate
+            ></v-progress-circular>
+        </div>
+        </transition>
         <v-main>
             <v-container>
+                <v-card
+                    :class="[!$vuetify.breakpoint.xsOnly ? 'pa-4' : 'pa-0']"
+                    :elevation="$vuetify.breakpoint.xsOnly ? 0 : 2"
+                >
                 <v-text-field v-model="input.url" :disabled="loading.websocket"
                               placeholder="Article URL"></v-text-field>
                 <v-text-field v-model="input.translator" :style="translatorStyle"
@@ -70,7 +45,7 @@
                     class="text-center"
                     cols="12"  v-if="!loading.websocket"
                 >
-                    <v-btn color="primary" @click="request">
+                    <v-btn color="primary" @click="request()">
                         Request
                     </v-btn>
                 </v-col>
@@ -81,11 +56,6 @@
                     </v-btn>
                 </div>
                 <v-btn v-if="showRead" @click="clear">Clear</v-btn>
-<!--                <div v-if="loading.filters" id="progressBar" class="lds-facebook">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                </div>-->
                 <div>
                     <h1>Bug Translators</h1>
                     <div id="colorsPreview">
@@ -166,6 +136,7 @@
                         </template>
                     </v-simple-table>
                 </div>
+                </v-card>
             </v-container>
         </v-main>
         <v-footer>
@@ -185,7 +156,6 @@
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
 <script type="text/javascript">
     "use strict"
-    const colorsPreview = document.getElementById('colorsPreview')
     const wsURL = 'wss://%replace_as_ws_url%'
     const webSocket = new WebSocket(wsURL)
     
@@ -236,12 +206,10 @@
                     case 'verify':
                         if (json.value.id === 'owner') {
                             this.translatorStyle = {
-                                color: 'gold',
                                 fontWeight: 'bold'
                             }
                         } else {
                             this.translatorStyle = {
-                                color: 'green',
                                 fontWeight: 'bold'
                             }
                         }
