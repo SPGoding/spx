@@ -3,7 +3,10 @@
 
 <head>
     <title>spx client</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
     <meta charset="UTF-8">
     <style>
         #root {
@@ -16,19 +19,19 @@
             min-width: 256px;
             max-width: 75%;
         }
-
+        
         #root:hover {
             box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
         }
-
+        
         a {
             color: rgb(0, 119, 170);
         }
-
+        
         button {
             margin: 0.3em;
         }
-
+        
         span.checkbox {
             margin: 0.25em;
             padding: 0.05em;
@@ -36,16 +39,16 @@
             background-color: rgb(210, 255, 241);
             border-style: dashed;
         }
-
+        
         span.checkbox.unchecked {
             background-color: transparent;
             color: rgb(170, 170, 170);
         }
-
+        
         div.checkboxContainer {
             margin-top: 0.5em;
         }
-
+        
         #articles {
             margin: 1em auto;
             font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
@@ -57,40 +60,40 @@
             overflow-y: scroll;
             display: block;
         }
-
+        
         #articles td,
         #articles th {
             border: 1px solid #ddd;
         }
-
+        
         #articles tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-
+        
         #articles tr:hover {
             background-color: #ddd;
         }
-
+        
         #articles th:hover {
             background-color: #bbb;
         }
-
+        
         #articles th {
             padding-top: 0.8em;
             padding-bottom: 0.8em;
             background-color: #b2b2b2;
             color: black;
         }
-
+        
         /* Progress circle */
-
+        
         .lds-facebook {
             display: inline-block;
             position: relative;
             width: 80px;
             height: 80px;
         }
-
+        
         .lds-facebook div {
             display: inline-block;
             position: absolute;
@@ -99,28 +102,28 @@
             background: black;
             animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
         }
-
+        
         .lds-facebook div:nth-child(1) {
             left: 8px;
             animation-delay: -0.24s;
         }
-
+        
         .lds-facebook div:nth-child(2) {
             left: 32px;
             animation-delay: -0.12s;
         }
-
+        
         .lds-facebook div:nth-child(3) {
             left: 56px;
             animation-delay: 0;
         }
-
+        
         @keyframes lds-facebook {
             0% {
                 top: 8px;
                 height: 64px;
             }
-
+            
             50%,
             100% {
                 top: 24px;
@@ -132,12 +135,12 @@
 
 <body>
     <div id="root">
-        <input type="text" placeholder="Article URL" id="url" style="width: 512px; max-width: 100%;" /><br />
-        <input type="text" placeholder="Translator" id="translator" /><br />
-        <input type="button" value="Request" id="request" style="display: none;" />
+        <input v-model="input.url" placeholder="Article URL" style="width: 512px; max-width: 100%;" type="text"/><br/>
+        <input v-model="input.translator" placeholder="Translator" type="text"/><br/>
+        <input id="request" style="display: none;" type="button" value="Request"/>
         <div id="output"></div>
-        <input type="button" value="Clear" id="read" style="display: none;" />
-        <div class="lds-facebook" id="progressBar">
+        <input id="read" style="display: none;" type="button" value="Clear"/>
+        <div id="progressBar" class="lds-facebook" :style="{display: loading.filters ? 'block' : 'none'}">
             <div></div>
             <div></div>
             <div></div>
@@ -146,38 +149,49 @@
             <h1>Bug Translators</h1>
             <div id="colorsPreview"></div>
         </div>
-        <div id="filters" style="display: none;">
+        <div id="filters" :style="{display: !loading.filters ? 'block' : 'none'}">
             <h1>Filters</h1>
-            <div id="categoryCheckboxes" class="checkboxContainer"></div>
-            <div id="artCategoryCheckboxes" class="checkboxContainer"></div>
-            <div class="checkboxContainer">
-                <span onclick="updateCheckbox.bind(this)();" id="showTranslatedArticle" class="checkbox"
-                    data-value="translationStatusTranslated">Translated</span><span onclick="updateCheckbox.bind(this)();"
-                    id="showUntranslatedArticle" class="checkbox"
-                    data-value="translationStatusUntranslated">Untranslated</span>
+            <div id="categoryCheckboxes" class="checkboxContainer">
+                <span class="checkbox" v-for="item in categories">
+                    {{item.toUpperCase()}}
+                </span>
+            </div>
+            <div id="artCategoryCheckboxes" class="checkboxContainer">
+                <span class="checkbox" v-for="item in artCategories">
+                    {{item.toUpperCase()}}
+                </span>
             </div>
             <div class="checkboxContainer">
-                <span onclick="updateCheckbox.bind(this)();" id="showEmeraldedArticle" class="checkbox"
-                    data-value="emeralationStatusEmeralded">Emeralded</span><span onclick="updateCheckbox.bind(this)();"
-                    id="showUnemeraldedArticle" class="checkbox"
-                    data-value="emeralationStatusUnemeralded">Unemeralded</span>
+                    <span id="showTranslatedArticle" class="checkbox" data-value="translationStatusTranslated"
+                          onclick="updateCheckbox.bind(this)();">Translated</span><span
+                id="showUntranslatedArticle"
+                class="checkbox" data-value="translationStatusUntranslated"
+                onclick="updateCheckbox.bind(this)();">Untranslated</span>
+            </div>
+            <div class="checkboxContainer">
+                    <span id="showEmeraldedArticle" class="checkbox" data-value="emeralationStatusEmeralded"
+                          onclick="updateCheckbox.bind(this)();">Emeralded</span><span
+                id="showUnemeraldedArticle"
+                class="checkbox" data-value="emeralationStatusUnemeralded"
+                onclick="updateCheckbox.bind(this)();">Unemeralded</span>
             </div>
         </div>
         <div>
             <h1>Articles</h1>
-            <table id="articles"></table>
+            <table id="articles"><tr><th>Time</th><th>Category</th><th>Origin</th><th>Translation</th><th>Status</th><th>Take</th></tr>
+            </table>
         </div>
     </div>
     <p style="text-align: center;"><a href="https://github.com/SPGoding/spx/blob/master/README.md">ABOUT US</a> &
         <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">PRIVACY POLICY</a></p>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
     <script type="text/javascript">
         "use strict"
         const read = document.getElementById('read')
         const request = document.getElementById('request')
         const output = document.getElementById('output')
-        const url = document.getElementById('url')
-        const translator = document.getElementById('translator')
         const status = document.getElementById('status')
         const articlesTable = document.getElementById('articles')
         const colorsPreview = document.getElementById('colorsPreview')
@@ -191,27 +205,15 @@
         const filters = document.getElementById('filters')
         const wsURL = 'wss://%replace_as_ws_url%'
         const webSocket = new WebSocket(wsURL)
-
+        
         const MiscArtCategory = '其他'
-
+        
         let hasWebSocketDone = false
         let hasArticlesDone = false
         let hasRequestDone = true
-
-        const categories = []
-        const artCategories = []
-        let articles = []
-
+        
         const clipboardJS = new ClipboardJS('.copy')
-
-        if (localStorage.getItem('lastRequest')) {
-            url.value = localStorage.getItem('lastRequest')
-        }
-        if (localStorage.getItem('translator')) {
-            translator.value = localStorage.getItem('translator')
-        }
-        getArticles()
-
+        
         request.onclick = () => {
             if (url.value) {
                 hasRequestDone = false
@@ -232,18 +234,18 @@
                 alert('Please input URI')
             }
         }
-
+        
         read.onclick = () => {
             output.innerHTML = ''
             read.style.display = 'none'
         }
-
+        
         webSocket.onopen = () => {
             request.style.display = ''
             hasWebSocketDone = true
             hideProgressBar()
         }
-
+        
         webSocket.onmessage = event => {
             const json = JSON.parse(event.data)
             let append = ''
@@ -302,54 +304,23 @@
                         .replace(/\</g, '&lt;')
                         .replace(/&/g, '&amp;')
                         .replace(/"/g, '&#39;')
-                    }">Copy BBCode</button>`
+                }">Copy BBCode</button>`
             }
             output.innerHTML = `${append}<br />${output.innerHTML}`
             read.style.display = ''
         }
-
-        function getArticles() {
-            const xhr = new XMLHttpRequest()
-            xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        articles = []
-                        const rows = xhr.responseText.split(/\r?\n/).slice(1, -1)
-                        for (const row of rows) {
-                            // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
-                            const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
-                            const [category, artCategory] = cols[7].split(':')
-                            if (!categories.includes(category)) {
-                                categories.push(category)
-                            }
-                            if (!artCategories.includes(artCategory || MiscArtCategory)) {
-                                artCategories.push(artCategory || MiscArtCategory)
-                            }
-                            articles.push(cols)
-                        }
-                        hasArticlesDone = true
-                        updateCheckboxes()
-                        updateArticlesView()
-                    } else {
-                        articlesTable.innerHTML = `博文录加载失败，错误代码：${xhr.status}`
-                    }
-                }
-            }
-            xhr.send()
-        }
-
+        
         function requestBBCodeFor(link) {
             url.value = link
             request.onclick()
         }
-
+        
         function hideProgressBar() {
             if (hasArticlesDone && hasWebSocketDone) {
                 progressBar.style.display = 'none'
             }
         }
-
+        
         function updateCheckboxes() {
             if (isUncheckedInStorage('translationStatusTranslated')) {
                 showTranslatedArticle.classList.add('unchecked')
@@ -363,7 +334,7 @@
             if (isUncheckedInStorage('emeralationStatusUnemeralded')) {
                 showUnemeraldedArticle.classList.add('unchecked')
             }
-
+            
             function addCheckbox(parent, cat) {
                 const span = document.createElement('span')
                 span.classList.add('checkbox')
@@ -376,22 +347,22 @@
                 span.appendChild(txt)
                 parent.appendChild(span)
             }
-
+            
             categoryCheckboxes.innerHTML = ''
             for (const cat of categories.sort()) {
                 addCheckbox(categoryCheckboxes, cat)
             }
-
+            
             artCategoryCheckboxes.innerText = ''
             for (const cat of artCategories.sort()) {
                 addCheckbox(artCategoryCheckboxes, cat)
             }
         }
-
+        
         function isUncheckedInStorage(value) {
             return localStorage.getItem(`checkboxes.${value}`) === 'unchecked'
         }
-
+        
         function updateCheckbox() {
             if (this.classList.contains('unchecked')) {
                 this.classList.remove('unchecked')
@@ -402,44 +373,41 @@
             }
             updateArticlesView()
         }
-
+        
         function updateArticlesView() {
-            progressBar.style.display = ''
-            filters.style.display = 'none'
-
             setTimeout(() => {
                 let innerHTML = '<table id="articles"><tr><th>Time</th><th>Category</th><th>Origin</th><th>Translation</th><th>Status</th><th>Take</th></tr>'
-
+                
                 const filteredCategories = []
                 for (const span of categoryCheckboxes.children) {
                     if (!span.classList.contains('unchecked')) {
                         filteredCategories.push(span.dataset.value)
                     }
                 }
-
+                
                 const filteredArtCategories = []
                 for (const span of artCategoryCheckboxes.children) {
                     if (!span.classList.contains('unchecked')) {
                         filteredArtCategories.push(span.dataset.value)
                     }
                 }
-
+                
                 const filteredTranslated = [
                     ...!showTranslatedArticle.classList.contains('unchecked') ? [true] : [],
                     ...!showUntranslatedArticle.classList.contains('unchecked') ? [false] : []
                 ]
-
+                
                 const filteredEmeralded = [
                     ...!showEmeraldedArticle.classList.contains('unchecked') ? [true] : [],
                     ...!showUnemeraldedArticle.classList.contains('unchecked') ? [false] : []
                 ]
-
+                
                 for (const [time, title, link, trTitle, trLink, _, emeralded, cat] of articles) {
                     const isEmeralded = emeralded === '1'
                     const isTranslated = trLink !== '-'
-
+                    
                     const [category, artCategory] = cat.split(':')
-
+                    
                     if (!(
                         filteredCategories.includes(category) &&
                         (filteredArtCategories.includes(artCategory || MiscArtCategory)) &&
@@ -448,7 +416,7 @@
                     ) {
                         continue
                     }
-
+                    
                     let operationEmoji
                     if (isEmeralded) {
                         operationEmoji = '🖤'
@@ -457,7 +425,7 @@
                     } else {
                         operationEmoji = '💝'
                     }
-
+                    
                     innerHTML += '<tr>'
                     innerHTML += `<td>${time}</td>`
                     innerHTML += `<td>${cat.toUpperCase()}</td>`
@@ -467,25 +435,98 @@
                     innerHTML += `<td><button type="button" onclick="requestBBCodeFor('${link}')">${operationEmoji}</button></td>`
                     innerHTML += '</tr>'
                 }
-
+                
                 innerHTML += '</table>'
-
+                
                 articlesTable.innerHTML = innerHTML
                 hideProgressBar()
                 filters.style.display = ''
             }, 0)
         }
-
+        
         webSocket.onerror = e => {
             console.error(e)
         }
-
+        
         webSocket.onclose = () => {
             read.style.display = 'none'
             request.style.display = 'none'
             url.disabled = true
         }
+        
+        Vue.config.devtools = true
+        new Vue({
+            el: '#root',
+            vuetify: new Vuetify(),
+            mounted() {
+                this.getArticles()
+            },
+            beforeMount() {
+                if (localStorage.getItem('lastRequest')) {
+                    this.input.url.value = localStorage.getItem('lastRequest')
+                }
+                if (localStorage.getItem('translator')) {
+                    this.input.translator.value = localStorage.getItem('translator')
+                }
+            },
+            computed:{
+              checkboxes(){
+                  return []
+                }
+            },
+            methods: {
+                getArticles() {
+                    const xhr = new XMLHttpRequest()
+                    xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState === 4) {
+                            if (xhr.status === 200) {
+                                let articles = [], categories = [], artCategories = []
+                                const rows = xhr.responseText.split(/\r?\n/).slice(1, -1)
+                                for (const row of rows) {
+                                    // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
+                                    const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
+                                    const [category, artCategory] = cols[7].split(':')
+                                    if (!categories.includes(category)) {
+                                        categories.push(category)
+                                    }
+                                    if (!artCategories.includes(artCategory || MiscArtCategory)) {
+                                        artCategories.push(artCategory || MiscArtCategory)
+                                    }
+                                    articles.push(cols)
+                                }
+                                hasArticlesDone = true
+                                this.articles = articles
+                                this.categories = categories
+                                this.artCategories = artCategories
+                                //updateCheckboxes()
+                                //updateArticlesView()
+                                this.loading.filters = false
+                            } else {
+                                alert(`博文录加载失败，错误代码：${xhr.status}`)
+                            }
+                        }
+                    }
+                    xhr.send()
+                }
+            },
+            data() {
+                return {
+                    articles: [],
+                    categories: [],
+                    artCategories: [],
+                    loading: {
+                        filters: true
+                    },
+                    input: {
+                        url: '',
+                        translator: ''
+                    }
+                }
+            }
+        })
     </script>
+
 </body>
 
 </html>
