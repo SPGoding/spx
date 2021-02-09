@@ -12,7 +12,7 @@ const info = {
     author: ''
 }
 
-export async function convertMCAriticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', articleType: string) {
+export async function convertMCArticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？', articleType: string) {
     info.url = articleUrl
     info.title = html.title.split(' | ').slice(0, -1).join(' | ')
     info.translator = translator

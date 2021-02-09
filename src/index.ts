@@ -6,8 +6,9 @@ import * as path from 'path'
 import * as rp from 'request-promise-native'
 import { connection, server as WSServer } from 'websocket'
 import { BugCache } from './bug-cache'
+import { ColorCache } from './color-cache'
 import { Content, ContentProvider, JsonContentProvider } from './content-provider'
-import { convertMCAriticleToBBCode } from './converter'
+import { convertMCArticleToBBCode } from './converter'
 import { DiscordConfig, onMessage } from './discord-bot'
 import { getArticleType, getBeginning, getEnding, getVersionType, ManifestVersion, StringStringArrayMap } from './util'
 
@@ -234,7 +235,7 @@ wsServer.on('request', request => {
                             const src = await rp(uri)
                             const html = new JSDOM(src).window.document
                             const articleType = getArticleType(html)
-                            let bbcode = await convertMCAriticleToBBCode(html, uri, translator, articleType)
+                            let bbcode: string = await convertMCArticleToBBCode(html, uri, translator, articleType)
                             if (articleType === 'NEWS') {
                                 const version = lastResults.version[1]
                                 const versionType = getVersionType(version)
@@ -270,6 +271,8 @@ wsServer.on('request', request => {
         ownerIps.splice(ownerIps.indexOf(connection.remoteAddress), 1)
         vipIps.splice(vipIps.indexOf(connection.remoteAddress), 1)
     })
+
+    connection.sendUTF(JSON.stringify({ type: 'colors', value: ColorCache.colors }))
 })
 
 function announce(type: string, value: Content, forVip: boolean) {

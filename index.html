@@ -142,6 +142,7 @@
             <div></div>
             <div></div>
         </div>
+        <div id="colorsPreview"></div>
         <div id="filters" style="display: none;">
             <div id="categoryCheckboxes" class="checkboxContainer"></div>
             <div id="artCategoryCheckboxes" class="checkboxContainer"></div>
@@ -172,6 +173,7 @@
         const translator = document.getElementById('translator')
         const status = document.getElementById('status')
         const articlesTable = document.getElementById('articles')
+        const colorsPreview = document.getElementById('colorsPreview')
         const categoryCheckboxes = document.getElementById('categoryCheckboxes')
         const artCategoryCheckboxes = document.getElementById('artCategoryCheckboxes')
         const showTranslatedArticle = document.getElementById('showTranslatedArticle')
@@ -244,6 +246,17 @@
                     append = `VERSION - ${json.value.id}`
                     playSound = true
                     break
+                case 'colors':
+                    const colors = json.value
+                    const usernames = Object.keys(colors).sort()
+                    const resultPreviewArr = []
+                    const resultBBCodeArr = []
+                    for (const u of usernames) {
+                        resultPreviewArr.push(`<span style="color:${colors[u].color};">${u}</span>`)
+                        resultBBCodeArr.push(`[color=${colors[u].color}]${u}[/color]`)
+                    }
+                    colorsPreview.innerHTML = `${resultPreviewArr.join(', ')}<br><code>${resultBBCodeArr.join(', ')}</code>`;
+                    return
                 case 'bbcode':
                     hasRequestDone = true
                     hideProgressBar()
