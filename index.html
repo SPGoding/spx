@@ -1,491 +1,476 @@
 <!DOCTYPE html>
-<html>
+<!--suppress ALL -->
+<html lang="zh">
 
 <head>
     <title>spx client</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
     <meta charset="UTF-8">
-    <style>
-        #root {
-            text-align: center;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-            transition: 0.3s;
-            padding: 2px 16px;
-            font-size: 20px;
-            margin: auto;
-            min-width: 256px;
-            max-width: 75%;
-        }
-
-        #root:hover {
-            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-        }
-
-        a {
-            color: rgb(0, 119, 170);
-        }
-
-        button {
-            margin: 0.3em;
-        }
-
-        span.checkbox {
-            margin: 0.25em;
-            padding: 0.05em;
-            cursor: pointer;
-            background-color: rgb(210, 255, 241);
-            border-style: dashed;
-        }
-
-        span.checkbox.unchecked {
-            background-color: transparent;
-            color: rgb(170, 170, 170);
-        }
-
-        div.checkboxContainer {
-            margin-top: 0.5em;
-        }
-
-        #articles {
-            margin: 1em auto;
-            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-            font-size: 0.8em;
-            border-collapse: collapse;
-            table-layout: fixed;
-            width: 80%;
-            max-height: 30em;
-            overflow-y: scroll;
-            display: block;
-        }
-
-        #articles td,
-        #articles th {
-            border: 1px solid #ddd;
-        }
-
-        #articles tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        #articles tr:hover {
-            background-color: #ddd;
-        }
-
-        #articles th:hover {
-            background-color: #bbb;
-        }
-
-        #articles th {
-            padding-top: 0.8em;
-            padding-bottom: 0.8em;
-            background-color: #b2b2b2;
-            color: black;
-        }
-
-        /* Progress circle */
-
-        .lds-facebook {
-            display: inline-block;
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
-        .lds-facebook div {
-            display: inline-block;
-            position: absolute;
-            left: 8px;
-            width: 16px;
-            background: black;
-            animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
-        }
-
-        .lds-facebook div:nth-child(1) {
-            left: 8px;
-            animation-delay: -0.24s;
-        }
-
-        .lds-facebook div:nth-child(2) {
-            left: 32px;
-            animation-delay: -0.12s;
-        }
-
-        .lds-facebook div:nth-child(3) {
-            left: 56px;
-            animation-delay: 0;
-        }
-
-        @keyframes lds-facebook {
-            0% {
-                top: 8px;
-                height: 64px;
-            }
-
-            50%,
-            100% {
-                top: 24px;
-                height: 32px;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <div id="root">
-        <input type="text" placeholder="Article URL" id="url" style="width: 512px; max-width: 100%;" /><br />
-        <input type="text" placeholder="Translator" id="translator" /><br />
-        <input type="button" value="Request" id="request" style="display: none;" />
-        <div id="output"></div>
-        <input type="button" value="Clear" id="read" style="display: none;" />
-        <div class="lds-facebook" id="progressBar">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-        <div>
-            <h1>Bug Translators</h1>
-            <div id="colorsPreview"></div>
-        </div>
-        <div id="filters" style="display: none;">
-            <h1>Filters</h1>
-            <div id="categoryCheckboxes" class="checkboxContainer"></div>
-            <div id="artCategoryCheckboxes" class="checkboxContainer"></div>
-            <div class="checkboxContainer">
-                <span onclick="updateCheckbox.bind(this)();" id="showTranslatedArticle" class="checkbox"
-                    data-value="translationStatusTranslated">Translated</span><span onclick="updateCheckbox.bind(this)();"
-                    id="showUntranslatedArticle" class="checkbox"
-                    data-value="translationStatusUntranslated">Untranslated</span>
+<div id="root">
+    <v-app>
+        <transition name="fade">
+            <div v-if="loading.filters"
+                 style="top: 0;left: 0;right: 0;bottom: 0;display: flex;z-index: 1000;position: fixed;align-items: center;justify-content: center;background-color: rgba(0, 0, 0, 0.5);-webkit-tap-highlight-color: transparent;">
+                <v-progress-circular
+                    :size="70"
+                    :width="7"
+                    color="white"
+                    indeterminate
+                ></v-progress-circular>
             </div>
-            <div class="checkboxContainer">
-                <span onclick="updateCheckbox.bind(this)();" id="showEmeraldedArticle" class="checkbox"
-                    data-value="emeralationStatusEmeralded">Emeralded</span><span onclick="updateCheckbox.bind(this)();"
-                    id="showUnemeraldedArticle" class="checkbox"
-                    data-value="emeralationStatusUnemeralded">Unemeralded</span>
-            </div>
-        </div>
-        <div>
-            <h1>Articles</h1>
-            <table id="articles"></table>
-        </div>
-    </div>
-    <p style="text-align: center;"><a href="https://github.com/SPGoding/spx/blob/master/README.md">ABOUT US</a> &
-        <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">PRIVACY POLICY</a></p>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
-    <script type="text/javascript">
-        "use strict"
-        const read = document.getElementById('read')
-        const request = document.getElementById('request')
-        const output = document.getElementById('output')
-        const url = document.getElementById('url')
-        const translator = document.getElementById('translator')
-        const status = document.getElementById('status')
-        const articlesTable = document.getElementById('articles')
-        const colorsPreview = document.getElementById('colorsPreview')
-        const categoryCheckboxes = document.getElementById('categoryCheckboxes')
-        const artCategoryCheckboxes = document.getElementById('artCategoryCheckboxes')
-        const showTranslatedArticle = document.getElementById('showTranslatedArticle')
-        const showUntranslatedArticle = document.getElementById('showUntranslatedArticle')
-        const showEmeraldedArticle = document.getElementById('showEmeraldedArticle')
-        const showUnemeraldedArticle = document.getElementById('showUnemeraldedArticle')
-        const progressBar = document.getElementById('progressBar')
-        const filters = document.getElementById('filters')
-        const wsURL = 'wss://%replace_as_ws_url%'
-        const webSocket = new WebSocket(wsURL)
+        </transition>
+        <v-main>
+            <v-app-bar color="white">
+                <v-toolbar-title>spx client</v-toolbar-title>
+            </v-app-bar>
+            <v-container>
+                <v-card class="ma-3 px-3 my-6">
+                    <v-container>
+                        <v-row>
+                            <v-col md="8" xs="12">
+                                <v-text-field v-model="input.url" :disabled="loading.websocket"
+                                              placeholder="文章 URL"></v-text-field>
+                            </v-col>
+                            <v-col md="4" xs="12">
+                                <v-text-field v-model="input.translator" :style="translatorStyle"
+                                              placeholder="翻译者"></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-col
+                            v-if="!loading.websocket && !loading.wsrequest"
+                            class="text-center" cols="12"
+                        >
+                            <v-btn color="primary" @click="request()">
+                                请求
+                            </v-btn>
+                        </v-col>
+                        <div id="output" class="mt-2">
+                            <div class="my-2" v-html="output.append"></div>
+                            <v-btn v-if="output.value" color="primary"
+                                   @click="navigator.clipboard.writeText(output.value)">复制
+                                BBCode
+                            </v-btn>
+                            <v-btn v-if="output.value"
+                                   href="javascript:location.reload()">下一个
+                            </v-btn>
+                        </div>
+                        <v-btn v-if="showRead" @click="clear">清空</v-btn>
+                        <v-col v-if="loading.wsrequest" cols="12" class="text-center">
+                            <v-progress-circular indeterminate color="primary"
+                            ></v-progress-circular>
+                        </v-col>
+                    </v-container>
+                </v-card>
+                <v-card class="ma-3 px-3 my-4 pb-4">
+                    <v-container>
+                        <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
+                        <div id="colorsPreview">
+                            <p>
+                                spx 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
+                                协议无偿捐献他们的翻译的翻译者：
+                            </p>
+                            <p>
+                                <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
+                                        style="color: #fff;">{{ item.u }}
+                                </v-chip>
+                            </p>
+                            <p>
+                                虽然这不是必要的，但 spx 仍然鼓励您署名他们的贡献：
+                            </p>
+                            <v-row>
+                                <v-col md="11" xs="12">
+                                    <pre style="overflow-x: scroll;"><code>{{
+                                            colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
+                                        }}</code></pre>
+                                </v-col>
+                                <v-col class="text-center" md="1" xs="12">
+                                    <v-btn color="primary" small
+                                           @click="navigator.clipboard.writeText(colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+                                        复制
+                                    </v-btn>
+                                </v-col>
+                            </v-row>
+                        </div>
+                    </v-container>
+                </v-card>
+                <v-card v-if="!loading.filters" id="filters" class="ma-3 px-3 my-6 pb-4">
+                    <v-container>
+                        <h5 class="text-h5 text-center my-3">过滤</h5>
+                        
+                        <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
+                            <legend class="v-label theme--light pr-2"
+                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                <div>一般分类</div>
+                            </legend>
+                            <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                            </v-chip>
+                        </v-chip-group>
+                        
+                        <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
+                            <legend class="v-label theme--light pr-2"
+                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                <div>创作分类</div>
+                            </legend>
+                            <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                            </v-chip>
+                        </v-chip-group>
+                        <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
+                            <legend class="v-label theme--light pr-2"
+                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                <div>文章状态</div>
+                            </legend>
+                            <v-chip>已翻译</v-chip>
+                            <v-chip>未翻译</v-chip>
+                            <v-chip>无悬赏</v-chip>
+                            <v-chip>悬赏中</v-chip>
+                        </v-chip-group>
+                    </v-container>
+                </v-card>
+                <v-card class="ma-3 px-3 my-6 pb-4">
+                    <v-container>
+                        <h5 class="text-h5 text-center my-3">文章</h5>
+                        <v-card class="mx-3">
+                            <v-simple-table height="500px" fixed-header>
+                                <template v-slot:default>
+                                    <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>分类</th>
+                                        <th>来源</th>
+                                        <th>译文</th>
+                                        <th>状态</th>
+                                        <th>请求</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="item in filteredArticles">
+                                        <td>{{ item.time }}</td>
+                                        <td>{{ item.category || "无" }}</td>
+                                        <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
+                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{
+                                                item.trTitle
+                                            }}</a>
+                                            <span v-else>N/A</span></td>
+                                        <td>
+                                            <img
+                                                v-if="item.isEmeralded"
+                                                src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png">
+                                            <img v-else
+                                                 src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
+                                        </td>
+                                        <td>
+                                            <v-btn :disabled="output.value !== ''" icon @click="requestBBCodeFor(item.link)">
+                                                <v-icon :color="item.operationColor">mdi-heart</v-icon>
+                                            </v-btn>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </template>
+                            </v-simple-table>
+                        </v-card>
+                    </v-container>
+                </v-card>
+            </v-container>
+        </v-main>
+        <v-footer>
+            <v-col
+                class="text-center"
+                cols="12"
+            >
+                <p style="text-align: center;">
+                    <a href="https://github.com/SPGoding/spx/blob/master/README.md">关于我们</a> |
+                    <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">隐私政策</a>
+                </p>
+            </v-col>
+        </v-footer>
+        <v-snackbar v-model="snackbar">
+            {{ snackbarText }}
 
-        const MiscArtCategory = '其他'
+            <template v-slot:action="{ attrs }">
+                <v-btn text v-bind="attrs" @click="requestSucceeded = false">
+                    关闭
+                </v-btn>
+            </template>
+        </v-snackbar>
+    </v-app>
+</div>
 
-        let hasWebSocketDone = false
-        let hasArticlesDone = false
-        let hasRequestDone = true
-
-        const categories = []
-        const artCategories = []
-        let articles = []
-
-        const clipboardJS = new ClipboardJS('.copy')
-
-        if (localStorage.getItem('lastRequest')) {
-            url.value = localStorage.getItem('lastRequest')
-        }
-        if (localStorage.getItem('translator')) {
-            translator.value = localStorage.getItem('translator')
-        }
-        getArticles()
-
-        request.onclick = () => {
-            if (url.value) {
-                hasRequestDone = false
-                progressBar.style.display = ''
-                if (url.value.startsWith('verify ')) {
-                    localStorage.setItem('lastRequest', url.value)
-                    webSocket.send(`request, ${url.value}`)
-                    url.value = ''
-                } else if (url.value.startsWith('MC-')) {
-                    webSocket.send(`request, ${url.value}`)
-                    url.value = ''
-                } else {
-                    webSocket.send(`request, ${url.value} ${translator.value}`)
-                    url.value = ''
-                }
-                localStorage.setItem('translator', translator.value)
-            } else {
-                alert('Please input URI')
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+<script type="text/javascript">
+    "use strict"
+    const wsURL = 'wss://%replace_as_ws_url%'
+    const webSocket = new WebSocket(wsURL)
+    
+    const MiscArtCategory = '其他'
+    
+    Vue.config.devtools = true
+    new Vue({
+        el: '#root',
+        vuetify: new Vuetify(),
+        mounted() {
+            this.getArticles()
+            
+            
+            webSocket.onopen = () => {
+                console.log('[spx] WebSocket Status: onopen')
+                this.loading.websocket = false
             }
-        }
+            
+            webSocket.onmessage = event => {
+                const json = JSON.parse(event.data)
+                let append = ''
+                let playSound = false
+                this.loading.wsrequest = false
 
-        read.onclick = () => {
-            output.innerHTML = ''
-            read.style.display = 'none'
-        }
-
-        webSocket.onopen = () => {
-            request.style.display = ''
-            hasWebSocketDone = true
-            hideProgressBar()
-        }
-
-        webSocket.onmessage = event => {
-            const json = JSON.parse(event.data)
-            let append = ''
-            let playSound = false
-            switch (json.type) {
-                case 'version':
-                    append = `VERSION - ${json.value.id}`
-                    playSound = true
-                    break
-                case 'colors':
-                    const colors = json.value
-                    const usernames = Object.keys(colors).sort()
-                    const resultPreviewArr = []
-                    const resultBBCodeArr = []
-                    for (const u of usernames) {
-                        resultPreviewArr.push(`<span style="color:${colors[u].color};">${u}</span>`)
-                        resultBBCodeArr.push(`[color=${colors[u].color}]${u}[/color]`)
-                    }
-                    colorsPreview.innerHTML = `${resultPreviewArr.join('、')}<br><code style="font-size:0.6em;">${resultBBCodeArr.join('、')}</code>`;
-                    return
-                case 'bbcode':
-                    hasRequestDone = true
-                    hideProgressBar()
-                    append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                    break
-                case 'read':
-                    hasRequestDone = true
-                    hideProgressBar()
-                    output.innerHTML = ""
-                    read.style.display = 'none'
-                    return
-                case 'verify':
-                    hasRequestDone = true
-                    hideProgressBar()
-                    if (json.value.id === 'owner') {
-                        translator.style.color = 'gold'
-                        translator.style.fontWeight = 'bold'
-                    } else {
-                        translator.style.color = 'green'
-                        translator.style.fontWeight = 'bold'
-                    }
-                    return
-                default:
-                    hasRequestDone = true
-                    hideProgressBar()
-                    append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                    break
-            }
-            if (playSound) {
-                const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
-                speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
-            }
-            if (json.value.addition) {
-                append += ` - <button class="copy" data-clipboard-text="${
-                    json.value.addition
-                        .replace(/\</g, '&lt;')
-                        .replace(/&/g, '&amp;')
-                        .replace(/"/g, '&#39;')
-                    }">Copy BBCode</button>`
-            }
-            output.innerHTML = `${append}<br />${output.innerHTML}`
-            read.style.display = ''
-        }
-
-        function getArticles() {
-            const xhr = new XMLHttpRequest()
-            xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        articles = []
-                        const rows = xhr.responseText.split(/\r?\n/).slice(1, -1)
-                        for (const row of rows) {
-                            // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
-                            const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
-                            const [category, artCategory] = cols[7].split(':')
-                            if (!categories.includes(category)) {
-                                categories.push(category)
-                            }
-                            if (!artCategories.includes(artCategory || MiscArtCategory)) {
-                                artCategories.push(artCategory || MiscArtCategory)
-                            }
-                            articles.push(cols)
+                switch (json.type) {
+                    case 'version':
+                        append = `VERSION - ${json.value.id}`
+                        playSound = true
+                        console.log('[spx] WebSocket Status: onmessage => version')
+                        break
+                    case 'colors':
+                        const colors = json.value
+                        const usernames = Object.keys(colors).sort()
+                        const resultPreviewArr = []
+                        for (const u of usernames) {
+                            resultPreviewArr.push({
+                                c: colors[u].color,
+                                u
+                            })
                         }
-                        hasArticlesDone = true
-                        updateCheckboxes()
-                        updateArticlesView()
-                    } else {
-                        articlesTable.innerHTML = `博文录加载失败，错误代码：${xhr.status}`
-                    }
+                        this.colorsPreview = resultPreviewArr
+                        console.log('[spx] WebSocket Status: onmessage => colors')
+                        return
+                    case 'bbcode':
+                        append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                        this.snackbarText = 'BBCode 转换成功。'
+                        this.snackbar = true
+                        console.log('[spx] WebSocket Status: onmessage => bbcode')
+                        break
+                    case 'read':
+                        this.output.append = ""
+                        this.output.value = ""
+                        this.showRead = false
+                        console.log('[spx] WebSocket Status: onmessage => read')
+                        return
+                    case 'verify':
+                        if (json.value.id === 'owner') {
+                            this.translatorStyle = {
+                                fontWeight: 'bold'
+                            }
+                        } else {
+                            this.translatorStyle = {
+                                fontWeight: 'bold'
+                            }
+                        }
+                        console.log('[spx] WebSocket Status: onmessage => verify')
+                        return
+                    default:
+                        append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
+                        console.log('[spx] WebSocket Status: onmessage => default')
+                        break
                 }
-            }
-            xhr.send()
-        }
-
-        function requestBBCodeFor(link) {
-            url.value = link
-            request.onclick()
-        }
-
-        function hideProgressBar() {
-            if (hasArticlesDone && hasWebSocketDone) {
-                progressBar.style.display = 'none'
-            }
-        }
-
-        function updateCheckboxes() {
-            if (isUncheckedInStorage('translationStatusTranslated')) {
-                showTranslatedArticle.classList.add('unchecked')
-            }
-            if (isUncheckedInStorage('translationStatusUntranslated')) {
-                showUntranslatedArticle.classList.add('unchecked')
-            }
-            if (isUncheckedInStorage('emeralationStatusEmeralded')) {
-                showEmeraldedArticle.classList.add('unchecked')
-            }
-            if (isUncheckedInStorage('emeralationStatusUnemeralded')) {
-                showUnemeraldedArticle.classList.add('unchecked')
-            }
-
-            function addCheckbox(parent, cat) {
-                const span = document.createElement('span')
-                span.classList.add('checkbox')
-                span.dataset.value = cat
-                span.onclick = updateCheckbox.bind(span)
-                if (isUncheckedInStorage(cat)) {
-                    span.classList.add('unchecked')
+                if (playSound) {
+                    const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
+                    speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
+                    console.log('[spx] WebSocket Status: onmessage => playsound')
                 }
-                const txt = document.createTextNode(cat.toUpperCase())
-                span.appendChild(txt)
-                parent.appendChild(span)
-            }
-
-            categoryCheckboxes.innerHTML = ''
-            for (const cat of categories.sort()) {
-                addCheckbox(categoryCheckboxes, cat)
-            }
-
-            artCategoryCheckboxes.innerText = ''
-            for (const cat of artCategories.sort()) {
-                addCheckbox(artCategoryCheckboxes, cat)
-            }
-        }
-
-        function isUncheckedInStorage(value) {
-            return localStorage.getItem(`checkboxes.${value}`) === 'unchecked'
-        }
-
-        function updateCheckbox() {
-            if (this.classList.contains('unchecked')) {
-                this.classList.remove('unchecked')
-                localStorage.removeItem(`checkboxes.${this.dataset.value}`)
-            } else {
-                this.classList.add('unchecked')
-                localStorage.setItem(`checkboxes.${this.dataset.value}`, 'unchecked')
-            }
-            updateArticlesView()
-        }
-
-        function updateArticlesView() {
-            progressBar.style.display = ''
-            filters.style.display = 'none'
-
-            setTimeout(() => {
-                let innerHTML = '<table id="articles"><tr><th>Time</th><th>Category</th><th>Origin</th><th>Translation</th><th>Status</th><th>Take</th></tr>'
-
-                const filteredCategories = []
-                for (const span of categoryCheckboxes.children) {
-                    if (!span.classList.contains('unchecked')) {
-                        filteredCategories.push(span.dataset.value)
-                    }
+                if (json.value.addition) {
+                    this.output.value =
+                        json.value.addition
+                            .replace(/\</g, '&lt;')
+                            .replace(/&/g, '&amp;')
+                            .replace(/"/g, '&#39;')
                 }
-
-                const filteredArtCategories = []
-                for (const span of artCategoryCheckboxes.children) {
-                    if (!span.classList.contains('unchecked')) {
-                        filteredArtCategories.push(span.dataset.value)
-                    }
+                this.output.append = append
+                this.showRead = true
+            }
+            
+            webSocket.onerror = e => {
+                this.snackbarText = "WebSocket 出现错误。"
+                this.snackbar = true
+                console.error(`[spx] WebSocket Status: onerror => ${e}`)
+            }
+            
+            webSocket.onclose = () => {
+                console.log('[spx] WebSocket Status: onclose')
+                this.showRead = false
+                this.loading.websocket = true
+            }
+            
+        },
+        watch: {
+            'input.url'(d) {
+                localStorage.setItem("lastRequest", d)
+            },
+            'input.translator'(d) {
+                localStorage.setItem("translator", d)
+            }
+        },
+        beforeMount() {
+            if (localStorage.getItem('lastRequest')) {
+                this.input.url = localStorage.getItem('lastRequest')
+            }
+            if (localStorage.getItem('translator')) {
+                this.input.translator = localStorage.getItem('translator')
+            }
+        },
+        computed: {
+            status() {
+                return {
+                    translated: this.statusInput.includes(0),
+                    untranslated: this.statusInput.includes(1),
+                    emeralded: this.statusInput.includes(2),
+                    unemeralded: this.statusInput.includes(3)
                 }
-
-                const filteredTranslated = [
-                    ...!showTranslatedArticle.classList.contains('unchecked') ? [true] : [],
-                    ...!showUntranslatedArticle.classList.contains('unchecked') ? [false] : []
-                ]
-
-                const filteredEmeralded = [
-                    ...!showEmeraldedArticle.classList.contains('unchecked') ? [true] : [],
-                    ...!showUnemeraldedArticle.classList.contains('unchecked') ? [false] : []
-                ]
-
-                for (const [time, title, link, trTitle, trLink, _, emeralded, cat] of articles) {
+            },
+            filteredArticles() {
+                let categories = this.checkboxes.map(v => this.categories[v])
+                let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
+                let result = this.articles.map(v => {
+                    const [time, title, link, trTitle, trLink, , emeralded, cat] = v
                     const isEmeralded = emeralded === '1'
                     const isTranslated = trLink !== '-'
-
+                    
                     const [category, artCategory] = cat.split(':')
-
-                    if (!(
-                        filteredCategories.includes(category) &&
-                        (filteredArtCategories.includes(artCategory || MiscArtCategory)) &&
-                        filteredEmeralded.includes(isEmeralded) &&
-                        filteredTranslated.includes(isTranslated))
-                    ) {
-                        continue
+                    let emeraldedMatch = isEmeralded ? this.status.emeralded : this.status.unemeralded
+                    let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
+                    if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && emeraldedMatch && translatedMatch)) {
+                        return null
                     }
-
-                    let operationEmoji
+                    let operationColor
                     if (isEmeralded) {
-                        operationEmoji = '🖤'
+                        operationColor = 'black'
                     } else if (isTranslated) {
-                        operationEmoji = '💚'
+                        operationColor = 'green'
                     } else {
-                        operationEmoji = '💝'
+                        operationColor = 'red'
                     }
-
-                    innerHTML += '<tr>'
-                    innerHTML += `<td>${time}</td>`
-                    innerHTML += `<td>${cat.toUpperCase()}</td>`
-                    innerHTML += `<td><a href="${link}" target="_blank">${title}</a></td>`
-                    innerHTML += `<td>${isTranslated ? `<a href="${trLink}" target="_blank">${trTitle}</a>` : 'N/A'}</td>`
-                    innerHTML += `<td><img src="${isEmeralded ? 'https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png' : 'https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png'}"></td>`
-                    innerHTML += `<td><button type="button" onclick="requestBBCodeFor('${link}')">${operationEmoji}</button></td>`
-                    innerHTML += '</tr>'
+                    
+                    return {
+                        operationColor,
+                        time,
+                        category: cat.toUpperCase(),
+                        link,
+                        title,
+                        trLink,
+                        trTitle,
+                        isTranslated,
+                        isEmeralded
+                    }
+                }).filter(v => v != null)
+                console.log(result)
+                return result
+            }
+        },
+        methods: {
+            requestBBCodeFor(link) {
+                this.request(link)
+            },
+            clear() {
+                this.output.append = ""
+                this.output.value = ""
+                this.showRead = false
+            },
+            request(url) {
+                this.loading.wsrequest = true
+                const val = url || this.input.url
+                if (val) {
+                    if (val.startsWith('verify ')) {
+                        localStorage.setItem('lastRequest', val)
+                        webSocket.send(`request, ${val}`)
+                        this.input.url = ''
+                    } else if (val.startsWith('MC-')) {
+                        webSocket.send(`request, ${val}`)
+                        this.input.url = ''
+                    } else {
+                        webSocket.send(`request, ${val} ${this.input.translator}`)
+                        this.input.url = ''
+                    }
+                    localStorage.setItem('translator', this.input.translator)
+                } else {
+                    this.snackbarText = '请输入请求 URL。'
+                    this.snackbar = true
                 }
-
-                innerHTML += '</table>'
-
-                articlesTable.innerHTML = innerHTML
-                hideProgressBar()
-                filters.style.display = ''
-            }, 0)
+            },
+            getArticles() {
+                const xhr = new XMLHttpRequest()
+                xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            let articles = [], categories = [], artCategories = []
+                            const rows = xhr.responseText.split(/\r?\n/).slice(1, -1)
+                            for (const row of rows) {
+                                // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
+                                const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
+                                const [category, artCategory] = cols[7].split(':')
+                                if (!categories.includes(category)) {
+                                    categories.push(category)
+                                }
+                                if (!artCategories.includes(artCategory || MiscArtCategory)) {
+                                    artCategories.push(artCategory || MiscArtCategory)
+                                }
+                                articles.push(cols)
+                            }
+                            this.articles = articles
+                            this.categories = categories
+                            this.artCategories = artCategories
+                            this.checkboxes = [...new Array(categories.length).keys()]
+                            this.artCheckboxes = [...new Array(artCategories.length).keys()]
+                            this.loading.filters = false
+                            console.log('[spx] Article table loaded.')
+                        } else {
+                            this.snackbarText = `博文录加载失败，错误代码：${xhr.status}`
+                            this.snackbar = true
+                            console.error('[spx] Article table failed loading.')
+                        }
+                    }
+                }
+                xhr.send()
+            }
+        },
+        data() {
+            return {
+                articles: [],
+                categories: [],
+                artCategories: [],
+                loading: {
+                    filters: true,
+                    websocket: true,
+                    wsrequest: false,
+                },
+                input: {
+                    url: '',
+                    translator: ''
+                },
+                checkboxes: [],
+                artCheckboxes: [],
+                statusInput: [0,1,2,3],
+                colorsPreview: [],
+                output: {
+                    append: '',
+                    value: ''
+                },
+                translatorStyle: {
+                    color: 'black',
+                    fontWeight: 'normal'
+                },
+                showRead: false,
+                snackbar: false,
+                snackbarText: '',
+            }
         }
+    })
+</script>
 
-        webSocket.onerror = e => {
-            console.error(e)
-        }
-
-        webSocket.onclose = () => {
-            read.style.display = 'none'
-            request.style.display = 'none'
-            url.disabled = true
-        }
-    </script>
 </body>
 
 </html>
