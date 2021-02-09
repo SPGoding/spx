@@ -122,14 +122,16 @@
 
 <body>
 <div id="root">
-    <input v-model="input.url" placeholder="Article URL" style="width: 512px; max-width: 100%;" type="text" :disabled="loading.websocket"/><br/>
-    <input v-model="input.translator" placeholder="Translator" type="text"/><br/>
-    <input id="request" :style="{display: loading.websocket ? 'none' : 'block' }" type="button" value="Request" @click="request"/>
+    <input v-model="input.url" :disabled="loading.websocket" placeholder="Article URL" style="width: 512px; max-width: 100%;"
+           type="text"/><br/>
+    <input v-model="input.translator" :style="translatorStyle" placeholder="Translator" type="text"/><br/>
+    <input id="request" :style="{display: loading.websocket ? 'none' : 'block' }" type="button" value="Request"
+           @click="request"/>
     <div id="output">
         <div v-html="output.append"></div>
-        <button v-if="output.value">Copy BBCode</button>
+        <button v-if="output.value" @click="navigator.clipboard.writeText(output.value)">Copy BBCode</button>
     </div>
-    <input id="read" style="display: none;" type="button" value="Clear"/>
+    <input id="read" :style="{display: showRead? 'block' : 'none'}" type="button" value="Clear" @click="clear"/>
     <div id="progressBar" :style="{display: loading.filters ? 'block' : 'none'}" class="lds-facebook">
         <div></div>
         <div></div>
@@ -138,8 +140,8 @@
     <div>
         <h1>Bug Translators</h1>
         <div id="colorsPreview">
-            <span v-for="item in colorsPreview" :style="{color: item.c}">{{item.u}}&nbsp;</span>
-            <code>{{colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")}}</code>
+            <span v-for="item in colorsPreview" :style="{color: item.c}">{{ item.u }}&nbsp;</span>
+            <code>{{ colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、") }}</code>
         </div>
     </div>
     <div id="filters" :style="{display: !loading.filters ? 'block' : 'none'}">
@@ -170,76 +172,69 @@
         <h1>Articles</h1>
         <v-simple-table>
             <template v-slot:default>
-            <thead>
-            <tr>
-                <th>Time</th>
-                <th>Category</th>
-                <th>Origin</th>
-                <th>Translation</th>
-                <th>Status</th>
-                <th>Take</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="item in filteredArticles">
-                <td>{{item.time}}</td>
-                <td>{{item.category}}</td>
-                <td><a :href="item.link" target="_blank">{{item.title}}</a></td>
-                <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{item.trTitle}}</a>
-                <span v-else>N/A</span></td>
-                <td>
-                    <img src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png" v-if="item.isEmeralded">
-                    <img v-else src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
-                </td>
-                <td>
-                    <button>{{item.operationEmoji}}</button>
-                </td>
-            </tr>
-            </tbody>
+                <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Category</th>
+                    <th>Origin</th>
+                    <th>Translation</th>
+                    <th>Status</th>
+                    <th>Take</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="item in filteredArticles">
+                    <td>{{ item.time }}</td>
+                    <td>{{ item.category }}</td>
+                    <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
+                    <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{ item.trTitle }}</a>
+                        <span v-else>N/A</span></td>
+                    <td>
+                        <img
+                            v-if="item.isEmeralded"
+                            src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png">
+                        <img v-else
+                             src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
+                    </td>
+                    <td>
+                        <button @click="requestBBCodeFor(item.link)"><a :style="{color: item.operationColor}">
+                            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"
+                                      fill="currentColor"/>
+                            </svg>
+                        </a></button>
+                    </td>
+                </tr>
+                </tbody>
             </template>
         </v-simple-table>
     </div>
 </div>
 <p style="text-align: center;"><a href="https://github.com/SPGoding/spx/blob/master/README.md">ABOUT US</a> &
     <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">PRIVACY POLICY</a></p>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
 <script type="text/javascript">
     "use strict"
-    const read = document.getElementById('read')
-    const output = document.getElementById('output')
     const colorsPreview = document.getElementById('colorsPreview')
     const wsURL = 'wss://%replace_as_ws_url%'
     const webSocket = new WebSocket(wsURL)
     
     const MiscArtCategory = '其他'
     
-    const clipboardJS = new ClipboardJS('.copy')
-    
-    read.onclick = () => {
-        output.innerHTML = ''
-        read.style.display = 'none'
-    }
-
-    function requestBBCodeFor(link) {
-        url.value = link
-        request.onclick()
-    }
-
     Vue.config.devtools = true
     new Vue({
         el: '#root',
         vuetify: new Vuetify(),
         mounted() {
             this.getArticles()
-    
-    
+            
+            
             webSocket.onopen = () => {
                 console.log('onopen')
                 this.loading.websocket = false
             }
-    
+            
             webSocket.onmessage = event => {
                 const json = JSON.parse(event.data)
                 let append = ''
@@ -265,16 +260,21 @@
                         append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                         break
                     case 'read':
-                        output.innerHTML = ""
-                        read.style.display = 'none'
+                        this.output.append = ""
+                        this.output.value = ""
+                        this.showRead = false
                         return
                     case 'verify':
                         if (json.value.id === 'owner') {
-                            translator.style.color = 'gold'
-                            translator.style.fontWeight = 'bold'
+                            this.translatorStyle = {
+                                color: 'gold',
+                                fontWeight: 'bold'
+                            }
                         } else {
-                            translator.style.color = 'green'
-                            translator.style.fontWeight = 'bold'
+                            this.translatorStyle = {
+                                color: 'green',
+                                fontWeight: 'bold'
+                            }
                         }
                         return
                     default:
@@ -293,52 +293,62 @@
                             .replace(/"/g, '&#39;')
                 }
                 this.output.append = append
+                this.showRead = true
             }
-    
+            
             webSocket.onerror = e => {
                 console.error(e)
             }
-    
+            
             webSocket.onclose = () => {
-                read.style.display = 'none'
+                console.log('onclose')
+                this.showRead = false
                 this.loading.websocket = true
             }
-    
+            
+        },
+        watch: {
+            'input.url'(d) {
+                localStorage.setItem("lastRequest", d)
+            },
+            'input.translator'(d) {
+                localStorage.setItem("translator", d)
+            }
         },
         beforeMount() {
             if (localStorage.getItem('lastRequest')) {
-                this.input.url.value = localStorage.getItem('lastRequest')
+                this.input.url = localStorage.getItem('lastRequest')
             }
             if (localStorage.getItem('translator')) {
-                this.input.translator.value = localStorage.getItem('translator')
+                this.input.translator = localStorage.getItem('translator')
             }
         },
         computed: {
-            filteredArticles(){
+            filteredArticles() {
                 let categories = Object.keys(this.checkboxes).filter(v => this.checkboxes[v])
                 let artCategories = Object.keys(this.artCheckboxes).filter(v => this.artCheckboxes[v])
                 let result = this.articles.map(v => {
-                    const [time, title, link, trTitle, trLink,,emeralded, cat] = v
+                    const [time, title, link, trTitle, trLink, , emeralded, cat] = v
                     const isEmeralded = emeralded === '1'
                     const isTranslated = trLink !== '-'
-    
+                    
                     const [category, artCategory] = cat.split(':')
                     let emeraldedMatch = isEmeralded ? this.status.emeralded : this.status.unemeralded
                     let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
-                    if(!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && emeraldedMatch && translatedMatch)){
+                    if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && emeraldedMatch && translatedMatch)) {
                         return null
                     }
-                    let operationEmoji
+                    let operationColor
                     if (isEmeralded) {
-                        operationEmoji = '🖤'
+                        operationColor = 'black'
                     } else if (isTranslated) {
-                        operationEmoji = '💚'
+                        operationColor = 'green'
                     } else {
-                        operationEmoji = '💝'
+                        operationColor = 'red'
                     }
                     
                     return {
-                        operationEmoji,
+                        operationColor,
                         time,
                         category: cat.toUpperCase(),
                         link,
@@ -348,14 +358,22 @@
                         isTranslated,
                         isEmeralded
                     }
-                }).filter(v => v!= null)
+                }).filter(v => v != null)
                 console.log(result)
                 return result
             }
         },
         methods: {
-            request(){
-                const val = this.input.url
+            requestBBCodeFor(link) {
+                this.request(link)
+            },
+            clear() {
+                this.output.append = ""
+                this.output.value = ""
+                this.showRead = false
+            },
+            request(url) {
+                const val = url || this.input.url
                 if (val) {
                     if (val.startsWith('verify ')) {
                         localStorage.setItem('lastRequest', val)
@@ -438,7 +456,12 @@
                 output: {
                     append: '',
                     value: ''
-                }
+                },
+                translatorStyle: {
+                    color: 'black',
+                    fontWeight: 'normal'
+                },
+                showRead: false
             }
         }
     })
