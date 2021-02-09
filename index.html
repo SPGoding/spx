@@ -95,36 +95,34 @@
                 <v-card v-if="!loading.filters" id="filters" class="ma-3 px-3 my-6 pb-4">
                     <v-container>
                         <h5 class="text-h5 text-center my-3">过滤</h5>
-                        <v-radio-group class="mt-0" hide-details row>
-                            <template v-slot:label>
-                                <div>一般分类</div>
-                            </template>
-                            <v-checkbox v-for="item in categories" v-model="checkboxes[item]" :label="item.toUpperCase().replace('-', ' ') || '无'" class="mt-0 mr-2"
-                                        dense hide-details></v-checkbox>
-                        </v-radio-group>
                         
-                        <v-radio-group class="mt-0" hide-details row>
-                            <template v-slot:label>
+                        <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
+                            <legend class="v-label theme--light pr-2"
+                                    style="left: 0px; right: auto; position: relative; line-height: 2;">
+                                <div>一般分类</div>
+                            </legend>
+                            <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                            </v-chip>
+                        </v-chip-group>
+                        
+                        <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
+                            <legend class="v-label theme--light pr-2"
+                                    style="left: 0px; right: auto; position: relative; line-height: 2;">
                                 <div>创作分类</div>
-                            </template>
-                            <v-checkbox v-for="item in artCategories" v-model="artCheckboxes[item]" :label="item.toUpperCase().replace('-', ' ') || '无'"
-                                        class="mt-0 mr-2"
-                                        dense
-                                        hide-details></v-checkbox>
-                        </v-radio-group>
-                        <v-radio-group class="mt-0" hide-details row>
-                            <template v-slot:label>
+                            </legend>
+                            <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                            </v-chip>
+                        </v-chip-group>
+                        <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
+                            <legend class="v-label theme--light pr-2"
+                                    style="left: 0px; right: auto; position: relative; line-height: 2;">
                                 <div>文章状态</div>
-                            </template>
-                            <v-checkbox v-model="status.translated" class="mt-0 mr-2" dense hide-details
-                                        label="已翻译"></v-checkbox>
-                            <v-checkbox v-model="status.untranslated" class="mt-0 mr-2" dense hide-details
-                                        label="未翻译"></v-checkbox>
-                            <v-checkbox v-model="status.emeralded" class="mt-0 mr-2" dense hide-details
-                                        label="无悬赏"></v-checkbox>
-                            <v-checkbox v-model="status.unemeralded" class="mt-0 mr-1" dense hide-details
-                                        label="悬赏中"></v-checkbox>
-                        </v-radio-group>
+                            </legend>
+                            <v-chip>已翻译</v-chip>
+                            <v-chip>未翻译</v-chip>
+                            <v-chip>无悬赏</v-chip>
+                            <v-chip>悬赏中</v-chip>
+                        </v-chip-group>
                     </v-container>
                 </v-card>
                 <v-card class="ma-3 px-3 my-6 pb-4">
@@ -296,9 +294,17 @@
             }
         },
         computed: {
+            status() {
+                return {
+                    translated: this.statusInput.includes(0),
+                    untranslated: this.statusInput.includes(1),
+                    emeralded: this.statusInput.includes(2),
+                    unemeralded: this.statusInput.includes(3)
+                }
+            },
             filteredArticles() {
-                let categories = Object.keys(this.checkboxes).filter(v => this.checkboxes[v])
-                let artCategories = Object.keys(this.artCheckboxes).filter(v => this.artCheckboxes[v])
+                let categories = this.checkboxes.map(v => this.categories[v])
+                let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
                 let result = this.articles.map(v => {
                     const [time, title, link, trTitle, trLink, , emeralded, cat] = v
                     const isEmeralded = emeralded === '1'
@@ -386,14 +392,8 @@
                             this.articles = articles
                             this.categories = categories
                             this.artCategories = artCategories
-                            this.checkboxes = categories.reduce((data, obj) => {
-                                data[obj] = true
-                                return data
-                            }, {})
-                            this.artCheckboxes = artCategories.reduce((data, obj) => {
-                                data[obj] = true
-                                return data
-                            }, {})
+                            this.checkboxes = [...new Array(categories.length).keys()]
+                            this.artCheckboxes = [...new Array(artCategories.length).keys()]
                             this.loading.filters = false
                         } else {
                             alert(`博文录加载失败，错误代码：${xhr.status}`)
@@ -416,14 +416,9 @@
                     url: '',
                     translator: ''
                 },
-                checkboxes: {},
-                artCheckboxes: {},
-                status: {
-                    translated: true,
-                    untranslated: true,
-                    unemeralded: true,
-                    emeralded: true
-                },
+                checkboxes: [],
+                artCheckboxes: [],
+                statusInput: [0,1,2,3],
                 colorsPreview: [],
                 output: {
                     append: '',
