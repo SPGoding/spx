@@ -98,7 +98,7 @@
                         
                         <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
                             <legend class="v-label theme--light pr-2"
-                                    style="left: 0px; right: auto; position: relative; line-height: 2;">
+                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
                                 <div>一般分类</div>
                             </legend>
                             <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
@@ -107,7 +107,7 @@
                         
                         <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
                             <legend class="v-label theme--light pr-2"
-                                    style="left: 0px; right: auto; position: relative; line-height: 2;">
+                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
                                 <div>创作分类</div>
                             </legend>
                             <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
@@ -115,7 +115,7 @@
                         </v-chip-group>
                         <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
                             <legend class="v-label theme--light pr-2"
-                                    style="left: 0px; right: auto; position: relative; line-height: 2;">
+                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
                                 <div>文章状态</div>
                             </legend>
                             <v-chip>已翻译</v-chip>
