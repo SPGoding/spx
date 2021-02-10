@@ -17,6 +17,8 @@ The app does use third party services that may collect information used to ident
 Link to privacy policy of third party service providers used by the app
 
 *   [GitHub](https://github.com/site/privacy)
+*   [jsDelivr](https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-net)
+*   [Google Fonts](https://policies.google.com/privacy)
 
 **Log Data**
 
