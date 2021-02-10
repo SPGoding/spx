@@ -96,42 +96,38 @@
                         </div>
                     </v-container>
                 </v-card>
-                <v-card v-if="!loading.filters" id="filters" class="ma-3 px-3 my-6 pb-4">
-                    <v-container>
-                        <h5 class="text-h5 text-center my-3">过滤</h5>
-                        
-                        <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
-                            <legend class="v-label theme--light pr-2"
-                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                <div>一般分类</div>
-                            </legend>
-                            <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
-                            </v-chip>
-                        </v-chip-group>
-                        
-                        <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
-                            <legend class="v-label theme--light pr-2"
-                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                <div>创作分类</div>
-                            </legend>
-                            <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
-                            </v-chip>
-                        </v-chip-group>
-                        <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
-                            <legend class="v-label theme--light pr-2"
-                                    style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                <div>文章状态</div>
-                            </legend>
-                            <v-chip>已翻译</v-chip>
-                            <v-chip>未翻译</v-chip>
-                            <v-chip>无悬赏</v-chip>
-                            <v-chip>悬赏中</v-chip>
-                        </v-chip-group>
-                    </v-container>
-                </v-card>
                 <v-card class="ma-3 px-3 my-6 pb-4">
                     <v-container>
                         <h5 class="text-h5 text-center my-3">文章</h5>
+                        <div class="mx-3 mb-3" v-if="!loading.filters" id="filters">
+                            <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
+                                <legend class="v-label theme--light pr-2"
+                                        style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                    <div>一般分类</div>
+                                </legend>
+                                <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                                </v-chip>
+                            </v-chip-group>
+
+                            <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
+                                <legend class="v-label theme--light pr-2"
+                                        style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                    <div>创作分类</div>
+                                </legend>
+                                <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                                </v-chip>
+                            </v-chip-group>
+                            <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
+                                <legend class="v-label theme--light pr-2"
+                                        style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                    <div>文章状态</div>
+                                </legend>
+                                <v-chip>已翻译</v-chip>
+                                <v-chip>未翻译</v-chip>
+                                <v-chip>无悬赏</v-chip>
+                                <v-chip>悬赏中</v-chip>
+                            </v-chip-group>
+                        </div>
                         <v-card class="mx-3">
                             <v-simple-table height="500px" fixed-header>
                                 <template v-slot:default>
