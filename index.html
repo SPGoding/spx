@@ -263,10 +263,12 @@
                     case 'verify':
                         if (json.value.id === 'owner') {
                             this.translatorStyle = {
+                                color: 'gold',
                                 fontWeight: 'bold'
                             }
                         } else {
                             this.translatorStyle = {
+                                color: 'green',
                                 fontWeight: 'bold'
                             }
                         }
@@ -307,16 +309,13 @@
             
         },
         watch: {
-            'input.url'(d) {
-                localStorage.setItem("lastRequest", d)
-            },
             'input.translator'(d) {
                 localStorage.setItem("translator", d)
             }
         },
         beforeMount() {
-            if (localStorage.getItem('lastRequest')) {
-                this.input.url = localStorage.getItem('lastRequest')
+            if (localStorage.getItem('lastVerificationRequest')) {
+                this.input.url = localStorage.getItem('lastVerificationRequest')
             }
             if (localStorage.getItem('translator')) {
                 this.input.translator = localStorage.getItem('translator')
@@ -384,7 +383,7 @@
                 const val = url || this.input.url
                 if (val) {
                     if (val.startsWith('verify ')) {
-                        localStorage.setItem('lastRequest', val)
+                        localStorage.setItem('lastVerificationRequest', val)
                         webSocket.send(`request, ${val}`)
                         this.input.url = ''
                     } else if (val.startsWith('MC-')) {
