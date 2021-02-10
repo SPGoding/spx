@@ -3,7 +3,7 @@
 <html lang="zh">
 
 <head>
-    <title>spx client</title>
+    <title>SPX Client</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
@@ -27,7 +27,7 @@
         </transition>
         <v-main>
             <v-app-bar color="white">
-                <v-toolbar-title>spx client</v-toolbar-title>
+                <v-toolbar-title>SPX Client</v-toolbar-title>
             </v-app-bar>
             <v-container>
                 <v-card class="ma-3 px-3 my-6">
@@ -69,7 +69,7 @@
                         <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
                         <div id="colorsPreview">
                             <p>
-                                spx 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
+                                SPX 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
                                 协议无偿捐献他们的翻译的翻译者：
                             </p>
                             <p>
@@ -78,7 +78,7 @@
                                 </v-chip>
                             </p>
                             <p>
-                                虽然这不是必要的，但 spx 仍然鼓励您署名他们的贡献：
+                                虽然这不是必要的，但 SPX 仍然鼓励您署名他们的贡献：
                             </p>
                             <v-row>
                                 <v-col md="11" xs="12">
@@ -150,18 +150,6 @@
                                                 item.trTitle
                                             }}</a>
                                             <span v-else>N/A</span></td>
-                                        <td>
-                                            <img
-                                                v-if="item.isEmeralded"
-                                                src="https://user-images.githubusercontent.com/15277496/76684841-320b4a80-65dd-11ea-8206-e766bbbd3b7d.png">
-                                            <img v-else
-                                                 src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
-                                        </td>
-                                        <td>
-                                            <v-btn icon @click="requestBBCodeFor(item.link)">
-                                                <v-icon :color="item.operationColor">mdi-heart</v-icon>
-                                            </v-btn>
-                                        </td>
                                     </tr>
                                     </tbody>
                                 </template>
@@ -212,7 +200,7 @@
             
             
             webSocket.onopen = () => {
-                console.log('[spx] WebSocket Status: onopen')
+                console.log('[SPX] WebSocket Status: onopen')
                 this.loading.websocket = false
             }
             
@@ -226,7 +214,7 @@
                     case 'version':
                         append = `VERSION - ${json.value.id}`
                         playSound = true
-                        console.log('[spx] WebSocket Status: onmessage => version')
+                        console.log('[SPX] WebSocket Status: onmessage => version')
                         break
                     case 'colors':
                         const colors = json.value
@@ -239,19 +227,19 @@
                             })
                         }
                         this.colorsPreview = resultPreviewArr
-                        console.log('[spx] WebSocket Status: onmessage => colors')
+                        console.log('[SPX] WebSocket Status: onmessage => colors')
                         return
                     case 'bbcode':
                         append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
                         this.snackbarText = 'BBCode 转换成功。'
                         this.snackbar = true
-                        console.log('[spx] WebSocket Status: onmessage => bbcode')
+                        console.log('[SPX] WebSocket Status: onmessage => bbcode')
                         break
                     case 'read':
                         this.output.append = ""
                         this.output.value = ""
                         this.showRead = false
-                        console.log('[spx] WebSocket Status: onmessage => read')
+                        console.log('[SPX] WebSocket Status: onmessage => read')
                         return
                     case 'verify':
                         if (json.value.id === 'owner') {
@@ -261,17 +249,17 @@
                         }
                         this.snackbarText = '成功验证了您的身份。'
                         this.snackbar = true
-                        console.log('[spx] WebSocket Status: onmessage => verify')
+                        console.log('[SPX] WebSocket Status: onmessage => verify')
                         return
                     default:
                         append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                        console.log('[spx] WebSocket Status: onmessage => default')
+                        console.log('[SPX] WebSocket Status: onmessage => default')
                         break
                 }
                 if (playSound) {
                     const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
                     speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
-                    console.log('[spx] WebSocket Status: onmessage => playsound')
+                    console.log('[SPX] WebSocket Status: onmessage => playsound')
                 }
                 if (json.value.addition) {
                     this.output.value =
@@ -287,11 +275,11 @@
             webSocket.onerror = e => {
                 this.snackbarText = "WebSocket 出现错误。"
                 this.snackbar = true
-                console.error(`[spx] WebSocket Status: onerror => ${e}`)
+                console.error(`[SPX] WebSocket Status: onerror => ${e}`)
             }
             
             webSocket.onclose = () => {
-                console.log('[spx] WebSocket Status: onclose')
+                console.log('[SPX] WebSocket Status: onclose')
                 this.showRead = false
                 this.loading.websocket = true
             }
@@ -314,44 +302,31 @@
             status() {
                 return {
                     translated: this.statusInput.includes(0),
-                    untranslated: this.statusInput.includes(1),
-                    emeralded: this.statusInput.includes(2),
-                    unemeralded: this.statusInput.includes(3)
+                    untranslated: this.statusInput.includes(1)
                 }
             },
             filteredArticles() {
                 let categories = this.checkboxes.map(v => this.categories[v])
                 let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
                 let result = this.articles.map(v => {
-                    const [time, title, link, trTitle, trLink, , emeralded, cat] = v
-                    const isEmeralded = emeralded === '1'
+                    // published, title, link, cat, tr_link, tr_name
+                    const [time, title, link, cat, trLink, trTitle] = v
                     const isTranslated = trLink !== '-'
                     
                     const [category, artCategory] = cat.split(':')
-                    let emeraldedMatch = isEmeralded ? this.status.emeralded : this.status.unemeralded
                     let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
-                    if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && emeraldedMatch && translatedMatch)) {
+                    if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && translatedMatch)) {
                         return null
-                    }
-                    let operationColor
-                    if (isEmeralded) {
-                        operationColor = 'black'
-                    } else if (isTranslated) {
-                        operationColor = 'green'
-                    } else {
-                        operationColor = 'red'
                     }
                     
                     return {
-                        operationColor,
                         time,
                         category: cat.toUpperCase(),
                         link,
                         title,
                         trLink,
                         trTitle,
-                        isTranslated,
-                        isEmeralded
+                        isTranslated
                     }
                 }).filter(v => v != null)
                 console.log(result)
@@ -390,16 +365,17 @@
             },
             getArticles() {
                 const xhr = new XMLHttpRequest()
-                xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/rawtable.csv', true)
+                xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/articles.csv', true)
                 xhr.onreadystatechange = () => {
                     if (xhr.readyState === 4) {
                         if (xhr.status === 200) {
                             let articles = [], categories = [], artCategories = []
                             const rows = xhr.responseText.split(/\r?\n/).slice(1, -1)
                             for (const row of rows) {
+                                // published, title, link, cat, tr_link, tr_name
                                 // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
                                 const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
-                                const [category, artCategory] = cols[7].split(':')
+                                const [category, artCategory] = cols[3].split(':')
                                 if (!categories.includes(category)) {
                                     categories.push(category)
                                 }
@@ -414,11 +390,11 @@
                             this.checkboxes = [...new Array(categories.length).keys()]
                             this.artCheckboxes = [...new Array(artCategories.length).keys()]
                             this.loading.filters = false
-                            console.log('[spx] Article table loaded.')
+                            console.log('[SPX] Article table loaded.')
                         } else {
                             this.snackbarText = `博文录加载失败，错误代码：${xhr.status}`
                             this.snackbar = true
-                            console.error('[spx] Article table failed loading.')
+                            console.error('[SPX] Article table failed loading.')
                         }
                     }
                 }
