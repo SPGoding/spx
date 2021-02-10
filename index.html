@@ -124,8 +124,6 @@
                                 </legend>
                                 <v-chip>已翻译</v-chip>
                                 <v-chip>未翻译</v-chip>
-                                <v-chip>无悬赏</v-chip>
-                                <v-chip>悬赏中</v-chip>
                             </v-chip-group>
                         </div>
                         <v-card class="mx-3">
@@ -137,7 +135,6 @@
                                         <th>分类</th>
                                         <th>原文</th>
                                         <th>译文</th>
-                                        <th>译者</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -145,9 +142,10 @@
                                         <td>{{ item.published }}</td>
                                         <td>{{ item.category || "无" }}</td>
                                         <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
-                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">译文</a>
+                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">by @{{
+                                                item.translator
+                                            }}</a>
                                             <span v-else>N/A</span></td>
-                                        <td>{{ item.translator }}</td>
                                     </tr>
                                     </tbody>
                                 </template>
