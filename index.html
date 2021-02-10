@@ -34,12 +34,12 @@
                     <v-container>
                         <v-row>
                             <v-col md="8" xs="12">
-                                <v-text-field v-model="input.url" :disabled="loading.websocket"
+                                <v-text-field v-model="input.url" :disabled="loading.websocket" prepend-icon="mdi-link"
                                               placeholder="文章 URL"></v-text-field>
                             </v-col>
                             <v-col md="4" xs="12">
-                                <v-text-field v-model="input.translator" :style="translatorStyle"
-                                              placeholder="翻译者"></v-text-field>
+                                <v-text-field v-model="input.translator" placeholder="翻译者"
+                                              :prepend-icon="translatorIcon"></v-text-field>
                             </v-col>
                         </v-row>
                         <v-col
@@ -52,15 +52,12 @@
                         </v-col>
                         <div id="output" class="mt-2">
                             <div class="my-2" v-html="output.append"></div>
-                            <v-btn v-if="output.value" color="primary"
+                            <v-btn v-if="output.value" color="primary" class="mr-3"
                                    @click="navigator.clipboard.writeText(output.value)">复制
                                 BBCode
                             </v-btn>
-                            <v-btn v-if="output.value"
-                                   href="javascript:location.reload()">下一个
-                            </v-btn>
+                            <v-btn v-if="showRead" @click="clear">清空</v-btn>
                         </div>
-                        <v-btn v-if="showRead" @click="clear">清空</v-btn>
                         <v-col v-if="loading.wsrequest" cols="12" class="text-center">
                             <v-progress-circular indeterminate color="primary"
                             ></v-progress-circular>
@@ -165,7 +162,7 @@
                                                  src="https://user-images.githubusercontent.com/15277496/76684847-3c2d4900-65dd-11ea-8d91-c7be623cf3d2.png">
                                         </td>
                                         <td>
-                                            <v-btn :disabled="output.value !== ''" icon @click="requestBBCodeFor(item.link)">
+                                            <v-btn icon @click="requestBBCodeFor(item.link)">
                                                 <v-icon :color="item.operationColor">mdi-heart</v-icon>
                                             </v-btn>
                                         </td>
@@ -262,16 +259,12 @@
                         return
                     case 'verify':
                         if (json.value.id === 'owner') {
-                            this.translatorStyle = {
-                                color: 'gold',
-                                fontWeight: 'bold'
-                            }
+                            this.translatorIcon = 'mdi-account-tie'
                         } else {
-                            this.translatorStyle = {
-                                color: 'green',
-                                fontWeight: 'bold'
-                            }
+                            this.translatorIcon = 'mdi-account-check'
                         }
+                        this.snackbarText = '成功验证了您的身份。'
+                        this.snackbar = true
                         console.log('[spx] WebSocket Status: onmessage => verify')
                         return
                     default:
@@ -458,10 +451,7 @@
                     append: '',
                     value: ''
                 },
-                translatorStyle: {
-                    color: 'black',
-                    fontWeight: 'normal'
-                },
+                translatorIcon: 'mdi-account',
                 showRead: false,
                 snackbar: false,
                 snackbarText: '',
