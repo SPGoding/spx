@@ -2,6 +2,8 @@ import http = require('http')
 import https = require('https')
 import { imageSize } from 'image-size'
 import { ISizeCalculationResult } from 'image-size/dist/types/interface'
+import { BugCache } from './bug-cache'
+import { ColorCache } from './color-cache'
 
 const nextMainRelease = '1.17'
 
@@ -291,6 +293,28 @@ export function getEnding(type: VersionType) {
 [/list][/spoiler][/align][/td][/tr]
 [/table][/align]`
     }
+}
+
+export function executeBugOrColorCommand(content: string, translator: string) {
+    const bugRegex = /^\[?(MC-\d+)]?\s*(.*)$/i
+    const bugMatchArr = content.match(bugRegex)
+    const colorCommandPrefix = '!spx color '
+    if (bugMatchArr) {
+        const id = bugMatchArr[1]
+        const desc = bugMatchArr[2]
+        BugCache.set(id, desc, translator)
+        BugCache.save()
+        return true
+    } else if (content.startsWith(colorCommandPrefix)) {
+        let color = content.slice(colorCommandPrefix.length)
+        if (!color.startsWith('#')) {
+            color = `#${color}`
+        }
+        ColorCache.set(translator, color)
+        ColorCache.save()
+        return true
+    }
+    return false
 }
 
 export const enum VersionType {
