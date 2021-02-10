@@ -137,17 +137,17 @@
                                         <th>分类</th>
                                         <th>原文</th>
                                         <th>译文</th>
+                                        <th>译者</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr v-for="item in filteredArticles">
-                                        <td>{{ item.time }}</td>
+                                        <td>{{ item.published }}</td>
                                         <td>{{ item.category || "无" }}</td>
                                         <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
-                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">{{
-                                                item.trTitle
-                                            }}</a>
+                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">译文</a>
                                             <span v-else>N/A</span></td>
+                                        <td>{{ item.translator }}</td>
                                     </tr>
                                     </tbody>
                                 </template>
@@ -308,7 +308,7 @@
                 let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
                 let result = this.articles.map(v => {
                     // published, title, link, cat, tr_link, tr_name
-                    const [time, title, link, cat, trLink, trTitle] = v
+                    const [published, title, link, cat, trLink, translator] = v
                     const isTranslated = trLink !== '-'
                     
                     const [category, artCategory] = cat.split(':')
@@ -318,12 +318,12 @@
                     }
                     
                     return {
-                        time,
+                        published,
                         category: cat.toUpperCase(),
                         link,
                         title,
                         trLink,
-                        trTitle,
+                        translator,
                         isTranslated
                     }
                 }).filter(v => v != null)
