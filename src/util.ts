@@ -191,18 +191,7 @@ export function getEnding(type: VersionType) {
 [/table][/align]
 [align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history/Development_versions]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95/%E9%A2%84%E8%A7%88%E7%89%88%E6%9C%AC]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
         case VersionType.PreRelease:
@@ -220,18 +209,7 @@ export function getEnding(type: VersionType) {
 [/table][/align]
 [align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history/Development_versions]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95/%E9%A2%84%E8%A7%88%E7%89%88%E6%9C%AC]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
         case VersionType.ReleaseCandidate:
@@ -249,18 +227,7 @@ export function getEnding(type: VersionType) {
 [/table][/align]
 [align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history/Development_versions]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95/%E9%A2%84%E8%A7%88%E7%89%88%E6%9C%AC]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
         case VersionType.Release:
@@ -279,18 +246,7 @@ export function getEnding(type: VersionType) {
 [/table][/align]
 [align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
     }
 }
