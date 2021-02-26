@@ -69,8 +69,7 @@
                         <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
                         <div id="colorsPreview">
                             <p>
-                                SPX 衷心感谢这些以 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>
-                                协议无偿捐献他们的翻译的翻译者：
+                                SPX 自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> 协议提供支持：
                             </p>
                             <p>
                                 <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
@@ -83,12 +82,12 @@
                             <v-row>
                                 <v-col md="11" xs="12">
                                     <pre style="overflow-x: scroll;"><code>{{
-                                            colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
+                                            'SPX 自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
                                         }}</code></pre>
                                 </v-col>
                                 <v-col class="text-center" md="1" xs="12">
                                     <v-btn color="primary" small
-                                           @click="navigator.clipboard.writeText(colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+                                           @click="navigator.clipboard.writeText('SPX 自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
                                         复制
                                     </v-btn>
                                 </v-col>
