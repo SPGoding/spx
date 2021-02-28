@@ -15,13 +15,14 @@
 <div id="root">
     <v-app>
         <transition name="fade">
-            <div v-if="loading.filters"
-                 style="top: 0;left: 0;right: 0;bottom: 0;display: flex;z-index: 1000;position: fixed;align-items: center;justify-content: center;background-color: rgba(0, 0, 0, 0.5);-webkit-tap-highlight-color: transparent;">
+            <div v-if="loading.websocket"
+                 style="top: 0;left: 0;right: 0;bottom: 0;display: flex;z-index: 1000;position: fixed;align-items: center;
+                 justify-content: center;background-color: rgba(0, 0, 0, 0.5);-webkit-tap-highlight-color: transparent;">
                 <v-progress-circular
-                    :size="70"
-                    :width="7"
-                    color="white"
-                    indeterminate
+                        :size="70"
+                        :width="7"
+                        color="white"
+                        indeterminate
                 ></v-progress-circular>
             </div>
         </transition>
@@ -30,134 +31,160 @@
                 <v-toolbar-title>SPX Client</v-toolbar-title>
             </v-app-bar>
             <v-container>
-                <v-card class="ma-3 px-3 my-6">
-                    <v-container>
-                        <v-row>
-                            <v-col md="8" xs="12">
-                                <v-text-field v-model="input.url" :disabled="loading.websocket" prepend-icon="mdi-link"
-                                              placeholder="文章 URL"></v-text-field>
-                            </v-col>
-                            <v-col md="4" xs="12">
-                                <v-text-field v-model="input.translator" placeholder="翻译者"
-                                              :prepend-icon="translatorIcon"></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <v-col
-                            v-if="!loading.websocket && !loading.wsrequest"
-                            class="text-center" cols="12"
-                        >
-                            <v-btn color="primary" @click="request()">
-                                请求
-                            </v-btn>
-                        </v-col>
-                        <div id="output" class="mt-2">
-                            <div class="my-2" v-html="output.append"></div>
-                            <v-btn v-if="output.value" color="primary" class="mr-3"
-                                   @click="navigator.clipboard.writeText(output.value)">复制
-                                BBCode
-                            </v-btn>
-                            <v-btn v-if="showRead" @click="clear">清空</v-btn>
-                        </div>
-                        <v-col v-if="loading.wsrequest" cols="12" class="text-center">
-                            <v-progress-circular indeterminate color="primary"
-                            ></v-progress-circular>
-                        </v-col>
+                <v-card class="ma-3 px-3 my-6" v-if="loading.websocket">
+                    <v-container class="text-center">
+                        <v-progress-circular
+                                :size="40"
+                                :width="7"
+                                color="indigo"
+                                indeterminate
+                        ></v-progress-circular>
                     </v-container>
                 </v-card>
-                <v-card class="ma-3 px-3 my-4 pb-4">
-                    <v-container>
-                        <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
-                        <div id="colorsPreview">
-                            <p>
-                                SPX 自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> 协议提供支持：
-                            </p>
-                            <p>
-                                <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
-                                        style="color: #fff;">{{ item.u }}
-                                </v-chip>
-                            </p>
-                            <p>
-                                虽然这不是必要的，但 SPX 仍然鼓励您署名他们的贡献：
-                            </p>
+                <div v-else>
+                    <v-card class="ma-3 px-3 my-6">
+                        <v-container>
                             <v-row>
-                                <v-col md="11" xs="12">
-                                    <pre style="overflow-x: scroll;"><code>{{
-                                            'SPX 自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
-                                        }}</code></pre>
+                                <v-col md="8" xs="12">
+                                    <v-text-field v-model="input.url" :disabled="loading.websocket"
+                                                  prepend-icon="mdi-link"
+                                                  placeholder="文章 URL"></v-text-field>
                                 </v-col>
-                                <v-col class="text-center" md="1" xs="12">
-                                    <v-btn color="primary" small
-                                           @click="navigator.clipboard.writeText('SPX 自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
-                                        复制
-                                    </v-btn>
+                                <v-col md="4" xs="12">
+                                    <v-text-field v-model="input.translator" placeholder="翻译者"
+                                                  :prepend-icon="translatorIcon"></v-text-field>
                                 </v-col>
                             </v-row>
-                        </div>
-                    </v-container>
-                </v-card>
+                            <v-col
+                                    v-if="!loading.websocket && !loading.wsrequest"
+                                    class="text-center" cols="12"
+                            >
+                                <v-btn color="primary" @click="request()">
+                                    请求
+                                </v-btn>
+                            </v-col>
+                            <div id="output" class="mt-2">
+                                <div class="my-2" v-html="output.append"></div>
+                                <v-btn v-if="output.value" color="primary" class="mr-3"
+                                       @click="navigator.clipboard.writeText(output.value)">复制
+                                    BBCode
+                                </v-btn>
+                                <v-btn v-if="showRead" @click="clear">清空</v-btn>
+                            </div>
+                            <v-col v-if="loading.wsrequest" cols="12" class="text-center">
+                                <v-progress-circular indeterminate color="primary"
+                                ></v-progress-circular>
+                            </v-col>
+                        </v-container>
+                    </v-card>
+                    <v-card class="ma-3 px-3 my-4 pb-4">
+                        <v-container>
+                            <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
+                            <div id="colorsPreview">
+                                <p>
+                                    SPX 自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0
+                                    1.0</a>
+                                    协议提供支持：
+                                </p>
+                                <p>
+                                    <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
+                                            style="color: #fff;">{{ item.u }}
+                                    </v-chip>
+                                </p>
+                                <p>
+                                    虽然这不是必要的，但 SPX 仍然鼓励您署名他们的贡献：
+                                </p>
+                                <v-row>
+                                    <v-col md="11" xs="12">
+                                            <pre style="overflow-x: scroll;"><code>{{
+                                                    'SPX 自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
+                                                }}</code></pre>
+                                    </v-col>
+                                    <v-col class="text-center" md="1" xs="12">
+                                        <v-btn color="primary" small
+                                               @click="navigator.clipboard.writeText('SPX 自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+                                            复制
+                                        </v-btn>
+                                    </v-col>
+                                </v-row>
+                            </div>
+                        </v-container>
+                    </v-card>
+                </div>
                 <v-card class="ma-3 px-3 my-6 pb-4">
                     <v-container>
                         <h5 class="text-h5 text-center my-3">文章</h5>
-                        <div class="mx-3 mb-3" v-if="!loading.filters" id="filters">
-                            <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
-                                <legend class="v-label theme--light pr-2"
-                                        style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                    <div>一般分类</div>
-                                </legend>
-                                <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
-                                </v-chip>
-                            </v-chip-group>
-
-                            <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
-                                <legend class="v-label theme--light pr-2"
-                                        style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                    <div>创作分类</div>
-                                </legend>
-                                <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
-                                </v-chip>
-                            </v-chip-group>
-                            <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
-                                <legend class="v-label theme--light pr-2"
-                                        style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                    <div>文章状态</div>
-                                </legend>
-                                <v-chip>已翻译</v-chip>
-                                <v-chip>未翻译</v-chip>
-                            </v-chip-group>
+                        <div v-if="loading.filters" class="text-center">
+                            <v-progress-circular
+                                    :size="40"
+                                    :width="7"
+                                    color="indigo"
+                                    indeterminate
+                            ></v-progress-circular>
                         </div>
-                        <v-card class="mx-3">
-                            <v-simple-table height="500px" fixed-header>
-                                <template v-slot:default>
-                                    <thead>
-                                    <tr>
-                                        <th>时间</th>
-                                        <th>分类</th>
-                                        <th>原文</th>
-                                        <th>译文</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr v-for="item in filteredArticles">
-                                        <td>{{ item.published }}</td>
-                                        <td>{{ item.category || "无" }}</td>
-                                        <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
-                                        <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">by @{{
-                                                item.translator
-                                            }}</a>
-                                            <span v-else>N/A</span></td>
-                                    </tr>
-                                    </tbody>
-                                </template>
-                            </v-simple-table>
-                        </v-card>
+                        <div v-else>
+                            <div class="mx-3 mb-3" id="filters">
+                                <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
+                                    <legend class="v-label theme--light pr-2"
+                                            style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                        <div>一般分类</div>
+                                    </legend>
+                                    <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+                                    </v-chip>
+                                </v-chip-group>
+
+                                <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
+                                    <legend class="v-label theme--light pr-2"
+                                            style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                        <div>创作分类</div>
+                                    </legend>
+                                    <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无'
+                                        }}
+                                    </v-chip>
+                                </v-chip-group>
+                                <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
+                                    <legend class="v-label theme--light pr-2"
+                                            style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+                                        <div>文章状态</div>
+                                    </legend>
+                                    <v-chip>已翻译</v-chip>
+                                    <v-chip>未翻译</v-chip>
+                                </v-chip-group>
+                            </div>
+                            <v-card class="mx-3">
+                                <v-simple-table height="500px" fixed-header>
+                                    <template v-slot:default>
+                                        <thead>
+                                        <tr>
+                                            <th>时间</th>
+                                            <th>分类</th>
+                                            <th>原文</th>
+                                            <th>译文</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="item in filteredArticles">
+                                            <td>{{ item.published }}</td>
+                                            <td>{{ item.category || "无" }}</td>
+                                            <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
+                                            <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">by @{{
+                                                    item.translator
+                                                }}</a>
+                                                <span v-else>N/A</span></td>
+                                        </tr>
+                                        </tbody>
+                                    </template>
+                                </v-simple-table>
+                            </v-card>
+                        </div>
                     </v-container>
                 </v-card>
             </v-container>
         </v-main>
         <v-footer>
             <v-col
-                class="text-center"
-                cols="12"
+                    class="text-center"
+                    cols="12"
             >
                 <p style="text-align: center;">
                     <a href="https://github.com/SPGoding/spx">GitHub</a> |
@@ -183,22 +210,22 @@
     "use strict"
     const wsURL = 'wss://%replace_as_ws_url%'
     const webSocket = new WebSocket(wsURL)
-    
+
     const MiscArtCategory = '其他'
-    
+
     Vue.config.devtools = true
     new Vue({
         el: '#root',
         vuetify: new Vuetify(),
         mounted() {
             this.getArticles()
-            
-            
+
+
             webSocket.onopen = () => {
                 console.log('[SPX] WebSocket Status: onopen')
                 this.loading.websocket = false
             }
-            
+
             webSocket.onmessage = event => {
                 const json = JSON.parse(event.data)
                 let append = ''
@@ -266,19 +293,19 @@
                 this.output.append = append
                 this.showRead = true
             }
-            
+
             webSocket.onerror = e => {
                 this.snackbarText = "WebSocket 出现错误。"
                 this.snackbar = true
                 console.error(`[SPX] WebSocket Status: onerror => ${e}`)
             }
-            
+
             webSocket.onclose = () => {
                 console.log('[SPX] WebSocket Status: onclose')
                 this.showRead = false
                 this.loading.websocket = true
             }
-            
+
         },
         watch: {
             'input.translator'(d) {
@@ -307,13 +334,13 @@
                     // published, title, link, cat, tr_link, tr_name
                     const [published, title, link, cat, trLink, translator] = v
                     const isTranslated = trLink !== '-'
-                    
+
                     const [category, artCategory] = cat.split(':')
                     let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
                     if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && translatedMatch)) {
                         return null
                     }
-                    
+
                     return {
                         published,
                         category: cat.toUpperCase(),
@@ -412,7 +439,7 @@
                 },
                 checkboxes: [],
                 artCheckboxes: [],
-                statusInput: [0,1,2,3],
+                statusInput: [0, 1, 2, 3],
                 colorsPreview: [],
                 output: {
                     append: '',
