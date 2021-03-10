@@ -9,7 +9,7 @@ import { BugCache } from './bug-cache'
 import { ColorCache } from './color-cache'
 import { Content, ContentProvider, JsonContentProvider } from './content-provider'
 import { convertMCArticleToBBCode } from './converter'
-import { DiscordConfig, onMessage } from './discord-bot'
+import { DiscordConfig, onMessage, onReactionAdd } from './discord-bot'
 import { getArticleType, getBeginning, getEnding, getVersionType, ManifestVersion, StringStringArrayMap } from './util'
 
 //#region Detection
@@ -90,6 +90,7 @@ let discord: DiscordConfig | undefined
             })
             await discordClient.login(discord.token)
             discordClient.on('message', onMessage.bind(undefined, discord))
+            discordClient.on('messageReactionAdd', onReactionAdd.bind(undefined, discord))
             console.log('Discord bot launched.')
         }
     } catch (e) {

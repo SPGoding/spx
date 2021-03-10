@@ -513,7 +513,7 @@ function removeLastLinebreak(str: string) {
 function translateBugs(str: string) {
     if (str.startsWith('[url=https://bugs.mojang.com/browse/MC-')) {
         const id = str.slice(36, str.indexOf(']'))
-        const summary = BugCache.getSummary(id)
+        const summary = BugCache.getSummary(id) ?? ''
         const color = BugCache.getColor(id)
         if (summary) {
             return `[url=https://bugs.mojang.com/browse/${id}][color=${color}][b]${id}[/b][/color][/url]- ${summary}`

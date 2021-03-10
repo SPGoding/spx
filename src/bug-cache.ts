@@ -35,7 +35,7 @@ export namespace BugCache {
 		bugs[id] = { summary, translator, date }
 	}
 
-	export function getSummary(id: string) {
+	export function getSummary(id: string): string | undefined {
 		return bugs[id]?.summary
 	}
 

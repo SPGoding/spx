@@ -1,15 +1,14 @@
-import { GuildMember, Message } from 'discord.js'
+import { GuildMember, Message, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, User, UserResolvable } from 'discord.js'
 import { BugCache } from './bug-cache'
 import { ColorCache } from './color-cache'
-import { executeBugOrColorCommand } from './util'
 
 export interface DiscordConfig {
 	token: string,
 	channel: string,
-	role: string
+	role: string,
 }
 
-export async function onMessage(config: DiscordConfig, message: Message) {
+export async function onMessage(config: DiscordConfig, message: Message | PartialMessage) {
 	try {
 		message = await ensureMessage(message)
 
@@ -19,12 +18,8 @@ export async function onMessage(config: DiscordConfig, message: Message) {
 
 		const member = await ensureMember(message.member)
 		if (member.roles.cache.has(config.role)) {
-			const content = message.content.trim()
 			const translator = member.user.tag.split('#').slice(0, -1).join('#')
-			const commandResult = executeBugOrColorCommand(content, translator)
-			if (commandResult) {
-				await message.react('✅')
-			}
+			await executeBugOrColorCommand(message, translator)
 		}
 
 	} catch (e) {
@@ -32,14 +27,63 @@ export async function onMessage(config: DiscordConfig, message: Message) {
 	}
 }
 
-async function ensureMessage(message: Message) {
+const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
+
+async function executeBugOrColorCommand(message: Message, translator: string): Promise<void> {
+	const content = message.content.trim()
+	const bugRegex = /^[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
+	const bugMatchArr = content.match(bugRegex)
+	const colorCommandPrefix = '!spx color '
+	if (bugMatchArr) {
+		const isForce = /^[!！]/.test(content)
+		const id = bugMatchArr[1]
+		const desc = bugMatchArr[2]
+		const existingOne = BugCache.getSummary(id)
+		if (existingOne && !isForce) {
+			const [, prompt] = await Promise.all([
+				message.react('❓'),
+				message.channel.send(`${id} 已被翻译为「${existingOne}」。确认覆盖？`)
+			])
+			await prompt.react('❗')
+			overrideConfirmations.set(prompt.id, { message, prompt, translator })
+		} else {
+			BugCache.set(id, desc, translator)
+			BugCache.save()
+			await message.react('✅')
+		}
+	} else if (content.startsWith(colorCommandPrefix)) {
+		let color = content.slice(colorCommandPrefix.length)
+		if (!color.startsWith('#')) {
+			color = `#${color}`
+		}
+		ColorCache.set(translator, color)
+		ColorCache.save()
+		await message.react('🌈')
+	}
+}
+
+export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction, _user: User | PartialUser) {
+	try {
+		if (overrideConfirmations.has(reaction.message.id)) {
+			const { message, prompt, translator } = overrideConfirmations.get(reaction.message.id)!
+			overrideConfirmations.delete(reaction.message.id)
+			message.content = `!${message.content}`
+			await executeBugOrColorCommand(message, translator)
+			await prompt.delete()
+		}
+	} catch (e) {
+		console.error(e)
+	}
+}
+
+async function ensureMessage(message: Message | PartialMessage): Promise<Message> {
 	if (message.partial) {
 		return message.fetch()
 	}
 	return message
 }
 
-async function ensureMember(member: GuildMember) {
+async function ensureMember(member: GuildMember | PartialGuildMember): Promise<GuildMember> {
 	if (member.partial) {
 		return member.fetch()
 	}

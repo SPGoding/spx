@@ -251,28 +251,6 @@ export function getEnding(type: VersionType) {
     }
 }
 
-export function executeBugOrColorCommand(content: string, translator: string) {
-    const bugRegex = /^\[?(MC-\d+)]?\s*(.*)$/i
-    const bugMatchArr = content.match(bugRegex)
-    const colorCommandPrefix = '!spx color '
-    if (bugMatchArr) {
-        const id = bugMatchArr[1]
-        const desc = bugMatchArr[2]
-        BugCache.set(id, desc, translator)
-        BugCache.save()
-        return true
-    } else if (content.startsWith(colorCommandPrefix)) {
-        let color = content.slice(colorCommandPrefix.length)
-        if (!color.startsWith('#')) {
-            color = `#${color}`
-        }
-        ColorCache.set(translator, color)
-        ColorCache.save()
-        return true
-    }
-    return false
-}
-
 export const enum VersionType {
     Snapshot,
     PreRelease,
