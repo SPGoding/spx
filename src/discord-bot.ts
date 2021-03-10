@@ -71,7 +71,7 @@ export async function onReactionAdd(_config: DiscordConfig, reaction: MessageRea
 			console.info(`User ${user.tag} added '${reaction.emoji.name}' reaction to a prompt`);
 			const { message, prompt, translator } = overrideConfirmations.get(reaction.message.id)!
 			if (user.id !== message.author.id) {
-				return await prompt.edit(`${prompt.content}\n不准 ${user.id} 为 ${message.author.id} 做决定.spg`)
+				return await prompt.edit(`${prompt.content}\n不准 ${user.tag} 为 ${message.author.tag} 做决定.spg`)
 			}
 			if (reaction.emoji.name === '⚪') {
 				message.content = `!${message.content}`
