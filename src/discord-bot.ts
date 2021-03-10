@@ -18,7 +18,7 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 		const member = await ensureMember(message.member)
 		if (member.roles.cache.has(config.role)) {
-			const translator = member.user.tag.split('#').slice(0, -1).join('#')
+			const translator = tagToName(member.user.tag)
 			await executeBugOrColorCommand(message, translator)
 		}
 
@@ -60,18 +60,24 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			color = `#${color}`
 		}
 		ColorCache.set(translator, color)
-		ColorCache.save()
 		await message.react('🌈')
+		if (translator === 'ff98sha' || translator === 'WuGuangYao') {
+			ColorCache.set('ff98sha', color)
+			ColorCache.set('WuGuangYao', color)
+			await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
+		}
+		ColorCache.save()
 	}
 }
 
 export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction, user: User | PartialUser) {
 	try {
+		user = await ensureUser(user)
 		if (overrideConfirmations.has(reaction.message.id)) {
 			console.info(`User ${user.tag} added '${reaction.emoji.name}' reaction to a prompt`);
 			const { message, prompt, translator } = overrideConfirmations.get(reaction.message.id)!
 			if (user.id !== message.author.id) {
-				return await prompt.edit(`${prompt.content}\n不准 ${user.tag} 为 ${message.author.tag} 做决定.spg`)
+				return await prompt.edit(`${prompt.content}\n不准 ${tagToName(user.tag)} 为 ${tagToName(message.author.tag)} 做决定.spg`)
 			}
 			if (reaction.emoji.name === '⚪') {
 				message.content = `!${message.content}`
@@ -99,4 +105,15 @@ async function ensureMember(member: GuildMember | PartialGuildMember): Promise<G
 		return member.fetch()
 	}
 	return member
+}
+
+async function ensureUser(user: User | PartialUser): Promise<User> {
+	if (user.partial) {
+		return user.fetch()
+	}
+	return user
+}
+
+function tagToName(tag: string): string {
+	return tag.split('#').slice(0, -1).join('#')
 }
