@@ -42,9 +42,9 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		if (existingOne && !isForce) {
 			const [, prompt] = await Promise.all([
 				message.react('❓'),
-				message.channel.send(`${id} 已被翻译为「${existingOne}」。确认覆盖？`)
+				message.channel.send(`❓ ${id} 已被翻译为「${existingOne}」。确认覆盖？`)
 			])
-			await prompt.react('❗')
+			await prompt.react('❕')
 			overrideConfirmations.set(prompt.id, { message, prompt, translator })
 		} else {
 			BugCache.set(id, desc, translator)
