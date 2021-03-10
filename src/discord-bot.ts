@@ -44,7 +44,10 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 				message.react('❓'),
 				message.channel.send(`❓ ${id} 已被翻译为「${existingOne}」。确认覆盖？`)
 			])
-			await prompt.react('❕')
+			await Promise.all([
+				prompt.react('⚪'),
+				prompt.react('❌')
+			]) 
 			overrideConfirmations.set(prompt.id, { message, prompt, translator })
 		} else {
 			BugCache.set(id, desc, translator)
@@ -66,9 +69,13 @@ export async function onReactionAdd(_config: DiscordConfig, reaction: MessageRea
 	try {
 		if (overrideConfirmations.has(reaction.message.id)) {
 			const { message, prompt, translator } = overrideConfirmations.get(reaction.message.id)!
+			if (reaction.emoji.identifier === '⚪') {
+				message.content = `!${message.content}`
+				await executeBugOrColorCommand(message, translator)
+			} else if (reaction.emoji.identifier !== '❌') {
+				return
+			}
 			overrideConfirmations.delete(reaction.message.id)
-			message.content = `!${message.content}`
-			await executeBugOrColorCommand(message, translator)
 			await prompt.delete()
 		}
 	} catch (e) {
