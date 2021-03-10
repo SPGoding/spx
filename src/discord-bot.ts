@@ -47,7 +47,7 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			await Promise.all([
 				prompt.react('⚪'),
 				prompt.react('❌')
-			]) 
+			])
 			overrideConfirmations.set(prompt.id, { message, prompt, translator })
 		} else {
 			BugCache.set(id, desc, translator)
@@ -65,14 +65,18 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 	}
 }
 
-export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction, _user: User | PartialUser) {
+export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction, user: User | PartialUser) {
 	try {
 		if (overrideConfirmations.has(reaction.message.id)) {
+			console.info(`User ${user.tag} added '${reaction.emoji.name}' reaction to a prompt`);
 			const { message, prompt, translator } = overrideConfirmations.get(reaction.message.id)!
-			if (reaction.emoji.identifier === '⚪') {
+			if (user.id !== message.author.id) {
+				return await prompt.edit(`${prompt.content}\n不准 ${user.id} 为 ${message.author.id} 做决定.spg`)
+			}
+			if (reaction.emoji.name === '⚪') {
 				message.content = `!${message.content}`
 				await executeBugOrColorCommand(message, translator)
-			} else if (reaction.emoji.identifier !== '❌') {
+			} else if (reaction.emoji.name !== '❌') {
 				return
 			}
 			overrideConfirmations.delete(reaction.message.id)
