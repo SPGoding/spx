@@ -85,7 +85,7 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			await message.channel.send(new MessageEmbed()
 				.setTitle(`共 ${unknownIssues.length} 个未翻译漏洞`)
 				.setDescription(unknownIssues.slice(0, 10).map(
-					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}): ${(i.fields as any)?.['summary'] ?? 'N/A'}`
+					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
 				).join('  \n'))
 			)
 		} else {
