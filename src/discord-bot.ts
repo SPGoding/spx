@@ -27,9 +27,8 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 			const translator = tagToName(member.user.tag)
 			await executeBugOrColorCommand(message, translator)
 		}
-
 	} catch (e) {
-		console.error(e)
+		console.error('[Discord#onMessage] ', e)
 	}
 }
 
@@ -74,12 +73,8 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
 		}
 		ColorCache.save()
-	} else if (content.trim().toLowerCase() === queryCommand) {
-		const result = await jira.issueSearch.searchForIssuesUsingJqlPost({
-			jql: 'project = MC AND fixVersion in unreleasedVersions()',
-			fields: ['key'],
-		})
-		const issues = result.issues ?? []
+	} else if (content.toLowerCase().startsWith(queryCommand)) {
+		const issues = await searchIssues(content.slice(queryCommand.length).trim() || 'project = MC AND fixVersion in unreleasedVersions()')
 		const unknownIssues: IssueBean[] = []
 		for (const issue of issues) {
 			if (issue.key && !BugCache.has(issue.key)) {
@@ -90,13 +85,36 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			await message.channel.send(new MessageEmbed()
 				.setTitle(`共 ${unknownIssues.length} 个未翻译漏洞`)
 				.setDescription(unknownIssues.slice(0, 10).map(
-					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}): ${(i.fields as any)?.['summary'] ?? 'Unknown'}`
+					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}): ${(i.fields as any)?.['summary'] ?? 'N/A'}`
 				).join('  \n'))
 			)
 		} else {
 			await message.channel.send('🎉 所有已修复漏洞均已翻译。')
 		}
 	}
+}
+
+async function searchIssues(jql: string) {
+	const ans: IssueBean[] = []
+	let startAt = 0
+	while (true) {
+		const result = await jira.issueSearch.searchForIssuesUsingJqlPost({
+			jql,
+			fields: ['key', 'summary'],
+			maxResults: 50,
+			startAt,
+		})
+		if (!result.issues) {
+			console.error(`[searchIssues] No issues when startAt=${startAt}`)
+		}
+		ans.push(...result.issues ?? [])
+		if (result.total === 50) {
+			startAt += 50
+		} else {
+			break
+		}
+	}
+	return ans
 }
 
 export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction, user: User | PartialUser) {
