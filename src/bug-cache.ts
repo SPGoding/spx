@@ -32,7 +32,7 @@ export namespace BugCache {
 	}
 
 	export function has(id: string) {
-		return id in bugs
+		return id in bugs && bugs[id].summary
 	}
 
 	export function set(id: string, summary: string, translator?: string, date = new Date().toUTCString()) {

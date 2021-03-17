@@ -67,6 +67,7 @@ let discord: DiscordConfig | undefined
 const index = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf-8').replace('%replace_as_server_url%', `${ip}`)
 const app = express()
 	.get('/colors', (_req, res) => {
+		res.setHeader('Content-Type', 'application/json')
 		res.send(JSON.stringify(ColorCache.colors))
 	})
 	.get('/convert/:url/:translator', async (req, res) => {
@@ -83,8 +84,10 @@ const app = express()
 					const ending = getEnding(versionType)
 					bbcode = `${beginning}${bbcode}${ending}`
 				}
+				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else {
+				res.setHeader('Content-Type', 'text/plain')
 				res.status(500).send('Not a Minecraft.net blog URL')
 			}
 		} catch (e) {
