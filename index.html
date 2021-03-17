@@ -3,455 +3,385 @@
 <html lang="zh">
 
 <head>
-    <title>SPX Client</title>
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
-    <meta charset="UTF-8">
+	<title>SPX Client</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
+	<meta charset="UTF-8">
 </head>
 
 <body>
 <div id="root">
-    <v-app>
-        <transition name="fade">
-            <div v-if="loading.websocket"
-                 style="top: 0;left: 0;right: 0;bottom: 0;display: flex;z-index: 1000;position: fixed;align-items: center;
-                 justify-content: center;background-color: rgba(0, 0, 0, 0.5);-webkit-tap-highlight-color: transparent;">
-                <v-progress-circular
-                        :size="70"
-                        :width="7"
-                        color="white"
-                        indeterminate
-                ></v-progress-circular>
-            </div>
-        </transition>
-        <v-main>
-            <v-app-bar color="white">
-                <v-toolbar-title>SPX Client</v-toolbar-title>
-            </v-app-bar>
-            <v-container>
-                <v-card class="ma-3 px-3 my-6" v-if="loading.websocket">
-                    <v-container class="text-center">
-                        <v-progress-circular
-                                :size="40"
-                                :width="7"
-                                color="indigo"
-                                indeterminate
-                        ></v-progress-circular>
-                    </v-container>
-                </v-card>
-                <div v-else>
-                    <v-card class="ma-3 px-3 my-6">
-                        <v-container>
-                            <v-row>
-                                <v-col md="8" xs="12">
-                                    <v-text-field v-model="input.url" :disabled="loading.websocket"
-                                                  prepend-icon="mdi-link"
-                                                  placeholder="文章 URL"></v-text-field>
-                                </v-col>
-                                <v-col md="4" xs="12">
-                                    <v-text-field v-model="input.translator" placeholder="翻译者"
-                                                  :prepend-icon="translatorIcon"></v-text-field>
-                                </v-col>
-                            </v-row>
-                            <v-col
-                                    v-if="!loading.websocket && !loading.wsrequest"
-                                    class="text-center" cols="12"
-                            >
-                                <v-btn color="primary" @click="request()">
-                                    请求
-                                </v-btn>
-                            </v-col>
-                            <div id="output" class="mt-2">
-                                <div class="my-2" v-html="output.append"></div>
-                                <v-btn v-if="output.value" color="primary" class="mr-3"
-                                       @click="navigator.clipboard.writeText(output.value)">复制
-                                    BBCode
-                                </v-btn>
-                                <v-btn v-if="showRead" @click="clear">清空</v-btn>
-                            </div>
-                            <v-col v-if="loading.wsrequest" cols="12" class="text-center">
-                                <v-progress-circular indeterminate color="primary"
-                                ></v-progress-circular>
-                            </v-col>
-                        </v-container>
-                    </v-card>
-                    <v-card class="ma-3 px-3 my-4 pb-4">
-                        <v-container>
-                            <h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
-                            <div id="colorsPreview">
-                                <p>
-                                    SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0
-                                    1.0</a>
-                                    协议提供支持：
-                                </p>
-                                <p>
-                                    <v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
-                                            style="color: #fff;">{{ item.u }}
-                                    </v-chip>
-                                </p>
-                                <p>
-                                    虽然这不是必要的，但 SPX 仍然鼓励您署名他们的贡献：
-                                </p>
-                                <v-row>
-                                    <v-col md="11" xs="12">
-                                            <pre style="overflow-x: scroll;"><code>{{
-                                                    'SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
-                                                }}</code></pre>
-                                    </v-col>
-                                    <v-col class="text-center" md="1" xs="12">
-                                        <v-btn color="primary" small
-                                               @click="navigator.clipboard.writeText('SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
-                                            复制
-                                        </v-btn>
-                                    </v-col>
-                                </v-row>
-                            </div>
-                        </v-container>
-                    </v-card>
-                </div>
-                <v-card class="ma-3 px-3 my-6 pb-4">
-                    <v-container>
-                        <h5 class="text-h5 text-center my-3">文章</h5>
-                        <div v-if="loading.filters" class="text-center">
-                            <v-progress-circular
-                                    :size="40"
-                                    :width="7"
-                                    color="indigo"
-                                    indeterminate
-                            ></v-progress-circular>
-                        </div>
-                        <div v-else>
-                            <div class="mx-3 mb-3" id="filters">
-                                <v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
-                                    <legend class="v-label theme--light pr-2"
-                                            style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                        <div>一般分类</div>
-                                    </legend>
-                                    <v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
-                                    </v-chip>
-                                </v-chip-group>
+	<v-app>
+		<v-main>
+			<v-app-bar color="white">
+				<v-toolbar-title>SPX Client</v-toolbar-title>
+			</v-app-bar>
+			<v-container>
+				<div>
+					<v-card class="ma-3 px-3 my-6">
+						<v-container>
+							<v-row>
+								<v-col md="8" xs="12">
+									<v-text-field v-model="input.url"
+												  prepend-icon="mdi-link"
+												  placeholder="文章 URL"></v-text-field>
+								</v-col>
+								<v-col md="4" xs="12">
+									<v-text-field v-model="input.translator" placeholder="翻译者"
+												  prepend-icon="mdi-account"></v-text-field>
+								</v-col>
+							</v-row>
+							<v-col
+									class="text-center" cols="12"
+							>
+								<v-btn color="primary" @click="request()">
+									请求
+								</v-btn>
+							</v-col>
+							<div id="output" class="mt-2">
+								<div class="my-2" v-html="output.message"></div>
+								<v-btn v-if="output.bbcode" color="primary" class="mr-3"
+									   @click="navigator.clipboard.writeText(output.bbcode)">复制
+									BBCode
+								</v-btn>
+								<v-btn v-if="showRead" @click="clear">清空</v-btn>
+							</div>
+							<v-col v-if="loading.xhrrequest" cols="12" class="text-center">
+								<v-progress-circular indeterminate color="primary"
+								></v-progress-circular>
+							</v-col>
+						</v-container>
+					</v-card>
+					<v-card class="ma-3 px-3 my-4 pb-4">
+						<v-container>
+							<h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
+							<div id="colorsPreview">
+								<p>
+									SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0
+									1.0</a>
+									协议提供支持：
+								</p>
+								<p>
+									<v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
+											style="color: #fff;">{{ item.u }}
+									</v-chip>
+								</p>
+								<p>
+									虽然这不是必要的，但 SPX 仍然鼓励您署名他们的贡献：
+								</p>
+								<v-row>
+									<v-col md="11" xs="12">
+											<pre style="overflow-x: scroll;"><code>{{
+													'SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
+												}}</code></pre>
+									</v-col>
+									<v-col class="text-center" md="1" xs="12">
+										<v-btn color="primary" small
+											   @click="navigator.clipboard.writeText('SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+											复制
+										</v-btn>
+									</v-col>
+								</v-row>
+							</div>
+						</v-container>
+					</v-card>
+				</div>
+				<v-card class="ma-3 px-3 my-6 pb-4">
+					<v-container>
+						<h5 class="text-h5 text-center my-3">文章</h5>
+						<div v-if="loading.filters" class="text-center">
+							<v-progress-circular
+									:size="40"
+									:width="7"
+									color="indigo"
+									indeterminate
+							></v-progress-circular>
+						</div>
+						<div v-else>
+							<div class="mx-3 mb-3" id="filters">
+								<v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
+									<legend class="v-label theme--light pr-2"
+											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+										<div>一般分类</div>
+									</legend>
+									<v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+									</v-chip>
+								</v-chip-group>
 
-                                <v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
-                                    <legend class="v-label theme--light pr-2"
-                                            style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                        <div>创作分类</div>
-                                    </legend>
-                                    <v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无'
-                                        }}
-                                    </v-chip>
-                                </v-chip-group>
-                                <v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
-                                    <legend class="v-label theme--light pr-2"
-                                            style="left: 0px; right: auto; position: relative; line-height: 2.38;">
-                                        <div>文章状态</div>
-                                    </legend>
-                                    <v-chip>已翻译</v-chip>
-                                    <v-chip>未翻译</v-chip>
-                                </v-chip-group>
-                            </div>
-                            <v-card class="mx-3">
-                                <v-simple-table height="500px" fixed-header>
-                                    <template v-slot:default>
-                                        <thead>
-                                        <tr>
-                                            <th>时间</th>
-                                            <th>分类</th>
-                                            <th>原文</th>
-                                            <th>译文</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="item in filteredArticles">
-                                            <td>{{ item.published }}</td>
-                                            <td>{{ item.category || "无" }}</td>
-                                            <td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
-                                            <td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">by @{{
-                                                    item.translator
-                                                }}</a>
-                                                <span v-else>N/A</span></td>
-                                        </tr>
-                                        </tbody>
-                                    </template>
-                                </v-simple-table>
-                            </v-card>
-                        </div>
-                    </v-container>
-                </v-card>
-            </v-container>
-        </v-main>
-        <v-footer>
-            <v-col
-                    class="text-center"
-                    cols="12"
-            >
-                <p style="text-align: center;">
-                    <a href="https://github.com/SPGoding/spx">GitHub</a> |
-                    <a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">Privacy Policy</a>
-                </p>
-            </v-col>
-        </v-footer>
-        <v-snackbar v-model="snackbar">
-            {{ snackbarText }}
+								<v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
+									<legend class="v-label theme--light pr-2"
+											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+										<div>创作分类</div>
+									</legend>
+									<v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无'
+										}}
+									</v-chip>
+								</v-chip-group>
+								<v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
+									<legend class="v-label theme--light pr-2"
+											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+										<div>文章状态</div>
+									</legend>
+									<v-chip>已翻译</v-chip>
+									<v-chip>未翻译</v-chip>
+								</v-chip-group>
+							</div>
+							<v-card class="mx-3">
+								<v-simple-table height="500px" fixed-header>
+									<template v-slot:default>
+										<thead>
+										<tr>
+											<th>时间</th>
+											<th>分类</th>
+											<th>原文</th>
+											<th>译文</th>
+										</tr>
+										</thead>
+										<tbody>
+										<tr v-for="item in filteredArticles">
+											<td>{{ item.published }}</td>
+											<td>{{ item.category || "无" }}</td>
+											<td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
+											<td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">by @{{
+													item.translator
+												}}</a>
+												<span v-else>N/A</span></td>
+										</tr>
+										</tbody>
+									</template>
+								</v-simple-table>
+							</v-card>
+						</div>
+					</v-container>
+				</v-card>
+			</v-container>
+		</v-main>
+		<v-footer>
+			<v-col
+					class="text-center"
+					cols="12"
+			>
+				<p style="text-align: center;">
+					<a href="https://github.com/SPGoding/spx">GitHub</a> |
+					<a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">Privacy Policy</a>
+				</p>
+			</v-col>
+		</v-footer>
+		<v-snackbar v-model="snackbar">
+			{{ snackbarText }}
 
-            <template v-slot:action="{ attrs }">
-                <v-btn text v-bind="attrs" @click="requestSucceeded = false">
-                    关闭
-                </v-btn>
-            </template>
-        </v-snackbar>
-    </v-app>
+			<template v-slot:action="{ attrs }">
+				<v-btn text v-bind="attrs" @click="requestSucceeded = false">
+					关闭
+				</v-btn>
+			</template>
+		</v-snackbar>
+	</v-app>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
 <script type="text/javascript">
-    "use strict"
-    const wsURL = 'wss://%replace_as_ws_url%'
-    const webSocket = new WebSocket(wsURL)
+	"use strict"
+	const ServerUrl = '//%replace_as_server_url%'
+	const MiscArtCategory = '其他'
 
-    const MiscArtCategory = '其他'
+	/**
+	 * @param method {'GET' | 'POST'}
+	 * @param url {string}
+	 * @returns {Promise<string>}
+	 */
+	async function sendXhr(method, url) {
+		return new Promise((resolve, reject) => {
+			const xhr = new XMLHttpRequest()
+			xhr.open(method, url, true)
+			xhr.onreadystatechange = () => {
+				if (xhr.readyState === XMLHttpRequest.DONE) {
+					if (xhr.status === 200) {
+						resolve(xhr.responseText)
+					} else {
+						reject(xhr.status + xhr.responseText ? ` ${xhr.responseText}` : '')
+					}
+				}
+			}
+			xhr.send()
+		})
+	}
 
-    Vue.config.devtools = true
-    new Vue({
-        el: '#root',
-        vuetify: new Vuetify(),
-        mounted() {
-            this.getArticles()
+	Vue.config.devtools = true
+	new Vue({
+		el: '#root',
+		vuetify: new Vuetify(),
+		mounted() {
+			this.getArticles()
+			this.getColors()
+		},
+		watch: {
+			'input.translator'(d) {
+				localStorage.setItem("translator", d)
+			}
+		},
+		beforeMount() {
+			if (localStorage.getItem('lastVerificationRequest')) {
+				localStorage.removeItem('lastVerificationRequest')
+			}
+			if (localStorage.getItem('translator')) {
+				this.input.translator = localStorage.getItem('translator')
+			}
+		},
+		computed: {
+			status() {
+				return {
+					translated: this.statusInput.includes(0),
+					untranslated: this.statusInput.includes(1)
+				}
+			},
+			filteredArticles() {
+				let categories = this.checkboxes.map(v => this.categories[v])
+				let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
+				let result = this.articles.map(v => {
+					// published, title, link, cat, tr_link, tr_name
+					const [published, title, link, cat, trLink, translator] = v
+					const isTranslated = trLink !== '-'
 
+					const [category, artCategory] = cat.split(':')
+					let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
+					if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && translatedMatch)) {
+						return null
+					}
 
-            webSocket.onopen = () => {
-                console.log('[SPX] WebSocket Status: onopen')
-                this.loading.websocket = false
-            }
-
-            webSocket.onmessage = event => {
-                const json = JSON.parse(event.data)
-                let append = ''
-                let playSound = false
-                this.loading.wsrequest = false
-
-                switch (json.type) {
-                    case 'version':
-                        append = `VERSION - ${json.value.id}`
-                        playSound = true
-                        console.log('[SPX] WebSocket Status: onmessage => version')
-                        break
-                    case 'colors':
-                        const colors = json.value
-                        const usernames = Object.keys(colors).sort()
-                        const resultPreviewArr = []
-                        for (const u of usernames) {
-                            resultPreviewArr.push({
-                                c: colors[u].color,
-                                u
-                            })
-                        }
-                        this.colorsPreview = resultPreviewArr
-                        console.log('[SPX] WebSocket Status: onmessage => colors')
-                        return
-                    case 'bbcode':
-                        append = `BBCode - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                        this.snackbarText = 'BBCode 转换成功。'
-                        this.snackbar = true
-                        console.log('[SPX] WebSocket Status: onmessage => bbcode')
-                        break
-                    case 'read':
-                        this.output.append = ""
-                        this.output.value = ""
-                        this.showRead = false
-                        console.log('[SPX] WebSocket Status: onmessage => read')
-                        return
-                    case 'verify':
-                        if (json.value.id === 'owner') {
-                            this.translatorIcon = 'mdi-account-tie'
-                        } else {
-                            this.translatorIcon = 'mdi-account-check'
-                        }
-                        this.snackbarText = '成功验证了您的身份。'
-                        this.snackbar = true
-                        console.log('[SPX] WebSocket Status: onmessage => verify')
-                        return
-                    default:
-                        append = `${json.type.toUpperCase()} - <a href="${json.value.id}" target="_blank">${json.value.text}</a>`
-                        console.log('[SPX] WebSocket Status: onmessage => default')
-                        break
-                }
-                if (playSound) {
-                    const speech = `New ${json.type.replace(/_/g, ' ')} detected: ${json.value.text}`
-                    speechSynthesis.speak(new SpeechSynthesisUtterance(speech))
-                    console.log('[SPX] WebSocket Status: onmessage => playsound')
-                }
-                if (json.value.addition) {
-                    this.output.value =
-                        json.value.addition
-                            .replace(/\</g, '&lt;')
-                            .replace(/&/g, '&amp;')
-                            .replace(/"/g, '&#39;')
-                }
-                this.output.append = append
-                this.showRead = true
-            }
-
-            webSocket.onerror = e => {
-                this.snackbarText = "WebSocket 出现错误。"
-                this.snackbar = true
-                console.error(`[SPX] WebSocket Status: onerror => ${e}`)
-            }
-
-            webSocket.onclose = () => {
-                console.log('[SPX] WebSocket Status: onclose')
-                this.showRead = false
-                this.loading.websocket = true
-            }
-
-        },
-        watch: {
-            'input.translator'(d) {
-                localStorage.setItem("translator", d)
-            }
-        },
-        beforeMount() {
-            if (localStorage.getItem('lastVerificationRequest')) {
-                this.input.url = localStorage.getItem('lastVerificationRequest')
-            }
-            if (localStorage.getItem('translator')) {
-                this.input.translator = localStorage.getItem('translator')
-            }
-        },
-        computed: {
-            status() {
-                return {
-                    translated: this.statusInput.includes(0),
-                    untranslated: this.statusInput.includes(1)
-                }
-            },
-            filteredArticles() {
-                let categories = this.checkboxes.map(v => this.categories[v])
-                let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
-                let result = this.articles.map(v => {
-                    // published, title, link, cat, tr_link, tr_name
-                    const [published, title, link, cat, trLink, translator] = v
-                    const isTranslated = trLink !== '-'
-
-                    const [category, artCategory] = cat.split(':')
-                    let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
-                    if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && translatedMatch)) {
-                        return null
-                    }
-
-                    return {
-                        published,
-                        category: cat.toUpperCase(),
-                        link,
-                        title,
-                        trLink,
-                        translator,
-                        isTranslated
-                    }
-                }).filter(v => v != null)
-                console.log(result)
-                return result
-            }
-        },
-        methods: {
-            requestBBCodeFor(link) {
-                this.request(link)
-            },
-            clear() {
-                this.output.append = ""
-                this.output.value = ""
-                this.showRead = false
-            },
-            request(url) {
-                this.loading.wsrequest = true
-                const val = url || this.input.url
-                if (val) {
-                    if (val.startsWith('verify ')) {
-                        localStorage.setItem('lastVerificationRequest', val)
-                        webSocket.send(`request, ${val}`)
-                        this.input.url = ''
-                    } else if (val.startsWith('MC-')) {
-                        webSocket.send(`request, ${val}`)
-                        this.input.url = ''
-                    } else {
-                        webSocket.send(`request, ${val} ${this.input.translator}`)
-                        this.input.url = ''
-                    }
-                    localStorage.setItem('translator', this.input.translator)
-                } else {
-                    this.snackbarText = '请输入请求 URL。'
-                    this.snackbar = true
-                }
-            },
-            getArticles() {
-                const xhr = new XMLHttpRequest()
-                xhr.open('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/articles.csv', true)
-                xhr.onreadystatechange = () => {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            let articles = [], categories = [], artCategories = []
-                            const rows = xhr.responseText.split(/\r?\n/).slice(1, -1)
-                            for (const row of rows) {
-                                // published, title, link, cat, tr_link, tr_name
-                                // https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
-                                const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
-                                const [category, artCategory] = cols[3].split(':')
-                                if (!categories.includes(category)) {
-                                    categories.push(category)
-                                }
-                                if (!artCategories.includes(artCategory || MiscArtCategory)) {
-                                    artCategories.push(artCategory || MiscArtCategory)
-                                }
-                                articles.push(cols)
-                            }
-                            this.articles = articles
-                            this.categories = categories
-                            this.artCategories = artCategories
-                            this.checkboxes = [...new Array(categories.length).keys()]
-                            this.artCheckboxes = [...new Array(artCategories.length).keys()]
-                            this.loading.filters = false
-                            console.log('[SPX] Article table loaded.')
-                        } else {
-                            this.snackbarText = `博文录加载失败，错误代码：${xhr.status}`
-                            this.snackbar = true
-                            console.error('[SPX] Article table failed loading.')
-                        }
-                    }
-                }
-                xhr.send()
-            }
-        },
-        data() {
-            return {
-                articles: [],
-                categories: [],
-                artCategories: [],
-                loading: {
-                    filters: true,
-                    websocket: true,
-                    wsrequest: false,
-                },
-                input: {
-                    url: '',
-                    translator: ''
-                },
-                checkboxes: [],
-                artCheckboxes: [],
-                statusInput: [0, 1, 2, 3],
-                colorsPreview: [],
-                output: {
-                    append: '',
-                    value: ''
-                },
-                translatorIcon: 'mdi-account',
-                showRead: false,
-                snackbar: false,
-                snackbarText: '',
-            }
-        }
-    })
+					return {
+						published,
+						category: cat.toUpperCase(),
+						link,
+						title,
+						trLink,
+						translator,
+						isTranslated
+					}
+				}).filter(v => v != null)
+				console.log(result)
+				return result
+			}
+		},
+		methods: {
+			requestBBCodeFor(link) {
+				this.request(link)
+			},
+			clear() {
+				this.output.message = ""
+				this.output.bbcode = ""
+				this.showRead = false
+			},
+			async request(url) {
+				this.loading.xhrrequest = true
+				try {
+					/** @type {string} */
+					const val = url || this.input.url
+					if (val) {
+						if (val.startsWith('verify ')) {
+							this.snackbarText = 'SPX 已经不需要财富密码了。'
+						} else if (val.startsWith('MC-')) {
+							this.snackbarText = 'SPX 已经一条漏洞都撑不下去了。'
+						} else {
+							const { bbcode, url } = JSON.parse(await sendXhr('GET', `${ServerUrl}/convert/${encodeURIComponent(val)}/${encodeURIComponent(this.input.translator)}`))
+							this.output.message = `BBCode - <a href="${url}" target="_blank">${url}</a>`
+							this.output.bbcode = bbcode
+							this.snackbarText = 'BBCode 转换成功。'
+							this.showRead = true
+							console.log('[SPX] [request/convert] DONE')
+						}
+						this.input.url = ''
+							this.snackbar = true
+						localStorage.setItem('translator', this.input.translator)
+					} else {
+						this.snackbarText = '请输入请求 URL。'
+						this.snackbar = true
+					}
+				} catch (e) {
+					console.error(`[SPX] [request('${url}')] `, e)
+				} finally {
+					this.loading.xhrrequest = false
+				}
+			},
+			async getColors() {
+				try {
+					const colors = JSON.parse(await sendXhr('GET', `${ServerUrl}/colors`))
+					const usernames = Object.keys(colors).sort()
+					const resultPreviewArr = []
+					for (const u of usernames) {
+						resultPreviewArr.push({
+							c: colors[u].color,
+							u
+						})
+					}
+					this.colorsPreview = resultPreviewArr
+					console.log('[SPX] [getColors] DONE')
+				} catch (e) {
+					console.error('[SPX] [getColors] ', e)
+				}
+			},
+			async getArticles() {
+				try {
+					const table = await sendXhr('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/articles.csv')
+					let articles = [], categories = [], artCategories = []
+					const rows = table.split(/\r?\n/).slice(1, -1)
+					for (const row of rows) {
+						// published, title, link, cat, tr_link, tr_name
+						// https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
+						const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
+						const [category, artCategory] = cols[3].split(':')
+						if (!categories.includes(category)) {
+							categories.push(category)
+						}
+						if (!artCategories.includes(artCategory || MiscArtCategory)) {
+							artCategories.push(artCategory || MiscArtCategory)
+						}
+						articles.push(cols)
+					}
+					this.articles = articles
+					this.categories = categories
+					this.artCategories = artCategories
+					this.checkboxes = [...new Array(categories.length).keys()]
+					this.artCheckboxes = [...new Array(artCategories.length).keys()]
+					this.loading.filters = false
+					console.log('[SPX] Article table loaded.')
+				} catch (status) {
+					this.snackbarText = `博文录加载失败，错误代码：${status}`
+					this.snackbar = true
+					console.error('[SPX] Article table failed loading.')
+				}
+			},
+		},
+		data() {
+			return {
+				articles: [],
+				categories: [],
+				artCategories: [],
+				loading: {
+					filters: true,
+					xhrrequest: false,
+				},
+				input: {
+					url: '',
+					translator: ''
+				},
+				checkboxes: [],
+				artCheckboxes: [],
+				statusInput: [0, 1, 2, 3],
+				colorsPreview: [],
+				output: {
+					message: '',
+					bbcode: ''
+				},
+				showRead: false,
+				snackbar: false,
+				snackbarText: '',
+			}
+		}
+	})
 </script>
 
 </body>
