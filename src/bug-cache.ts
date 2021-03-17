@@ -31,6 +31,10 @@ export namespace BugCache {
 		delete bugs[id]
 	}
 
+	export function has(id: string) {
+		return id in bugs
+	}
+
 	export function set(id: string, summary: string, translator?: string, date = new Date().toUTCString()) {
 		bugs[id] = { summary, translator, date }
 	}

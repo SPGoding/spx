@@ -1,6 +1,12 @@
-import { GuildMember, Message, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, User, UserResolvable } from 'discord.js'
+import { GuildMember, Message, MessageEmbed, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, User, UserResolvable } from 'discord.js'
 import { BugCache } from './bug-cache'
 import { ColorCache } from './color-cache'
+import { Version2Client as JiraClient } from 'jira.js'
+import { IssueBean } from 'jira.js/out/version2/models';
+
+const jira = new JiraClient({
+	host: 'https://bugs.mojang.com',
+});
 
 export interface DiscordConfig {
 	token: string,
@@ -34,6 +40,7 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 	const bugRegex = /^[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
+	const queryCommand = '!spx query'
 	if (bugMatchArr) {
 		const isForce = /^[!！]/.test(content)
 		const id = bugMatchArr[1]
@@ -67,6 +74,22 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
 		}
 		ColorCache.save()
+	} else if (content.trim().toLowerCase() === queryCommand) {
+		const result = await jira.issueSearch.searchForIssuesUsingJql({
+			jql: 'project = MC AND fixVersion in unreleasedVersions()'
+		})
+		const issues = result.issues ?? []
+		const unknownIssues: IssueBean[] = []
+		for (const issue of issues) {
+			if (issue.key && !BugCache.has(issue.key)) {
+				unknownIssues.push(issue)
+			}
+		}
+		await message.channel.send(new MessageEmbed().addFields(unknownIssues.map(i => ({
+			name: `[${i.key}](https://bugs.mojang.com/browse/${i.key})`,
+			value: (i.fields as any)?.['summary'] ?? 'Unknown',
+			inline: true
+		}))))
 	}
 }
 
