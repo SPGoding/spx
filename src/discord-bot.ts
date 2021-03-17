@@ -75,7 +75,7 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		}
 		ColorCache.save()
 	} else if (content.trim().toLowerCase() === queryCommand) {
-		const result = await jira.issueSearch.searchForIssuesUsingJql({
+		const result = await jira.issueSearch.searchForIssuesUsingJqlPost({
 			jql: 'project = MC AND fixVersion in unreleasedVersions()',
 			fields: ['key'],
 		})
@@ -86,11 +86,16 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 				unknownIssues.push(issue)
 			}
 		}
-		await message.channel.send(new MessageEmbed().addFields(unknownIssues.map(i => ({
-			name: `[${i.key}](https://bugs.mojang.com/browse/${i.key})`,
-			value: (i.fields as any)?.['summary'] ?? 'Unknown',
-			inline: true
-		}))))
+		if (unknownIssues.length) {
+			await message.channel.send(new MessageEmbed()
+				.setTitle(`共 ${unknownIssues.length} 个未翻译漏洞`)
+				.setDescription(unknownIssues.slice(0, 10).map(
+					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}): ${(i.fields as any)?.['summary'] ?? 'Unknown'}`
+				).join('  \n'))
+			)
+		} else {
+			await message.channel.send('🎉 所有已修复漏洞均已翻译。')
+		}
 	}
 }
 
