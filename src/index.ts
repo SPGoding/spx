@@ -72,17 +72,21 @@ const app = express()
 	.get('/convert/:url/:translator', async (req, res) => {
 		const { url, translator } = req.params
 		try {
-			const src = await rp(url)
-			const html = new JSDOM(src).window.document
-			const articleType = getArticleType(html)
-			let bbcode = await convertMCArticleToBBCode(html, url, translator, articleType)
-			if (articleType === 'NEWS') {
-				const versionType = getVersionType(url)
-				const beginning = getBeginning(versionType)
-				const ending = getEnding(versionType)
-				bbcode = `${beginning}${bbcode}${ending}`
+			if (url.startsWith('https://www.minecraft.net/en-us/article/') || url.startsWith('https://www.minecraft.net/zh-cn/article/')) {
+				const src = await rp(url)
+				const html = new JSDOM(src).window.document
+				const articleType = getArticleType(html)
+				let bbcode = await convertMCArticleToBBCode(html, url, translator, articleType)
+				if (articleType === 'NEWS') {
+					const versionType = getVersionType(url)
+					const beginning = getBeginning(versionType)
+					const ending = getEnding(versionType)
+					bbcode = `${beginning}${bbcode}${ending}`
+				}
+				res.send(JSON.stringify({ bbcode, url }))
+			} else {
+				res.status(500).send('Not a Minecraft.net blog URL')
 			}
-			res.send(JSON.stringify({ bbcode, url }))
 		} catch (e) {
 			console.error('[convert] ', e)
 		}
