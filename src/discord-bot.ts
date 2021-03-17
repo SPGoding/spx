@@ -96,21 +96,21 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 
 async function searchIssues(jql: string) {
 	const ans: IssueBean[] = []
-	let startAt = 0
+	let totalCount = 0
 	while (true) {
 		const result = await jira.issueSearch.searchForIssuesUsingJqlPost({
 			jql,
 			fields: ['key', 'summary'],
 			maxResults: 50,
-			startAt,
+			startAt: totalCount,
 		})
 		if (!result.issues) {
-			console.error(`[searchIssues] No issues when startAt=${startAt}`)
+			console.error(`[searchIssues] No issues when totalCount=${totalCount}`)
 		}
 		ans.push(...result.issues ?? [])
-		if (result.total === 50) {
-			startAt += 50
-		} else {
+		totalCount += result.issues?.length ?? 0
+
+		if (totalCount >= (result.total ?? 0)) {
 			break
 		}
 	}
