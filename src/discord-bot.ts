@@ -76,7 +76,8 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		ColorCache.save()
 	} else if (content.trim().toLowerCase() === queryCommand) {
 		const result = await jira.issueSearch.searchForIssuesUsingJql({
-			jql: 'project = MC AND fixVersion in unreleasedVersions()'
+			jql: 'project = MC AND fixVersion in unreleasedVersions()',
+			fields: ['key'],
 		})
 		const issues = result.issues ?? []
 		const unknownIssues: IssueBean[] = []
