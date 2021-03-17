@@ -277,9 +277,9 @@
 			},
 			async request(url) {
 				this.loading.xhrrequest = true
+				/** @type {string} */
+				const val = url || this.input.url
 				try {
-					/** @type {string} */
-					const val = url || this.input.url
 					if (val) {
 						if (val.startsWith('verify ')) {
 							this.snackbarText = 'SPX 已经不需要财富密码了。'
@@ -294,16 +294,16 @@
 							console.log('[SPX] [request/convert] DONE')
 						}
 						this.input.url = ''
-							this.snackbar = true
-						localStorage.setItem('translator', this.input.translator)
 					} else {
 						this.snackbarText = '请输入请求 URL。'
-						this.snackbar = true
 					}
 				} catch (e) {
-					console.error(`[SPX] [request('${url}')] `, e)
+					this.snackbarText = `错误：${e}`
+					console.error(`[SPX] [request('${val}')] `, e)
 				} finally {
+					this.snackbar = true
 					this.loading.xhrrequest = false
+					localStorage.setItem('translator', this.input.translator)
 				}
 			},
 			async getColors() {
