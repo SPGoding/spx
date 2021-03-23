@@ -76,9 +76,17 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 	} else if (content.toLowerCase().startsWith(queryCommand)) {
 		const issues = await searchIssues(content.slice(queryCommand.length).trim() || 'project = MC AND fixVersion in unreleasedVersions()')
 		const unknownIssues: IssueBean[] = []
+		const translators = new Map<string, number>()
 		for (const issue of issues) {
-			if (issue.key && !BugCache.has(issue.key)) {
-				unknownIssues.push(issue)
+			if (issue.key) {
+				if (BugCache.has(issue.key)) {
+					const translator = BugCache.getTranslator(issue.key)
+					if (translator) {
+						translators.set(translator, (translators.get(translator) ?? 0) + 1)
+					}
+				} else {
+					unknownIssues.push(issue)
+				}
 			}
 		}
 		if (unknownIssues.length) {
@@ -91,6 +99,11 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		} else {
 			await message.channel.send('🎉 所有已修复漏洞均已翻译。')
 		}
+		const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
+		await message.channel.send(new MessageEmbed()
+			.setTitle('统计')
+			.setDescription(sortedTranslators.map(([translator, count]) => `${translator}: ${count} (${count / issues.length * 100}%)`).join('  \n'))
+		)
 	}
 }
 

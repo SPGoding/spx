@@ -43,6 +43,10 @@ export namespace BugCache {
 		return bugs[id]?.summary
 	}
 
+	export function getTranslator(id: string): string | undefined {
+		return bugs[id]?.translator
+	}
+
 	// https://stackoverflow.com/a/3426956
 	export function getColor(id: string): string {
 		const translator = bugs[id]?.translator
