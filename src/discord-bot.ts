@@ -102,7 +102,9 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
 		await message.channel.send(new MessageEmbed()
 			.setTitle('统计')
-			.addFields(...sortedTranslators.map(([translator, count]) => ({ name: translator, value: `${count} (${count / issues.length * 100}%)`, inline: true })))
+			.setDescription(sortedTranslators.map(
+				([translator, count]) => `${translator}\t${count}\t(${count / issues.length * 100}%)`
+			).join('  \n'))
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
 		)
 	}
