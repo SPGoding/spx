@@ -47,9 +47,12 @@ export namespace BugCache {
 		return bugs[id]?.translator
 	}
 
-	// https://stackoverflow.com/a/3426956
 	export function getColor(id: string): string {
-		const translator = bugs[id]?.translator
+		return getColorFromTranslator(bugs[id]?.translator)
+	}
+
+	// https://stackoverflow.com/a/3426956
+	export function getColorFromTranslator(translator: string | undefined): string {
 		if (!translator) {
 			return '#388d40'
 		} else if (ColorCache.has(translator)) {
