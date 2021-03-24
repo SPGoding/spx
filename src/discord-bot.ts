@@ -105,7 +105,7 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 				.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
 				.setDescription(unknownIssues.slice(0, 10).map(
 					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
-				).join('  \n'))
+				).join('<br>'))
 			)
 		} else {
 			await message.channel.send(`🎉 ${issues.length} 个漏洞均已翻译。`)
@@ -115,7 +115,7 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 			.setTitle('统计')
 			.setDescription(sortedTranslators.map(
 				([translator, count]) => `**${translator}** ${count} (${(count / issues.length * 100).toFixed(2)}%)`
-			).join('  \n'))
+			).join('<br>'))
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
 		)
 	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
