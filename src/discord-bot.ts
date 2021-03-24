@@ -36,7 +36,7 @@ const overrideConfirmations = new Map<string, { message: Message, prompt: Messag
 
 async function executeCommand(message: Message, translator: string): Promise<void> {
 	const content = message.content.trim()
-	const bugRegex = /^[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
+	const bugRegex = /^(?:!spx bug )?[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
 	const colorOfCommandPrefix = '!spx colorOf '
