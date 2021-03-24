@@ -103,20 +103,26 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 		if (unknownIssues.length) {
 			await message.channel.send(new MessageEmbed()
 				.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
-				.addField('漏洞', unknownIssues.slice(0, 10).map(i => `[${i.key}](https://bugs.mojang.com/browse/${i.key})`).join('\n'), true)
-				.addField('描述', unknownIssues.slice(0, 10).map(i => (i.fields as any)?.['summary'] ?? 'N/A').join('\n'), true)
+				.setDescription(unknownIssues.slice(0, 10).map(
+					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
+				).join('\n'))
 			)
 		} else {
 			await message.channel.send(`🎉 ${issues.length} 个漏洞均已翻译。`)
 		}
 		const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
-		await message.channel.send(new MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle('统计')
-			.addField('打工人', sortedTranslators.map(([translator, _count]) => `**${translator}**`).join('\n'), true)
-			.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
-			.addField('%', sortedTranslators.map(([_translator, count]) => (count / issues.length * 100).toFixed(2)).join('\n'), true)
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
-		)
+			.addField('打工人', '', true)
+			.addField('#', '', true)
+			.addField('%', '', true)
+		for (const [translator, count] of sortedTranslators) {
+			embed.addField('', `**${translator}**`, true)
+			embed.addField('', count, true)
+			embed.addField('', `${(count / issues.length * 100).toFixed(2)}%`, true)
+		}
+		await message.channel.send(embed)
 	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
 		if (translator === 'SPGoding') {
 			// Yes, this check will be broken if the user renames themself to SPGoding.
