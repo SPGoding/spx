@@ -25,7 +25,7 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 		const member = await ensureMember(message.member)
 		if (member.roles.cache.has(config.role)) {
 			const translator = tagToName(member.user.tag)
-			await executeBugOrColorCommand(message, translator)
+			await executeCommand(message, translator)
 		}
 	} catch (e) {
 		console.error('[Discord#onMessage] ', e)
@@ -34,12 +34,13 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
 
-async function executeBugOrColorCommand(message: Message, translator: string): Promise<void> {
+async function executeCommand(message: Message, translator: string): Promise<void> {
 	const content = message.content.trim()
 	const bugRegex = /^[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
 	const colorOfCommandPrefix = '!spx colorOf '
+	const executeAsCommand = '!spx sudo execute as '
 	const queryCommand = '!spx query'
 	if (bugMatchArr) {
 		const isForce = /^[!！]/.test(content)
@@ -117,6 +118,17 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			).join('  \n'))
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
 		)
+	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
+		if (translator === 'SPGoding') {
+			// Yes, this check will be broken if the user renames themself to SPGoding.
+			const victim = content.slice(executeAsCommand.length, content.indexOf(' run !spx'))
+			const command = content.slice(content.indexOf(' run !spx') + 5)
+			message.content = command
+			await message.channel.send(`💻 正在以 ${victim} 的身份执行 \`${command}\`。`)
+			await executeCommand(message, victim)
+		} else {
+			await message.channel.send('🔥 SPGoding 以外的用户使用 !spx sudo 系列命令会下地狱。')
+		}
 	}
 }
 
@@ -154,7 +166,7 @@ export async function onReactionAdd(_config: DiscordConfig, reaction: MessageRea
 			}
 			if (reaction.emoji.name === '⚪') {
 				message.content = `!${message.content}`
-				await executeBugOrColorCommand(message, translator)
+				await executeCommand(message, translator)
 			} else if (reaction.emoji.name !== '❌') {
 				return
 			}
