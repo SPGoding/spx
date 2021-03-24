@@ -80,7 +80,8 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		await message.channel.send(new MessageEmbed()
 			.setTitle(`${target} 的色图！`)
 			.setDescription(`色：\`${hex}\``)
-			.setImage(`https://colorhexa.com/${hex.slice(1)}.png`)
+			.setColor(hex)
+			.setThumbnail(`https://colorhexa.com/${hex.slice(1)}.png`)
 		)
 	} else if (content.toLowerCase().startsWith(queryCommand)) {
 		const issues = await searchIssues(content.slice(queryCommand.length).trim() || 'project = MC AND fixVersion in unreleasedVersions()')
