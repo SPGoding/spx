@@ -39,6 +39,7 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 	const bugRegex = /^[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
+	const colorOfCommandPrefix = '!spx colorOf '
 	const queryCommand = '!spx query'
 	if (bugMatchArr) {
 		const isForce = /^[!！]/.test(content)
@@ -60,7 +61,7 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			BugCache.save()
 			await message.react('✅')
 		}
-	} else if (content.startsWith(colorCommandPrefix)) {
+	} else if (content.toLowerCase().startsWith(colorCommandPrefix)) {
 		let color = content.slice(colorCommandPrefix.length)
 		if (!color.startsWith('#')) {
 			color = `#${color}`
@@ -73,6 +74,14 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 			await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
 		}
 		ColorCache.save()
+	} else if (content.toLowerCase().startsWith(colorOfCommandPrefix.toLowerCase())) {
+		const target = content.slice(colorOfCommandPrefix.length)
+		const hex = BugCache.getColorFromTranslator(target)
+		await message.channel.send(new MessageEmbed()
+			.setTitle(`${target} 的色图！`)
+			.setDescription(`色：\`${hex}\``)
+			.setImage(`https://colorhexa.com/${hex.slice(1)}.png`)
+		)
 	} else if (content.toLowerCase().startsWith(queryCommand)) {
 		const issues = await searchIssues(content.slice(queryCommand.length).trim() || 'project = MC AND fixVersion in unreleasedVersions()')
 		const unknownIssues: IssueBean[] = []
