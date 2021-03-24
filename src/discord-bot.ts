@@ -111,18 +111,13 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 			await message.channel.send(`🎉 ${issues.length} 个漏洞均已翻译。`)
 		}
 		const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
-		const embed = new MessageEmbed()
+		await message.channel.send(new MessageEmbed()
 			.setTitle('统计')
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
-			.addField('打工人', '', true)
-			.addField('#', '', true)
-			.addField('%', '', true)
-		for (const [translator, count] of sortedTranslators) {
-			embed.addField('', `**${translator}**`, true)
-			embed.addField('', count, true)
-			embed.addField('', `${(count / issues.length * 100).toFixed(2)}%`, true)
-		}
-		await message.channel.send(embed)
+			.addField('打工人', sortedTranslators.map(([translator, _count]) => `**${translator}**`).join('\n'), true)
+			.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
+			.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
+		)
 	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
 		if (translator === 'SPGoding') {
 			// Yes, this check will be broken if the user renames themself to SPGoding.
