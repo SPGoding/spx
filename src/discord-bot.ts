@@ -91,19 +91,19 @@ async function executeBugOrColorCommand(message: Message, translator: string): P
 		}
 		if (unknownIssues.length) {
 			await message.channel.send(new MessageEmbed()
-				.setTitle(`共 ${unknownIssues.length} 个未翻译漏洞`)
+				.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
 				.setDescription(unknownIssues.slice(0, 10).map(
 					i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
 				).join('  \n'))
 			)
 		} else {
-			await message.channel.send('🎉 所有已修复漏洞均已翻译。')
+			await message.channel.send(`🎉 ${issues.length} 个漏洞均已翻译。`)
 		}
 		const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
 		await message.channel.send(new MessageEmbed()
 			.setTitle('统计')
 			.setDescription(sortedTranslators.map(
-				([translator, count]) => `**${translator}** ${count} (${count / issues.length * 100}%)`
+				([translator, count]) => `**${translator}** ${count} (${(count / issues.length * 100).toFixed(2)}%)`
 			).join('  \n'))
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
 		)
