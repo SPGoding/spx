@@ -113,7 +113,8 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 		await message.channel.send(new MessageEmbed()
 			.setTitle('统计')
 			.addField('打工人', sortedTranslators.map(([translator, _count]) => `**${translator}**`).join('\n'), true)
-			.addField('# (%)', sortedTranslators.map(([_translator, count]) => `${count} (${(count / issues.length * 100).toFixed(2)}%)`).join('\n'), true)
+			.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
+			.addField('%', sortedTranslators.map(([_translator, count]) => (count / issues.length * 100).toFixed(2)).join('\n'), true)
 			.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
 		)
 	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
