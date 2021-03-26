@@ -39,4 +39,8 @@ export namespace ColorCache {
 	export function getColor(id: string): string {
 		return colors[id].color
 	}
+
+	export function getTranslators(): string[] {
+		return Object.keys(colors)
+	}
 }

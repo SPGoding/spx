@@ -129,8 +129,26 @@ async function executeCommand(message: Message, translator: string, sudoAble = f
 			const victim = content.slice(executeAsCommand.length, content.indexOf(' run !spx'))
 			const command = content.slice(content.indexOf(' run !spx') + 5)
 			message.content = command
-			await message.channel.send(`💻 正在以 ${victim} 的身份执行 \`${command}\`。`)
-			await executeCommand(message, victim, true)
+			const allTranslators = ColorCache.getTranslators()
+			let actualVictims: string[]
+			switch (victim) {
+				case '@a':
+				case '@e':
+					actualVictims = allTranslators
+					break
+				case '@p':
+				case '@s':
+					actualVictims = [translator]
+				case '@r':
+					actualVictims = [allTranslators[Math.floor(allTranslators.length * Math.random())]]
+				default:
+					actualVictims = [victim]
+					break
+			}
+			for (const vic of actualVictims) {
+				await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
+				await executeCommand(message, vic, true)
+			}
 		} else {
 			await message.channel.send(`🔥 ${translator} 违规操作，检举哭哭。`)
 		}
