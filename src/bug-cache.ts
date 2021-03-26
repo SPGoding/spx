@@ -22,7 +22,7 @@ export namespace BugCache {
 
 	function sort() {
 		const ans: BugCache = {}
-		for (const key of Object.keys(bugs).sort()) {
+		for (const key of Object.keys(bugs).sort((a, b) => parseInt(a.slice(3)) - parseInt(b.slice(3)))) {
 			ans[key] = bugs[key]
 		}
 		bugs = ans
