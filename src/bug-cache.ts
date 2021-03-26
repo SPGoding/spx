@@ -12,18 +12,24 @@ export interface BugCache {
 
 export namespace BugCache {
 	export const bugsPath = path.join(__dirname, './bugs.json')
-	export const bugs: BugCache = {}
+	export let bugs: BugCache = {}
 
 	export function load() {
 		if (fs.existsSync(bugsPath)) {
-			const result = fs.readJsonSync(bugsPath)
-			for (const key in result) {
-				bugs[key] = result[key]
-			}
+			bugs = fs.readJsonSync(bugsPath)
 		}
 	}
 
+	function sort() {
+		const ans: BugCache = {}
+		for (const key of Object.keys(bugs).sort()) {
+			ans[key] = bugs[key]
+		}
+		bugs = ans
+	}
+
 	export function save() {
+		sort()
 		fs.writeFileSync(bugsPath, JSON.stringify(bugs, undefined, 2), { encoding: 'utf8' })
 	}
 

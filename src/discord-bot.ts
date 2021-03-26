@@ -40,8 +40,9 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
 	const colorOfCommandPrefix = '!spx colorOf '
-	const executeAsCommand = '!spx sudo execute as '
+	const executeAsCommand = '!spx execute as '
 	const queryCommand = '!spx query'
+	const backupCommand = '!spx backup'
 	if (bugMatchArr) {
 		const isForce = /^[!！]/.test(content)
 		const id = bugMatchArr[1]
@@ -146,10 +147,21 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 				actualVictims = [victim]
 				break
 		}
-		for (const vic of actualVictims) {
+		for (const [i, vic] of actualVictims.entries()) {
+			if (i >= 15) {
+				await message.channel.send(`📚 StackOverflowException`)
+				break
+			}
 			await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
 			await executeCommand(message, vic)
 		}
+	} else if (content.toLowerCase().startsWith(backupCommand)) {
+		await message.channel.send('💾 Backup', {
+			files: [
+				BugCache.bugsPath,
+				ColorCache.colorPath,
+			]
+		})
 	}
 }
 

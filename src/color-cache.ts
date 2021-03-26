@@ -9,18 +9,24 @@ export interface ColorCache {
 
 export namespace ColorCache {
 	export const colorPath = path.join(__dirname, './colors.json')
-	export const colors: ColorCache = {}
+	export let colors: ColorCache = {}
 
 	export function load() {
 		if (fs.existsSync(colorPath)) {
-			const result = fs.readJsonSync(colorPath)
-			for (const key in result) {
-				colors[key] = result[key]
-			}
+			colors = fs.readJsonSync(colorPath)
 		}
 	}
 
+	function sort() {
+		const ans: ColorCache = {}
+		for (const key of Object.keys(colors).sort()) {
+			ans[key] = colors[key]
+		}
+		colors = ans
+	}
+
 	export function save() {
+		sort()
 		fs.writeFileSync(colorPath, JSON.stringify(colors, undefined, 2), { encoding: 'utf8' })
 	}
 
