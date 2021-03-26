@@ -34,7 +34,7 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
 
-async function executeCommand(message: Message, translator: string, sudoAble = false): Promise<void> {
+async function executeCommand(message: Message, translator: string): Promise<void> {
 	const content = message.content.trim()
 	const bugRegex = /^(?:!spx bug )?[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
@@ -124,35 +124,31 @@ async function executeCommand(message: Message, translator: string, sudoAble = f
 			.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
 		)
 	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
-		if (sudoAble || translator === 'SPGoding' || translator === 'SPX') {
-			// Yes, this check will be broken if the user renames themself to SPGoding or SPX.
-			const victim = content.slice(executeAsCommand.length, content.indexOf(' run !spx'))
-			const command = content.slice(content.indexOf(' run !spx') + 5)
-			message.content = command
-			const allTranslators = ColorCache.getTranslators()
-			let actualVictims: string[]
-			switch (victim) {
-				case '@a':
-				case '@e':
-					actualVictims = allTranslators
-					break
-				case '@p':
-				case '@s':
-					actualVictims = [translator]
-					break
-				case '@r':
-					actualVictims = [allTranslators[Math.floor(allTranslators.length * Math.random())]]
-					break
-				default:
-					actualVictims = [victim]
-					break
-			}
-			for (const vic of actualVictims) {
-				await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
-				await executeCommand(message, vic, true)
-			}
-		} else {
-			await message.channel.send(`🔥 ${translator} 违规操作，检举哭哭。`)
+		// Yes, this check will be broken if the user renames themself to SPGoding or SPX.
+		const victim = content.slice(executeAsCommand.length, content.indexOf(' run !spx'))
+		const command = content.slice(content.indexOf(' run !spx') + 5)
+		message.content = command
+		const allTranslators = ColorCache.getTranslators()
+		let actualVictims: string[]
+		switch (victim) {
+			case '@a':
+			case '@e':
+				actualVictims = allTranslators
+				break
+			case '@p':
+			case '@s':
+				actualVictims = [translator]
+				break
+			case '@r':
+				actualVictims = [allTranslators[Math.floor(allTranslators.length * Math.random())]]
+				break
+			default:
+				actualVictims = [victim]
+				break
+		}
+		for (const vic of actualVictims) {
+			await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
+			await executeCommand(message, vic)
 		}
 	}
 }
