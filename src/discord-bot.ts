@@ -139,8 +139,10 @@ async function executeCommand(message: Message, translator: string, sudoAble = f
 				case '@p':
 				case '@s':
 					actualVictims = [translator]
+					break
 				case '@r':
 					actualVictims = [allTranslators[Math.floor(allTranslators.length * Math.random())]]
+					break
 				default:
 					actualVictims = [victim]
 					break
