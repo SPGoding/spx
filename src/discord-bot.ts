@@ -34,7 +34,7 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
 
-async function executeCommand(message: Message, translator: string): Promise<void> {
+async function executeCommand(message: Message, translator: string, sudoAble = false): Promise<void> {
 	const content = message.content.trim()
 	const bugRegex = /^(?:!spx bug )?[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
@@ -63,16 +63,21 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 			await message.react('✅')
 		}
 	} else if (content.toLowerCase().startsWith(colorCommandPrefix)) {
-		let color = content.slice(colorCommandPrefix.length)
-		if (!color.startsWith('#')) {
-			color = `#${color}`
-		}
-		ColorCache.set(translator, color)
-		await message.react('🌈')
-		if (translator === 'ff98sha' || translator === 'WuGuangYao') {
-			ColorCache.set('ff98sha', color)
-			ColorCache.set('WuGuangYao', color)
-			await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
+		let color = content.slice(colorCommandPrefix.length).toLowerCase()
+		if (color === 'clear') {
+			ColorCache.remove(translator)
+			await message.react('💥')
+		} else {
+			if (!color.startsWith('#')) {
+				color = `#${color}`
+			}
+			ColorCache.set(translator, color)
+			await message.react('🌈')
+			if (translator === 'ff98sha' || translator === 'WuGuangYao') {
+				ColorCache.set('ff98sha', color)
+				ColorCache.set('WuGuangYao', color)
+				await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
+			}
 		}
 		ColorCache.save()
 	} else if (content.toLowerCase().startsWith(colorOfCommandPrefix.toLowerCase())) {
@@ -119,15 +124,15 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 			.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
 		)
 	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
-		if (translator === 'SPGoding') {
-			// Yes, this check will be broken if the user renames themself to SPGoding.
+		if (sudoAble || translator === 'SPGoding' || translator === 'SPX') {
+			// Yes, this check will be broken if the user renames themself to SPGoding or SPX.
 			const victim = content.slice(executeAsCommand.length, content.indexOf(' run !spx'))
 			const command = content.slice(content.indexOf(' run !spx') + 5)
 			message.content = command
 			await message.channel.send(`💻 正在以 ${victim} 的身份执行 \`${command}\`。`)
-			await executeCommand(message, victim)
+			await executeCommand(message, victim, true)
 		} else {
-			await message.channel.send('🔥 SPGoding 以外的用户使用 !spx sudo 系列命令会下地狱。')
+			await message.channel.send(`🔥 ${translator} 违规操作，检举哭哭。`)
 		}
 	}
 }
