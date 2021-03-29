@@ -34,7 +34,7 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
 
-async function executeCommand(message: Message, translator: string, out = { recursionCount: 15 }): Promise<void> {
+async function executeCommand(message: Message, translator: string, out = { recursionCount: 12 }): Promise<void> {
 	const content = message.content.trim()
 	const bugRegex = /^(?:!spx bug )?([!！]|)?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
@@ -148,10 +148,13 @@ async function executeCommand(message: Message, translator: string, out = { recu
 				break
 		}
 		for (const vic of actualVictims) {
-			if (out.recursionCount-- == 0) {
-				await message.channel.send(`📚 StackOverflowException`)
+			if (out.recursionCount <= 0) {
+				if (out.recursionCount === 0) {
+					await message.channel.send(`📚 StackOverflowException`)
+				}
 				break
 			}
+			out.recursionCount -= 1
 			await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
 			await executeCommand(message, vic, out)
 		}
