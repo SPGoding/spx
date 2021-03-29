@@ -34,9 +34,9 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
 
-async function executeCommand(message: Message, translator: string): Promise<void> {
+async function executeCommand(message: Message, translator: string, out = { recursionCount: 15 }): Promise<void> {
 	const content = message.content.trim()
-	const bugRegex = /^(?:!spx bug )?[!！]?\s*\[?(MC-\d+)]?\s*(.*)$/i
+	const bugRegex = /^(?:!spx bug )?([!！]|)?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
 	const colorOfCommandPrefix = '!spx colorOf '
@@ -44,9 +44,9 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 	const queryCommand = '!spx query'
 	const backupCommand = '!spx backup'
 	if (bugMatchArr) {
-		const isForce = /^[!！]/.test(content)
-		const id = bugMatchArr[1]
-		const desc = bugMatchArr[2]
+		const isForce = !!bugMatchArr[1]
+		const id = bugMatchArr[2]
+		const desc = bugMatchArr[3]
 		const existingOne = BugCache.getSummary(id)
 		if (existingOne && !isForce) {
 			const [, prompt] = await Promise.all([
@@ -147,13 +147,13 @@ async function executeCommand(message: Message, translator: string): Promise<voi
 				actualVictims = [victim]
 				break
 		}
-		for (const [i, vic] of actualVictims.entries()) {
-			if (i >= 15) {
+		for (const vic of actualVictims) {
+			if (out.recursionCount-- == 0) {
 				await message.channel.send(`📚 StackOverflowException`)
 				break
 			}
 			await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
-			await executeCommand(message, vic)
+			await executeCommand(message, vic, out)
 		}
 	} else if (content.toLowerCase().startsWith(backupCommand)) {
 		await message.channel.send('💾 Backup', {
