@@ -148,13 +148,13 @@ async function executeCommand(message: Message, translator: string, out = { recu
 				break
 		}
 		for (const vic of actualVictims) {
-			if (out.recursionCount <= 0) {
-				if (out.recursionCount === 0) {
+			out.recursionCount -= 1
+			if (out.recursionCount < 0) {
+				if (out.recursionCount === -1) {
 					await message.channel.send(`📚 StackOverflowException`)
 				}
 				break
 			}
-			out.recursionCount -= 1
 			await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
 			await executeCommand(message, vic, out)
 		}
