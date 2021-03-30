@@ -66,7 +66,6 @@ export namespace BugCache {
 		} else {
 			const color = (hashCode(translator) & 0x00FFFFFF).toString(16)
 			const hexColor = `#${'00000'.slice(0, 6 - color.length)}${color}`
-			ColorCache.set(translator, hexColor)
 			return hexColor
 		}
 	}

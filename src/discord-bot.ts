@@ -36,13 +36,14 @@ const overrideConfirmations = new Map<string, { message: Message, prompt: Messag
 
 async function executeCommand(message: Message, translator: string, out = { recursionCount: 12 }): Promise<void> {
 	const content = message.content.trim()
+	const backupCommand = '!spx backup'
 	const bugRegex = /^(?:!spx bug )?([!！]|)?\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
 	const colorCommandPrefix = '!spx color '
 	const colorOfCommandPrefix = '!spx colorOf '
 	const executeAsCommand = '!spx execute as '
+	const killCommand = '!spx kill '
 	const queryCommand = '!spx query'
-	const backupCommand = '!spx backup'
 	if (bugMatchArr) {
 		const isForce = !!bugMatchArr[1]
 		const id = bugMatchArr[2]
@@ -62,6 +63,10 @@ async function executeCommand(message: Message, translator: string, out = { recu
 			BugCache.set(id, desc, translator)
 			BugCache.save()
 			await message.react('✅')
+			if (!ColorCache.has(translator)) {
+				ColorCache.set(translator, BugCache.getColorFromTranslator(translator))
+				await message.react('🌈')
+			}
 		}
 	} else if (content.toLowerCase().startsWith(colorCommandPrefix)) {
 		let color = content.slice(colorCommandPrefix.length).toLowerCase()
@@ -90,6 +95,14 @@ async function executeCommand(message: Message, translator: string, out = { recu
 			.setColor(hex)
 			.setThumbnail(`https://colorhexa.com/${hex.slice(1)}.png`)
 		)
+	} else if (content.toLowerCase().startsWith(killCommand)) {
+		const victim = content.slice(killCommand.length)
+		if (ColorCache.has(victim)) {
+			ColorCache.remove(victim)
+			await message.react('🔪')
+		} else {
+			await message.react('❔')
+		}
 	} else if (content.toLowerCase().startsWith(queryCommand)) {
 		const issues = await searchIssues(content.slice(queryCommand.length).trim() || 'project = MC AND fixVersion in unreleasedVersions()')
 		const unknownIssues: IssueBean[] = []
@@ -155,8 +168,12 @@ async function executeCommand(message: Message, translator: string, out = { recu
 				}
 				break
 			}
-			await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
-			await executeCommand(message, vic, out)
+			if (ColorCache.has(vic)) {
+				await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
+				await executeCommand(message, vic, out)
+			} else {
+				await message.channel.send(`🎃 找不到名为 ${vic} 的用户。您是否是想找「野兽先辈」？`)
+			}
 		}
 	} else if (content.toLowerCase().startsWith(backupCommand)) {
 		await message.channel.send('💾 Backup', {
