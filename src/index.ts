@@ -73,7 +73,7 @@ const app = express()
 	.get('/convert/:url/:translator', async (req, res) => {
 		const { url, translator } = req.params
 		try {
-			if (url.startsWith('https://www.minecraft.net/en-us/article/') || url.startsWith('https://www.minecraft.net/zh-cn/article/' || url.startsWith('https://feedback.minecraft.net/hc/en-us/articles/'))) {
+			if (url.startsWith('https://www.minecraft.net/en-us/article/') || url.startsWith('https://www.minecraft.net/zh-cn/article/') || url.startsWith('https://feedback.minecraft.net/hc/en-us/articles/')) {
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
 				const articleType = getArticleType(html)
@@ -92,6 +92,8 @@ const app = express()
 			}
 		} catch (e) {
 			console.error('[convert] ', e)
+			res.setHeader('Content-Type', 'text/plain')
+			res.status(500).send(e)
 		}
 	})
 	.get('/*', (_req, res) => {
