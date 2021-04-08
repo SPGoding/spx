@@ -8,7 +8,7 @@ import { ColorCache } from './color-cache'
 import { DiscordConfig, onMessage, onReactionAdd } from './discord-bot'
 import { JSDOM } from 'jsdom'
 import { getArticleType, getBeginning, getEnding, getVersionType } from './util'
-import { convertMCArticleToBBCode } from './converter'
+import { convertFeedbackArticleToBBCode, convertMCArticleToBBCode } from './converter'
 
 const configPath = path.join(__dirname, './config.json')
 let httpPort: number | undefined
@@ -73,7 +73,9 @@ const app = express()
 	.get('/convert/:url/:translator', async (req, res) => {
 		const { url, translator } = req.params
 		try {
-			if (url.startsWith('https://www.minecraft.net/en-us/article/') || url.startsWith('https://www.minecraft.net/zh-cn/article/') || url.startsWith('https://feedback.minecraft.net/hc/en-us/articles/')) {
+			const isMinecraftBlog = url.match(/^https:\/\/www.minecraft.net\/(?:en-us|zh-cn)\/article\//)
+			const isFeedback = url.match(/^https:\/\/feedback.minecraft.net\/hc\/en-us\/articles\//)
+			if (isMinecraftBlog) {
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
 				const articleType = getArticleType(html)
@@ -84,6 +86,12 @@ const app = express()
 					const ending = getEnding(versionType)
 					bbcode = `${beginning}${bbcode}${ending}`
 				}
+				res.setHeader('Content-Type', 'application/json')
+				res.send(JSON.stringify({ bbcode, url }))
+			} else if (isFeedback) {
+				const src = await rp(url)
+				const html = new JSDOM(src).window.document
+				let bbcode = await convertFeedbackArticleToBBCode(html, url, translator)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else {

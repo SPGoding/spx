@@ -83,6 +83,34 @@ export async function getContent(html: Document) {
     return ans
 }
 
+export async function convertFeedbackArticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
+    info.url = articleUrl
+    info.title = html.title.slice(0, html.title.lastIndexOf(' &ndash; Minecraft Feedback'))
+    info.translator = translator
+
+    const content = await getFeedbackContent(html)
+
+    const ans = `${content}[/indent][/indent]`
+
+    return ans
+}
+
+/**
+ * Get the content of an article as the form of a BBCode string.
+ * @param html An HTML Document.
+ */
+export async function getFeedbackContent(html: Document) {
+    const rootSection = html.getElementsByClassName('article-info')[0] as HTMLElement
+    let ans = await converters.recurse(rootSection)
+
+    // Add spaces between texts and '[x'.
+    ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
+    // Add spaces between '[/x]' and texts.
+    ans = ans.replace(/(\[\/[^\]]+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
+
+    return ans
+}
+
 export const converters = {
     /**
      * Converts a ChildNode to a BBCode string according to the type of the node.
