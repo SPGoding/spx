@@ -175,7 +175,7 @@ export const converters = {
             case '#text':
                 if (node) {
                     return ((node as Text).textContent as string)
-                        .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+                        .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ')
                 } else {
                     return ''
                 }
