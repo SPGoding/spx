@@ -90,7 +90,7 @@ export function getBeginning(type: VersionType) {
 [tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=50%,#FFFFCE]
-[tr][td][align=center]部分新特性译名未最终确定，以下译名仅供参考。[/align][/td][/tr]
+[tr][td][align=center]部分新特性译名仅供新闻预览，请到[url=https://crowdin.com/project/minecraft/zh-CN]Crowdin[/url]讨论游戏正式译名。[/align][/td][/tr]
 [/table][/align]
 
 [hr]\n
