@@ -47,7 +47,7 @@ async function executeCommand(message: Message, translator: string, out = { recu
 	if (bugMatchArr) {
 		const isForce = !!bugMatchArr[1]
 		const id = bugMatchArr[2]
-		const desc = bugMatchArr[3]
+		const desc = markdownToBbcode(bugMatchArr[3])
 		const existingOne = BugCache.getSummary(id)
 		if (existingOne && !isForce) {
 			const [, prompt] = await Promise.all([
@@ -183,6 +183,11 @@ async function executeCommand(message: Message, translator: string, out = { recu
 			]
 		})
 	}
+}
+
+function markdownToBbcode(value: string): string {
+	return value
+		.replace(/`([^`]+)`/g, "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]$1[/font][/backcolor]")
 }
 
 async function searchIssues(jql: string) {
