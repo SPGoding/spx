@@ -69,9 +69,9 @@ async function executeCommand(message: Message, translator: string, out = { recu
 			}
 		}
 	} else if (content.toLowerCase().startsWith(colorCommandPrefix)) {
-		const argument = content.slice(colorCommandPrefix.length).toLowerCase()
-		let color = argument.split(' ')[0]
-		let target = argument.split(' ')[1] ?? translator
+		const argument = content.slice(colorCommandPrefix.length)
+		let color = argument.split(' ')[0].toLowerCase()
+		let target = argument.split(' ')[1] || translator
 		if (color === 'clear') {
 			ColorCache.remove(target)
 			await message.react('💥')
