@@ -75,12 +75,22 @@ async function executeCommand(message: Message, translator: string, out = { recu
 		if (color === 'clear') {
 			ColorCache.remove(target)
 			await message.react('💥')
+			await message.channel.send(new MessageEmbed()
+				.setDescription(`已移除 ${target} 的颜色`)
+				.setColor('#000000')
+				.setThumbnail(`https://colorhexa.com/000000.png`)
+			)
 		} else {
 			if (!color.startsWith('#')) {
 				color = `#${color}`
 			}
 			ColorCache.set(target, color)
 			await message.react('🌈')
+			await message.channel.send(new MessageEmbed()
+				.setDescription(`已设置 ${target} 的颜色为 ${color}`)
+				.setColor(color)
+				.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`)
+			)
 			if (target === 'ff98sha' || target === 'WuGuangYao') {
 				ColorCache.set('ff98sha', color)
 				ColorCache.set('WuGuangYao', color)
