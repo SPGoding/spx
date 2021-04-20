@@ -69,17 +69,19 @@ async function executeCommand(message: Message, translator: string, out = { recu
 			}
 		}
 	} else if (content.toLowerCase().startsWith(colorCommandPrefix)) {
-		let color = content.slice(colorCommandPrefix.length).toLowerCase()
+		const argument = content.slice(colorCommandPrefix.length).toLowerCase()
+		let color = argument.split(' ')[0]
+		let target = argument.split(' ')[1] ?? translator
 		if (color === 'clear') {
-			ColorCache.remove(translator)
+			ColorCache.remove(target)
 			await message.react('💥')
 		} else {
 			if (!color.startsWith('#')) {
 				color = `#${color}`
 			}
-			ColorCache.set(translator, color)
+			ColorCache.set(target, color)
 			await message.react('🌈')
-			if (translator === 'ff98sha' || translator === 'WuGuangYao') {
+			if (target === 'ff98sha' || target === 'WuGuangYao') {
 				ColorCache.set('ff98sha', color)
 				ColorCache.set('WuGuangYao', color)
 				await message.channel.send('🏳‍🌈 ff98sha 与 WuGuangYao 已锁。')
@@ -97,8 +99,9 @@ async function executeCommand(message: Message, translator: string, out = { recu
 		)
 	} else if (content.toLowerCase().startsWith(killCommand)) {
 		const victim = content.slice(killCommand.length)
-		if (ColorCache.has(victim)) {
-			ColorCache.remove(victim)
+		if (victim === translator) {
+			await message.channel.send('需要帮助？可拨打全国防自杀热线：xxx-xxx-xxxx')
+		} else if (ColorCache.has(victim)) {
 			await message.react('🔪')
 		} else {
 			await message.react('❔')
