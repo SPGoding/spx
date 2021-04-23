@@ -15,8 +15,18 @@
 <div id="root">
 	<v-app>
 		<v-main>
-			<v-app-bar color="white">
+			<v-app-bar :color="$vuetify.theme.dark ? 'dark' : 'white'">
 				<v-toolbar-title>SPX Client</v-toolbar-title>
+				<v-spacer></v-spacer>
+				<v-tooltip bottom>
+					<template v-slot:activator="{ on, attrs }">
+					  	<v-btn icon v-bind="attrs" v-on="on" text @click="$vuetify.theme.dark = !$vuetify.theme.dark">
+							<v-icon v-if="$vuetify.theme.dark">mdi-brightness-7</v-icon>
+							<v-icon v-else>mdi-brightness-4</v-icon>
+					  	</v-btn>
+					</template>
+					<span>夜间模式切换</span>
+				</v-tooltip>
 			</v-app-bar>
 			<v-container>
 				<div>
@@ -42,11 +52,11 @@
 							</v-col>
 							<div id="output" class="mt-2">
 								<div class="my-2" v-html="output.message"></div>
-								<v-btn v-if="output.bbcode" color="primary" class="mr-3"
+								<v-btn v-if="output.bbcode" color="primary" class="mr-3 mt-3 mb-5"
 									   @click="navigator.clipboard.writeText(output.bbcode)">复制
 									BBCode
 								</v-btn>
-								<v-btn v-if="showRead" @click="clear">清空</v-btn>
+								<v-btn v-if="showRead" class="mt-3 mb-5" @click="clear">清空</v-btn>
 							</div>
 							<v-col v-if="loading.xhrrequest" cols="12" class="text-center">
 								<v-progress-circular indeterminate color="primary"
@@ -57,7 +67,19 @@
 					<v-card class="ma-3 px-3 my-4 pb-4">
 						<v-container>
 							<h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
-							<div id="colorsPreview">
+							<div v-if="loading.color" class="text-center">
+								<div v-if="loading.colorFailed" class="text-center">
+									<p>加载失败。请尝试刷新。</p>
+								</div>
+								<v-progress-circular
+										v-else
+										:size="40"
+										:width="7"
+										color="indigo"
+										indeterminate
+								></v-progress-circular>
+							</div>
+							<div id="colorsPreview" v-else>
 								<p>
 									SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0
 									1.0</a>
@@ -79,7 +101,7 @@
 									</v-col>
 									<v-col class="text-center" md="1" xs="12">
 										<v-btn color="primary" small
-											   @click="navigator.clipboard.writeText('SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+											@click="navigator.clipboard.writeText('SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
 											复制
 										</v-btn>
 									</v-col>
@@ -102,7 +124,7 @@
 						<div v-else>
 							<div class="mx-3 mb-3" id="filters">
 								<v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
-									<legend class="v-label theme--light pr-2"
+									<legend class="v-label pr-2"
 											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
 										<div>一般分类</div>
 									</legend>
@@ -111,7 +133,7 @@
 								</v-chip-group>
 
 								<v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
-									<legend class="v-label theme--light pr-2"
+									<legend class="v-label pr-2"
 											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
 										<div>创作分类</div>
 									</legend>
@@ -120,7 +142,7 @@
 									</v-chip>
 								</v-chip-group>
 								<v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
-									<legend class="v-label theme--light pr-2"
+									<legend class="v-label pr-2"
 											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
 										<div>文章状态</div>
 									</legend>
@@ -185,7 +207,7 @@
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
 <script type="text/javascript">
 	"use strict"
-	const ServerUrl = '//%replace_as_server_url%'
+	const ServerUrl = 'http://localhost'//%replace_as_server_url%'
 	const MiscArtCategory = '其他'
 
 	/**
@@ -214,6 +236,13 @@
 	new Vue({
 		el: '#root',
 		vuetify: new Vuetify(),
+		created() {
+			if (localStorage.getItem("spxInitialized") !== "true") {
+      			localStorage.setItem("spxDarkMode", window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "true" : "false");
+    		}
+			this.$vuetify.theme.dark = localStorage.getItem("spxDarkMode") === "true"
+			localStorage.setItem("spxInitialized", "true");
+		},
 		mounted() {
 			this.getArticles()
 			this.getColors()
@@ -301,6 +330,9 @@
 					this.snackbarText = `错误：${e}`
 					console.error(`[SPX] [request('${val}')] `, e)
 				} finally {
+					if (!this.input.translator){
+						this.snackbarText = '请输入翻译者。'
+					}
 					this.snackbar = true
 					this.loading.xhrrequest = false
 					localStorage.setItem('translator', this.input.translator)
@@ -319,7 +351,9 @@
 					}
 					this.colorsPreview = resultPreviewArr
 					console.log('[SPX] [getColors] DONE')
+					this.loading.color = false
 				} catch (e) {
+					this.loading.colorFailed = true
 					console.error('[SPX] [getColors] ', e)
 				}
 			},
@@ -363,6 +397,8 @@
 				loading: {
 					filters: true,
 					xhrrequest: false,
+					color: true,
+					colorFailed: false,
 				},
 				input: {
 					url: '',
