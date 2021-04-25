@@ -19,45 +19,16 @@ export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * Math.floor(max - min)) + min
 }
 
-export function getVersionType(version: string): VersionType {
-    if (version.toLowerCase().includes('pre')) {
+export function getVersionType(url: string): VersionType {
+    if (url.toLowerCase().includes('pre-release')) {
         return VersionType.PreRelease
-    } else if (version.toLowerCase().includes('rc')) {
+    } else if (url.toLowerCase().includes('release-candidate')) {
         return VersionType.ReleaseCandidate
-    } else if (version.match(/^\d\dw\d\d[a-z]$/i)) {
+    } else if (url.toLowerCase().includes('snapshot')) {
         return VersionType.Snapshot
     } else {
         return VersionType.Release
     }
-}
-
-/**
- * @returns [ snapCount, preCount ]
- */
-export function getCounts(versions: ManifestVersion[], version: string): [number, number] {
-    let snapCount = 0
-    let preCount = 0
-
-    for (const ver of versions) {
-        if (AFVersions.indexOf(ver.id) !== -1) {
-            continue
-        }
-        if (ver.type === 'snapshot') {
-            snapCount += 1
-            if (ver.id.toLowerCase().indexOf('pre') !== -1) {
-                preCount += 1
-            }
-        } else {
-            break
-        }
-    }
-
-    if (versions[0].id !== version) {
-        snapCount += 1
-        preCount += 1
-    }
-
-    return [snapCount, preCount]
 }
 
 export function getImageDimensions(imgUrl: string) {
@@ -103,8 +74,7 @@ export function getArticleType(html: Document): string {
  * @param version The version.
  * @param versions All released versions. Sorted by released time from new ones to old ones.
  */
-export function getBeginning(type: VersionType, version: string, versions: ManifestVersion[]) {
-    const [snapCount, preCount] = getCounts(versions, version)
+export function getBeginning(type: VersionType) {
     switch (type) {
         case VersionType.Snapshot:
             return `[align=center][table=80%,#EDFBFF]
@@ -114,13 +84,13 @@ export function getBeginning(type: VersionType, version: string, versions: Manif
 [tr][td][align=center]然而，每周快照主要用于新特性展示，通常存在大量漏洞。因此对于普通玩家建议仅做[color=Red][b]测试尝鲜[/b][/color]用。在快照中打开存档前请务必[color=Red][b]进行备份[/b][/color]。[b]适用于正式版的Mod不兼容快照，且大多数Mod都不对每周快照提供支持[/b]。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
-[tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，${version}为其第<计数器>个预览版。[/b][/color][/align][/td][/tr]
+[tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，<版本>为其第<计数器>个预览版。[/b][/color][/align][/td][/tr]
 [/table][/align]
 [align=center][table=50%,#FFEBED]
 [tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=50%,#FFFFCE]
-[tr][td][align=center]部分新特性译名未最终确定，以下译名仅供参考。[/align][/td][/tr]
+[tr][td][align=center]部分新特性译名仅供新闻预览，请到[url=https://crowdin.com/project/minecraft/zh-CN]Crowdin[/url]讨论游戏正式译名。[/align][/td][/tr]
 [/table][/align]
 
 [hr]\n
@@ -133,7 +103,7 @@ export function getBeginning(type: VersionType, version: string, versions: Manif
 [tr][td][align=center]然而，预发布版主要用于服主和Mod制作者的预先体验，如果发现重大漏洞，该预发布版会被新的预发布版代替。因此建议普通玩家[color=Red]持观望态度[/color]。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
-[tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，${version}为其第<计数器>个预发布版，第<计数器>个预览版。[/b][/color][/align][/td][/tr]
+[tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，<版本>为其第<计数器>个预发布版，第<计数器>个预览版。[/b][/color][/align][/td][/tr]
 [/table][/align]
 [align=center][table=50%,#FFEBED]
 [tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr]
@@ -148,7 +118,7 @@ export function getBeginning(type: VersionType, version: string, versions: Manif
 [tr][td][align=center]候选版已可供普通玩家进行抢鲜体验，但仍需当心可能存在的漏洞。[/color]。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
-[tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，${version}为其第<计数器>个候选版，第<计数器>个预览版。[/b][/color][/align][/td][/tr]
+[tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，<版本>为其第<计数器>个候选版，第<计数器>个预览版。[/b][/color][/align][/td][/tr]
 [/table][/align]
 [align=center][table=50%,#FFEBED]
 [tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr]
@@ -189,20 +159,9 @@ export function getEnding(type: VersionType) {
 [tr][td=15%][color=#D10A0A][align=center]对于正版用户[/align][/color][/td][td][align=center]官方启动器是跟进最及时、运行最稳定的启动器，每次启动均会自动检查并下载启动器最新版本。Java版的启动器下载地址在上文已经提供。[/align][/td][/tr]
 [tr][td=15%][color=#D10A0A][align=center]对于非正版用户[/align][/color][/td][td][align=center]非正版用户[b]完全可以[/b]体验预览版本，请于[url=http://www.mcbbs.net/forum.php?mod=viewthread&tid=38297&page=1#pid547821]推荐启动器列表[/url]寻找合适的启动器。目前绝大多数主流启动器都带有游戏下载功能。如有仍疑惑请到[url=http://www.mcbbs.net/forum-qanda-1.html]原版问答[/url]板块提问。[/align][/td][/tr]
 [/table][/align]
-[align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history/Development_versions]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95/%E9%A2%84%E8%A7%88%E7%89%88%E6%9C%AC]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
         case VersionType.PreRelease:
@@ -218,20 +177,9 @@ export function getEnding(type: VersionType) {
 [tr][td=15%][color=#D10A0A][align=center]对于正版用户[/align][/color][/td][td][align=center]官方启动器是跟进最及时、运行最稳定的启动器，每次启动均会自动检查并下载启动器最新版本。Java版的启动器下载地址在上文已经提供。[/align][/td][/tr]
 [tr][td=15%][color=#D10A0A][align=center]对于非正版用户[/align][/color][/td][td][align=center]非正版用户[b]完全可以[/b]体验预览版本，请于[url=http://www.mcbbs.net/forum.php?mod=viewthread&tid=38297&page=1#pid547821]推荐启动器列表[/url]寻找合适的启动器。目前绝大多数主流启动器都带有游戏下载功能。如有仍疑惑请到[url=http://www.mcbbs.net/forum-qanda-1.html]原版问答[/url]板块提问。[/align][/td][/tr]
 [/table][/align]
-[align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history/Development_versions]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95/%E9%A2%84%E8%A7%88%E7%89%88%E6%9C%AC]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
         case VersionType.ReleaseCandidate:
@@ -247,20 +195,9 @@ export function getEnding(type: VersionType) {
 [tr][td=15%][color=#D10A0A][align=center]对于正版用户[/align][/color][/td][td][align=center]官方启动器是跟进最及时、运行最稳定的启动器，每次启动均会自动检查并下载启动器最新版本。Java版的启动器下载地址在上文已经提供。[/align][/td][/tr]
 [tr][td=15%][color=#D10A0A][align=center]对于非正版用户[/align][/color][/td][td][align=center]非正版用户[b]完全可以[/b]体验预览版本，请于[url=http://www.mcbbs.net/forum.php?mod=viewthread&tid=38297&page=1#pid547821]推荐启动器列表[/url]寻找合适的启动器。目前绝大多数主流启动器都带有游戏下载功能。如有仍疑惑请到[url=http://www.mcbbs.net/forum-qanda-1.html]原版问答[/url]板块提问。[/align][/td][/tr]
 [/table][/align]
-[align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history/Development_versions]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95/%E9%A2%84%E8%A7%88%E7%89%88%E6%9C%AC]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
         case VersionType.Release:
@@ -277,44 +214,11 @@ export function getEnding(type: VersionType) {
 [tr][td=15%][color=#D10A0A][align=center]对于正版用户[/align][/color][/td][td][align=center]官方启动器是跟进最及时、运行最稳定的启动器，每次启动均会自动检查并下载启动器最新版本。Java版的启动器下载地址在上文已经提供。[/align][/td][/tr]
 [tr][td=15%][color=#D10A0A][align=center]对于非正版用户[/align][/color][/td][td][align=center]非正版用户也请使用启动器下载游戏，请于[url=http://www.mcbbs.net/forum.php?mod=viewthread&tid=38297&page=1#pid547821]推荐启动器列表[/url]寻找合适的启动器。目前绝大多数主流启动器都带有游戏下载功能。如有仍疑惑请到[url=http://www.mcbbs.net/forum-qanda-1.html]原版问答[/url]板块提问。[/align][/td][/tr]
 [/table][/align]
-[align=center][img=416,132]https://attachment.mcbbs.net/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]
-[tr][td][align=center][b]外部来源以及详细的更新条目追踪[/b]
-[spoiler][list]
-[*][url=https://minecraft.net/zh-hans/]Minecraft官网[/url]（内容英文）
-[*][url=https://twitter.com/jeb_]Jeb的Twitter[/url]（英文）
-[*][url=https://twitter.com/Dinnerbone]Dinnerbone的Twitter[/url]（英文）
-[*][url=https://twitter.com/_grum]Grum的Twitter[/url]（英文）
-[*][url=https://twitter.com/SeargeDP]Searge的Twitter[/url]（英文）
-[*][url=https://www.minecraftforum.net]Minecraft官方论坛[/url]（英文）
-[*][url=https://feedback.minecraft.net/hc/en-us/categories/115000410252-Knowledge-Base]Minecraft博客[/url]（英文）
-[*][url=https://minecraft.gamepedia.com/Java_Edition_version_history]英文Minecraft Wiki的版本记录页面[/url]（英文，更新条目详细，较及时）
-[*][url=https://minecraft-zh.gamepedia.com/Java%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95]中文Minecraft Wiki的版本记录页面[/url]（中文，更新条目详细）
-[/list][/spoiler][/align][/td][/tr]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
     }
-}
-
-export function executeBugOrColorCommand(content: string, translator: string) {
-    const bugRegex = /^\[?(MC-\d+)]?\s*(.*)$/i
-    const bugMatchArr = content.match(bugRegex)
-    const colorCommandPrefix = '!spx color '
-    if (bugMatchArr) {
-        const id = bugMatchArr[1]
-        const desc = bugMatchArr[2]
-        BugCache.set(id, desc, translator)
-        BugCache.save()
-        return true
-    } else if (content.startsWith(colorCommandPrefix)) {
-        let color = content.slice(colorCommandPrefix.length)
-        if (!color.startsWith('#')) {
-            color = `#${color}`
-        }
-        ColorCache.set(translator, color)
-        ColorCache.save()
-        return true
-    }
-    return false
 }
 
 export const enum VersionType {
