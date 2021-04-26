@@ -73,7 +73,7 @@ const app = express()
 	.get('/convert/:url/:translator', async (req, res) => {
 		const { url, translator } = req.params
 		try {
-			const isMinecraftBlog = url.match(/^https:\/\/www.minecraft.net\/(?:en-us|zh-cn)\/article\//)
+			const isMinecraftBlog = url.match(/^https:\/\/www.minecraft.net\/(?:en-us|zh-hans)\/article\//)
 			const isFeedback = url.match(/^https:\/\/feedback.minecraft.net\/hc\/en-us\/articles\//)
 			if (isMinecraftBlog) {
 				const src = await rp(url)
