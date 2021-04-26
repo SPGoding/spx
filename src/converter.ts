@@ -259,7 +259,7 @@ export const converters = {
             ans = `[/indent][/indent][align=center]${ans}[/align][indent][indent]\n`
         } else if (ele.classList.contains('article-image-carousel__caption')) {
             // Image description
-            ans = `[/indent][/indent][align=center][b]${ans.replace(/\n/, '')}[/b][/align][indent][indent]\n`
+            ans = `[/indent][/indent][align=center][b]${ans}[/b][/align][indent][indent]\n`
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[/indent][/indent][align=center]【请将此处替换为含https的视频链接[media]XXX[/media]】[/align][indent][indent]\n'
@@ -402,7 +402,7 @@ export const converters = {
     },
     ol: async (ele: HTMLElement) => {
         const inner = await converters.recurse(ele)
-        const ans = `\n[list=1]\n${inner}[/list]\n`
+        const ans = `[list=1]\n${inner}[/list]\n`
 
         return ans
     },
@@ -463,7 +463,7 @@ export const converters = {
     },
     ul: async (ele: HTMLElement) => {
         const inner = await converters.recurse(ele)
-        const ans = `\n[list]\n${inner}[/list]\n`
+        const ans = `[list]\n${inner}[/list]\n`
 
         return ans
     }
@@ -474,7 +474,9 @@ export const converters = {
  */
 export function translateMachinely(input: string) {
     const mappings: [RegExp, string][] = [
+        [/Block of the Week: /gi, '本周方块：'],
         [/Taking Inventory: /gi, '背包盘点：'],
+        [/Around the Block: /gi, '群系漫游：'],
         [/Minecraft Snapshot /gi, 'Minecraft 快照 '],
         [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
         [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
@@ -486,16 +488,8 @@ export function translateMachinely(input: string) {
         [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
-        [/“/g, '[font=楷体,楷体_GB2312]“[/font]'],
-        [/”/g, '[font=楷体,楷体_GB2312]”[/font]'],
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
-        [/\[\/i\]/g, '[/font]'],
-        [/,( |$)/g, '，'],
-        [/!( |$)/g, '！'],
-        [/\.\.\.( |$)/g, '…'],
-        [/\.( |$)/g, '。'],
-        [/\?( |$)/g, '？'],
-        [/( |^)\-( |$)/g, ' —— ']
+        [/\[\/i\]/g, '[/font]']
     ]
 
     for (const mapping of mappings) {
