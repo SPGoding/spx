@@ -271,15 +271,15 @@ export const converters = {
              *               <img> .article-image-carousel__image
              *               <div> .article-image-carousel__caption
              */
-            const prefix = `[/indent][/indent][album]`
-            const suffix = `[/album][indent][indent]\n`
+            const prefix = `[/indent][/indent][album]\n`
+            const suffix = `\n[/album][indent][indent]\n`
             const slides: [string, string][] = []
             const findSlides = async (ele: HTMLDivElement | HTMLImageElement): Promise<void> => {
                 if (ele.classList.contains('article-image-carousel__image')) {
-                    slides.push([resolveUrl((ele as HTMLImageElement).src), ''])
+                    slides.push([resolveUrl((ele as HTMLImageElement).src), ' '])
                 } else if (ele.classList.contains('article-image-carousel__caption')) {
                     if (slides.length > 0) {
-                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele)).replace(/\n/, '')}[/b]`
+                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele))}[/b]`
                     }
                 } else {
                     for (const child of Array.from(ele.childNodes)) {
@@ -290,7 +290,12 @@ export const converters = {
                 }
             }
             await findSlides(ele)
-            ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
+            if (slides.length > 1){
+                ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
+            }
+            else{ // slides.length == 1
+                ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
+            }
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[/indent][/indent][align=center]【请将此处替换为含https的视频链接[media]XXX[/media]】[/align][indent][indent]\n'
