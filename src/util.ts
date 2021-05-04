@@ -26,8 +26,10 @@ export function getVersionType(url: string): VersionType {
         return VersionType.ReleaseCandidate
     } else if (url.toLowerCase().includes('snapshot')) {
         return VersionType.Snapshot
-    } else {
+    } else if (url.toLowerCase().includes('minecraft java edition')){
         return VersionType.Release
+    } else{
+        return VersionType.Normal
     }
 }
 
@@ -127,7 +129,6 @@ export function getBeginning(type: VersionType) {
 
 [hr]\n`
         case VersionType.Release:
-        default:
             return `[align=center][table=80%,#EDFBFF]
 [tr][td][align=center][b][color=Red]Minecraft Java版[/color]是指Windows、Mac OS与Linux平台上，使用Java语言开发的Minecraft版本。[/b][/align][/td][/tr]
 [/table][/align]
@@ -142,6 +143,13 @@ export function getBeginning(type: VersionType) {
 [tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr][/table][/align]
 
 [hr]\n`
+
+        case VersionType.Normal:
+        default:
+            return `\n[align=center][table=50%,#FFEBED]
+[tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr][/table][/align]
+[hr]\n`
+
     }
 }
 
@@ -202,7 +210,6 @@ export function getEnding(type: VersionType) {
 [/table][/align]`
 
         case VersionType.Release:
-        default:
             return `\n[hr]
 [align=center][table=70%,#EDFBFF]
 [tr][td=2,1][align=center][size=3][color=#D6D604][b]正版启动器下载地址[/b][/color][/size][/align][/td][/tr]
@@ -219,6 +226,15 @@ export function getEnding(type: VersionType) {
 [align=center][table=75%,#FFEBED]
 [tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
+
+        case VersionType.Normal:
+        default:
+                return `\n[hr]
+
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][table=75%,#FFEBED]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
+[/table][/align]`
     }
 }
 
@@ -226,5 +242,6 @@ export const enum VersionType {
     Snapshot,
     PreRelease,
     ReleaseCandidate,
-    Release
+    Release,
+    Normal
 }

@@ -1,5 +1,7 @@
+import * as fs from 'fs-extra'
 import { BugCache } from './bug-cache'
 import { getImageDimensions } from './util'
+
 
 /*
  * @author SPGoding
@@ -30,7 +32,7 @@ export async function convertMCArticleToBBCode(html: Document, articleUrl: strin
  * @param html An HTML Document.
  */
 export function getHeroImage(html: Document, articleType: string = '') {
-    const category = articleType ? `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]` : ''
+    const category = articleType ? `\n[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]` : ''
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
         return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
@@ -175,7 +177,7 @@ export const converters = {
             case '#text':
                 if (node) {
                     return ((node as Text).textContent as string)
-                        .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ')
+                        .replace(/[\n\r\t]+/g, '').replace(/\s{2,}/g, '')
                 } else {
                     return ''
                 }
@@ -313,7 +315,7 @@ export const converters = {
     dl: async (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n\n${await converters.recurse(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `\n\n${await converters.recurse(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -397,12 +399,17 @@ export const converters = {
                 h = result.images[0].height
             }
 
-            if (w && h && img.classList.contains('attributed-quote__image')) {
-                const newH = Math.min(h, 92)
-                w = Math.round(newH / h * w)
-                h = newH
+            if (w && h) {
+                if (img.classList.contains('attributed-quote__image')){ // for in-quote avatar image
+                    h = 92
+                    w = 53
+                }
+                else if (img.classList.contains('mr-3')){ // for attributor avatar image
+                    h = 121
+                    w = 82
+                }
             }
-
+            
             prefix = w && h ? `[img=${w},${h}]` : '[img]'
         } catch (e) {
             console.error(e)
@@ -414,7 +421,7 @@ export const converters = {
         }
 
         let ans: string
-        if (img.classList.contains('attributed-quote__image')) {
+        if (img.classList.contains('attributed-quote__image') || img.classList.contains('mr-3')) {
             // Attributed quote author avatar.
             ans = `\n[float=left]${prefix}${imgUrl}[/img][/float]`
         } else {
