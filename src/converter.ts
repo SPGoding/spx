@@ -257,9 +257,38 @@ export const converters = {
 
         if (ele.classList.contains('text-center')) {
             ans = `[/indent][/indent][align=center]${ans}[/align][indent][indent]\n`
-        } else if (ele.classList.contains('article-image-carousel__caption')) {
-            // Image description
-            ans = `[/indent][/indent][align=center][b]${ans}[/b][/align][indent][indent]\n`
+        } else if (ele.classList.contains('article-image-carousel')) {
+            // Image carousel.
+            /* 
+             * <div> .article-image-carousel
+             *   <div> .slick-list
+             *     <div> .slick-track
+             *       * <div> .slick-slide [.slick-cloned]
+             *           <div>
+             *             <div> .slick-slide-carousel
+             *               <img> .article-image-carousel__image
+             *               <div> .article-image-carousel__caption
+             */
+            const prefix = `[/indent][/indent][album]`
+            const suffix = `[/album][indent][indent]\n`
+            const slides: [string, string][] = []
+            const findSlides = async (ele: HTMLDivElement | HTMLImageElement): Promise<void> => {
+                if (ele.classList.contains('article-image-carousel__image')) {
+                    slides.push([resolveUrl((ele as HTMLImageElement).src), ''])
+                } else if (ele.classList.contains('article-image-carousel__caption')) {
+                    if (slides.length > 0) {
+                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele)).replace(/\n/, '')}[/b]`
+                    }
+                } else {
+                    for (const child of Array.from(ele.childNodes)) {
+                        if (child.nodeName === 'DIV' || child.nodeName === 'IMG') {
+                            await findSlides(child as HTMLDivElement | HTMLImageElement)
+                        }
+                    }
+                }
+            }
+            await findSlides(ele)
+            ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[/indent][/indent][align=center]【请将此处替换为含https的视频链接[media]XXX[/media]】[/align][indent][indent]\n'
@@ -269,7 +298,7 @@ export const converters = {
             // End of the content.
             ans = ''
         }
-        //  else if (ele.classList.contains('end-with-block')) {
+        // else if (ele.classList.contains('end-with-block')) {
         //     ans = ans.trimRight() + '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
         // }
 
