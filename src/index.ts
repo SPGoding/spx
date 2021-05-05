@@ -86,12 +86,14 @@ const app = express()
 					const ending = getEnding(versionType)
 					bbcode = `${beginning}${bbcode}${ending}`
 				}
+				//fs.writeFile('./output.txt', bbcode)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else if (isFeedback) {
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
 				let bbcode = await convertFeedbackArticleToBBCode(html, url, translator)
+				//fs.writeFile('./output.txt', bbcode)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else {

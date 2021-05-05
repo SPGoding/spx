@@ -1,5 +1,7 @@
+import * as fs from 'fs-extra'
 import { BugCache } from './bug-cache'
 import { getImageDimensions } from './util'
+
 
 /*
  * @author SPGoding
@@ -30,7 +32,7 @@ export async function convertMCArticleToBBCode(html: Document, articleUrl: strin
  * @param html An HTML Document.
  */
 export function getHeroImage(html: Document, articleType: string = '') {
-    const category = articleType ? `[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]` : ''
+    const category = articleType ? `\n[backcolor=Black][color=White][font="Noto Sans",sans-serif][b]${articleType}[/b][/font][/color][/backcolor][/align]` : ''
     const img = html.getElementsByClassName('article-head__image')[0] as HTMLImageElement | undefined
     if (!img) {
         return `[postbg]bg3.png[/postbg]\n\n[align=center]${category}[indent][indent]\n`
@@ -175,7 +177,7 @@ export const converters = {
             case '#text':
                 if (node) {
                     return ((node as Text).textContent as string)
-                        .replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ')
+                        .replace(/[\n\r\t]+/g, '').replace(/\s{2,}/g, '')
                 } else {
                     return ''
                 }
@@ -269,15 +271,15 @@ export const converters = {
              *               <img> .article-image-carousel__image
              *               <div> .article-image-carousel__caption
              */
-            const prefix = `[/indent][/indent][album]`
-            const suffix = `[/album][indent][indent]\n`
+            const prefix = `[/indent][/indent][album]\n`
+            const suffix = `\n[/album][indent][indent]\n`
             const slides: [string, string][] = []
             const findSlides = async (ele: HTMLDivElement | HTMLImageElement): Promise<void> => {
                 if (ele.classList.contains('article-image-carousel__image')) {
-                    slides.push([resolveUrl((ele as HTMLImageElement).src), ''])
+                    slides.push([resolveUrl((ele as HTMLImageElement).src), ' '])
                 } else if (ele.classList.contains('article-image-carousel__caption')) {
                     if (slides.length > 0) {
-                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele)).replace(/\n/, '')}[/b]`
+                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele))}[/b]`
                     }
                 } else {
                     for (const child of Array.from(ele.childNodes)) {
@@ -288,7 +290,12 @@ export const converters = {
                 }
             }
             await findSlides(ele)
-            ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
+            if (slides.length > 1){
+                ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
+            }
+            else{ // slides.length == 1
+                ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
+            }
         } else if (ele.classList.contains('video')) {
             // Video.
             ans = '\n[/indent][/indent][align=center]【请将此处替换为含https的视频链接[media]XXX[/media]】[/align][indent][indent]\n'
@@ -313,7 +320,7 @@ export const converters = {
     dl: async (ele: HTMLElement) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n\n${await converters.recurse(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n`
+        const ans = `\n\n${await converters.recurse(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n\n`
         return ans
     },
     dd: async (ele: HTMLElement) => {
@@ -397,12 +404,17 @@ export const converters = {
                 h = result.images[0].height
             }
 
-            if (w && h && img.classList.contains('attributed-quote__image')) {
-                const newH = Math.min(h, 92)
-                w = Math.round(newH / h * w)
-                h = newH
+            if (w && h) {
+                if (img.classList.contains('attributed-quote__image')){ // for in-quote avatar image
+                    h = 92
+                    w = 53
+                }
+                else if (img.classList.contains('mr-3')){ // for attributor avatar image
+                    h = 121
+                    w = 82
+                }
             }
-
+            
             prefix = w && h ? `[img=${w},${h}]` : '[img]'
         } catch (e) {
             console.error(e)
@@ -414,7 +426,7 @@ export const converters = {
         }
 
         let ans: string
-        if (img.classList.contains('attributed-quote__image')) {
+        if (img.classList.contains('attributed-quote__image') || img.classList.contains('mr-3')) {
             // Attributed quote author avatar.
             ans = `\n[float=left]${prefix}${imgUrl}[/img][/float]`
         } else {
