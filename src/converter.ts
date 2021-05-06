@@ -289,10 +289,10 @@ export const converters = {
                 }
             }
             await findSlides(ele)
-            if (slides.length > 1) {
+            if (isAlbum(slides)){
                 ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
             }
-            else { // slides.length == 1
+            else {
                 ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
             }
         } else if (ele.classList.contains('video')) {
@@ -594,5 +594,20 @@ function translateBugs(str: string) {
         }
     } else {
         return str
+    }
+}
+
+function isAlbum(slides: [string, string][]){
+    const enableAlbum = false
+    if (enableAlbum){
+        return slides.length > 1
+    }
+    else{
+        for (let s of slides){
+            if (s[1] !== " "){
+                return false
+            }
+        }
+        return true
     }
 }
