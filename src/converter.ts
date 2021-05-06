@@ -2,10 +2,9 @@ import * as fs from 'fs-extra'
 import { BugCache } from './bug-cache'
 import { getImageDimensions } from './util'
 
-
-/*
- * @author SPGoding
- */
+interface Context {
+    disablePunctuationConverter?: boolean,
+}
 
 const info = {
     translator: '',
@@ -49,7 +48,7 @@ export function getHeroImage(html: Document, articleType: string = '') {
  */
 export async function getContent(html: Document) {
     const rootDiv = html.getElementsByClassName('article-body')[0] as HTMLElement
-    let ans = await converters.recurse(rootDiv)
+    let ans = await converters.recurse(rootDiv, {})
 
     // Get the server URL if it exists.
     const serverUrls = ans.match(/(https:\/\/launcher.mojang.com\/.+\/server.jar)/)
@@ -103,7 +102,7 @@ export async function convertFeedbackArticleToBBCode(html: Document, articleUrl:
  */
 export async function getFeedbackContent(html: Document) {
     const rootSection = html.getElementsByClassName('article-info')[0] as HTMLElement
-    let ans = await converters.recurse(rootSection)
+    let ans = await converters.recurse(rootSection, {})
 
     // Add spaces between texts and '[x'.
     ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
@@ -117,63 +116,63 @@ export const converters = {
     /**
      * Converts a ChildNode to a BBCode string according to the type of the node.
      */
-    convert: async (node: ChildNode): Promise<string> => {
+    convert: async (node: ChildNode, ctx: Context): Promise<string> => {
         switch (node.nodeName) {
             case 'A':
-                return converters.a(node as HTMLAnchorElement)
+                return converters.a(node as HTMLAnchorElement, ctx)
             case 'B':
             case 'STRONG':
-                return converters.strong(node as HTMLElement)
+                return converters.strong(node as HTMLElement, ctx)
             case 'BLOCKQUOTE':
-                return converters.blockquote(node as HTMLQuoteElement)
+                return converters.blockquote(node as HTMLQuoteElement, ctx)
             case 'BR':
                 return converters.br()
             case 'CITE':
-                return converters.cite(node as HTMLElement)
+                return converters.cite(node as HTMLElement, ctx)
             case 'CODE':
-                return converters.code(node as HTMLElement)
+                return converters.code(node as HTMLElement, ctx)
             case 'DIV':
             case 'SECTION':
-                return converters.div(node as HTMLDivElement)
+                return converters.div(node as HTMLDivElement, ctx)
             case 'DD':
-                return converters.dd(node as HTMLElement)
+                return converters.dd(node as HTMLElement, ctx)
             case 'DL':
-                return converters.dl(node as HTMLElement)
+                return converters.dl(node as HTMLElement, ctx)
             case 'DT':
-                return converters.dt(node as HTMLElement)
+                return converters.dt(node as HTMLElement, ctx)
             case 'EM':
-                return converters.em(node as HTMLElement)
+                return converters.em(node as HTMLElement, ctx)
             case 'H1':
-                return converters.h1(node as HTMLElement)
+                return converters.h1(node as HTMLElement, ctx)
             case 'H2':
-                return converters.h2(node as HTMLElement)
+                return converters.h2(node as HTMLElement, ctx)
             case 'H3':
-                return converters.h3(node as HTMLElement)
+                return converters.h3(node as HTMLElement, ctx)
             case 'H4':
-                return converters.h4(node as HTMLElement)
+                return converters.h4(node as HTMLElement, ctx)
             case 'I':
-                return converters.i(node as HTMLElement)
+                return converters.i(node as HTMLElement, ctx)
             case 'IMG':
-                return converters.img(node as HTMLImageElement)
+                return converters.img(node as HTMLImageElement, ctx)
             case 'LI':
-                return converters.li(node as HTMLElement)
+                return converters.li(node as HTMLElement, ctx)
             case 'OL':
-                return converters.ol(node as HTMLElement)
+                return converters.ol(node as HTMLElement, ctx)
             case 'P':
-                return converters.p(node as HTMLElement)
+                return converters.p(node as HTMLElement, ctx)
             case 'SPAN':
-                return converters.span(node as HTMLElement)
+                return converters.span(node as HTMLElement, ctx)
             case 'TABLE':
-                return converters.table(node as HTMLElement)
+                return converters.table(node as HTMLElement, ctx)
             case 'TBODY':
-                return converters.tbody(node as HTMLElement)
+                return converters.tbody(node as HTMLElement, ctx)
             case 'TH':
             case 'TD':
-                return converters.td(node as HTMLElement)
+                return converters.td(node as HTMLElement, ctx)
             case 'TR':
-                return converters.tr(node as HTMLElement)
+                return converters.tr(node as HTMLElement, ctx)
             case 'UL':
-                return converters.ul(node as HTMLElement)
+                return converters.ul(node as HTMLElement, ctx)
             case '#text':
                 if (node) {
                     return ((node as Text).textContent as string)
@@ -204,32 +203,32 @@ export const converters = {
     /**
      * Convert child nodes of an HTMLElement to a BBCode string.
      */
-    recurse: async (ele: HTMLElement) => {
+    recurse: async (ele: HTMLElement, ctx: Context) => {
         let ans = ''
 
         for (const child of Array.from(ele.childNodes)) {
-            ans += await converters.convert(child)
+            ans += await converters.convert(child, ctx)
         }
 
         ans = removeLastLinebreak(ans)
 
         return ans
     },
-    a: async (anchor: HTMLAnchorElement) => {
+    a: async (anchor: HTMLAnchorElement, ctx: Context) => {
         const url = resolveUrl(anchor.href)
         let ans
         if (url) {
-            ans = `[url=${url}][color=#388d40]${await converters.recurse(anchor)}[/color][/url]`
+            ans = `[url=${url}][color=#388d40]${await converters.recurse(anchor, ctx)}[/color][/url]`
         } else {
-            ans = await converters.recurse(anchor)
+            ans = await converters.recurse(anchor, ctx)
         }
 
         return ans
     },
-    blockquote: async (ele: HTMLQuoteElement) => {
+    blockquote: async (ele: HTMLQuoteElement, ctx: Context) => {
         const prefix = ''
         const suffix = ''
-        const ans = `${prefix}${await converters.recurse(ele)}${suffix}`
+        const ans = `${prefix}${await converters.recurse(ele, ctx)}${suffix}`
 
         return ans
     },
@@ -238,24 +237,24 @@ export const converters = {
 
         return ans
     },
-    cite: async (ele: HTMLElement) => {
+    cite: async (ele: HTMLElement, ctx: Context) => {
         const prefix = '—— '
         const suffix = ''
 
-        const ans = `${prefix}${await converters.recurse(ele)}${suffix}`
+        const ans = `${prefix}${await converters.recurse(ele, ctx)}${suffix}`
 
         return ans
     },
-    code: async (ele: HTMLElement) => {
+    code: async (ele: HTMLElement, ctx: Context) => {
         const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]"
         const suffix = '[/font][/backcolor]'
 
-        const ans = `${prefix}${await converters.recurse(ele)}${suffix}`
+        const ans = `${prefix}${await converters.recurse(ele, { ...ctx, disablePunctuationConverter: true })}${suffix}`
 
         return ans
     },
-    div: async (ele: HTMLDivElement) => {
-        let ans = await converters.recurse(ele)
+    div: async (ele: HTMLDivElement, ctx: Context) => {
+        let ans = await converters.recurse(ele, ctx)
 
         if (ele.classList.contains('text-center')) {
             ans = `[/indent][/indent][align=center]${ans}[/align][indent][indent]\n`
@@ -279,7 +278,7 @@ export const converters = {
                     slides.push([resolveUrl((ele as HTMLImageElement).src), ' '])
                 } else if (ele.classList.contains('article-image-carousel__caption')) {
                     if (slides.length > 0) {
-                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele))}[/b]`
+                        slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele, ctx))}[/b]`
                     }
                 } else {
                     for (const child of Array.from(ele.childNodes)) {
@@ -290,10 +289,10 @@ export const converters = {
                 }
             }
             await findSlides(ele)
-            if (slides.length > 1){
+            if (slides.length > 1) {
                 ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
             }
-            else{ // slides.length == 1
+            else { // slides.length == 1
                 ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
             }
         } else if (ele.classList.contains('video')) {
@@ -311,19 +310,19 @@ export const converters = {
 
         return ans
     },
-    dt: async (_ele: HTMLElement) => {
+    dt: async (_ele: HTMLElement, ctx: Context) => {
         // const ans = `${converters.rescure(ele)}：`
 
         // return ans
         return ''
     },
-    dl: async (ele: HTMLElement) => {
+    dl: async (ele: HTMLElement, ctx: Context) => {
         // The final <dd> after converted will contains an ending comma '，'
         // So I don't add any comma before '译者'.
-        const ans = `\n\n${await converters.recurse(ele)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n\n`
+        const ans = `\n\n${await converters.recurse(ele, ctx)}\n【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n\n`
         return ans
     },
-    dd: async (ele: HTMLElement) => {
+    dd: async (ele: HTMLElement, ctx: Context) => {
         let ans = ''
 
         if (ele.classList.contains('pubDate')) {
@@ -337,54 +336,54 @@ export const converters = {
             }
         } else {
             // Written by:
-            info.author = await converters.recurse(ele)
+            info.author = await converters.recurse(ele, ctx)
         }
 
         return ans
     },
-    em: async (ele: HTMLElement) => {
-        const ans = `[i]${await converters.recurse(ele)}[/i]`
+    em: async (ele: HTMLElement, ctx: Context) => {
+        const ans = `[i]${await converters.recurse(ele, ctx)}[/i]`
 
         return ans
     },
-    h1: async (ele: HTMLElement) => {
+    h1: async (ele: HTMLElement, ctx: Context) => {
         const prefix = '[size=6][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.recurse(ele)
-        const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const inner = await converters.recurse(ele, ctx)
+        const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
 
         return ans
     },
-    h2: async (ele: HTMLElement) => {
+    h2: async (ele: HTMLElement, ctx: Context) => {
         const prefix = '[size=5][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.recurse(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const inner = await converters.recurse(ele, ctx)
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
 
         return ans
     },
-    h3: async (ele: HTMLElement) => {
+    h3: async (ele: HTMLElement, ctx: Context) => {
         const prefix = '[size=4][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.recurse(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const inner = await converters.recurse(ele, ctx)
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
 
         return ans
     },
-    h4: async (ele: HTMLElement) => {
+    h4: async (ele: HTMLElement, ctx: Context) => {
         const prefix = '[size=3][b]'
         const suffix = '[/b][/size]'
-        const inner = await converters.recurse(ele)
-        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`)}\n\n`
+        const inner = await converters.recurse(ele, ctx)
+        const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
 
         return ans
     },
-    i: async (ele: HTMLElement) => {
-        const ans = `[i]${await converters.recurse(ele)}[/i]`
+    i: async (ele: HTMLElement, ctx: Context) => {
+        const ans = `[i]${await converters.recurse(ele, ctx)}[/i]`
 
         return ans
     },
-    img: async (img: HTMLImageElement) => {
+    img: async (img: HTMLImageElement, ctx: Context) => {
         if (img.alt === 'Author image') {
             return ''
         }
@@ -405,16 +404,16 @@ export const converters = {
             }
 
             if (w && h) {
-                if (img.classList.contains('attributed-quote__image')){ // for in-quote avatar image
+                if (img.classList.contains('attributed-quote__image')) { // for in-quote avatar image
                     h = 92
                     w = 53
                 }
-                else if (img.classList.contains('mr-3')){ // for attributor avatar image
+                else if (img.classList.contains('mr-3')) { // for attributor avatar image
                     h = 121
                     w = 82
                 }
             }
-            
+
             prefix = w && h ? `[img=${w},${h}]` : '[img]'
         } catch (e) {
             console.error(e)
@@ -435,41 +434,41 @@ export const converters = {
 
         return `${ans}`
     },
-    li: async (ele: HTMLElement) => {
-        const inner = await converters.recurse(ele)
-        const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner))}\n`
+    li: async (ele: HTMLElement, ctx: Context) => {
+        const inner = await converters.recurse(ele, ctx)
+        const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner), ctx)}\n`
 
         return ans
     },
-    ol: async (ele: HTMLElement) => {
-        const inner = await converters.recurse(ele)
+    ol: async (ele: HTMLElement, ctx: Context) => {
+        const inner = await converters.recurse(ele, ctx)
         const ans = `[list=1]\n${inner}[/list]\n`
 
         return ans
     },
-    p: async (ele: HTMLElement) => {
-        const inner = await converters.recurse(ele)
+    p: async (ele: HTMLElement, ctx: Context) => {
+        const inner = await converters.recurse(ele, ctx)
 
         let ans
 
         if (ele.classList.contains('lead')) {
-            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner)}[/b][/size]\n\n`
+            ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner, ctx)}[/b][/size]\n\n`
         } else {
-            ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner)}\n\n`
+            ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner, ctx)}\n\n`
         }
 
         return ans
     },
-    span: async (ele: HTMLElement) => {
-        const ans = await converters.recurse(ele)
+    span: async (ele: HTMLElement, ctx: Context) => {
+        const ans = await converters.recurse(ele, ctx)
 
         if (ele.classList.contains('bedrock-server')) {
-            // Is inline code.
+            // Inline code.
             const prefix = "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif][color=#7824c5]"
             const suffix = '[/color][/font][/backcolor]'
-            return `${prefix}${ans}${suffix}`
+            return `${prefix}${await converters.recurse(ele, { ...ctx, disablePunctuationConverter: true })}${suffix}`
         } else if (ele.classList.contains('strikethrough')) {
-            // Is strikethrough text.
+            // Strikethrough text.
             const prefix = '[s]'
             const suffix = '[/s]'
             return `${prefix}${ans}${suffix}`
@@ -477,33 +476,33 @@ export const converters = {
 
         return ans
     },
-    strong: async (ele: HTMLElement) => {
-        const ans = `[b]${await converters.recurse(ele)}[/b]`
+    strong: async (ele: HTMLElement, ctx: Context) => {
+        const ans = `[b]${await converters.recurse(ele, ctx)}[/b]`
 
         return ans
     },
-    table: async (ele: HTMLElement) => {
-        const ans = `\n[table]\n${await converters.recurse(ele)}[/table]\n`
+    table: async (ele: HTMLElement, ctx: Context) => {
+        const ans = `\n[table]\n${await converters.recurse(ele, ctx)}[/table]\n`
 
         return ans
     },
-    tbody: async (ele: HTMLElement) => {
-        const ans = await converters.recurse(ele)
+    tbody: async (ele: HTMLElement, ctx: Context) => {
+        const ans = await converters.recurse(ele, ctx)
 
         return ans
     },
-    td: async (ele: HTMLElement) => {
-        const ans = `[td]${await converters.recurse(ele)}[/td]`
+    td: async (ele: HTMLElement, ctx: Context) => {
+        const ans = `[td]${await converters.recurse(ele, ctx)}[/td]`
 
         return ans
     },
-    tr: async (ele: HTMLElement) => {
-        const ans = `[tr]${await converters.recurse(ele)}[/tr]\n`
+    tr: async (ele: HTMLElement, ctx: Context) => {
+        const ans = `[tr]${await converters.recurse(ele, ctx)}[/tr]\n`
 
         return ans
     },
-    ul: async (ele: HTMLElement) => {
-        const inner = await converters.recurse(ele)
+    ul: async (ele: HTMLElement, ctx: Context) => {
+        const inner = await converters.recurse(ele, ctx)
         const ans = `[list]\n${inner}[/list]\n`
 
         return ans
@@ -513,7 +512,7 @@ export const converters = {
 /**
  * Replace all half-shape characters to full-shape characters.
  */
-export function translateMachinely(input: string) {
+export function translateMachinely(input: string, ctx: Context) {
     const mappings: [RegExp, string][] = [
         [/Block of the Week: /gi, '本周方块：'],
         [/Taking Inventory: /gi, '背包盘点：'],
@@ -530,7 +529,17 @@ export function translateMachinely(input: string) {
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
-        [/\[\/i\]/g, '[/font]']
+        [/\[\/i\]/g, '[/font]'],
+        ...ctx.disablePunctuationConverter ? [] : [
+            [/“/g, '[font=楷体,楷体_GB2312]“[/font]'],
+            [/”/g, '[font=楷体,楷体_GB2312]”[/font]'],
+            [/,( |$)/g, '，'],
+            [/!( |$)/g, '！'],
+            [/\.\.\.( |$)/g, '…'],
+            [/\.( |$)/g, '。'],
+            [/\?( |$)/g, '？'],
+            [/( |^)\-( |$)/g, ' —— '],
+        ] as [RegExp, string][],
     ]
 
     for (const mapping of mappings) {
