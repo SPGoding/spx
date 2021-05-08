@@ -5,7 +5,7 @@ import * as path from 'path'
 import * as rp from 'request-promise-native'
 import { BugCache } from './bug-cache'
 import { ColorCache } from './color-cache'
-import { DiscordConfig, onMessage, onReactionAdd } from './discord-bot'
+import { DiscordConfig, onInteraction, onMessage, onReactionAdd, onReady } from './discord-bot'
 import { JSDOM } from 'jsdom'
 import { getArticleType, getBeginning, getEnding, getVersionType } from './util'
 import { convertFeedbackArticleToBBCode, convertMCArticleToBBCode } from './converter'
@@ -49,11 +49,11 @@ let discord: DiscordConfig | undefined
 		if (discord) {
 			discordClient = new Client({
 				partials: ['MESSAGE', 'USER'],
-				ws: {
-					intents: Intents.NON_PRIVILEGED
-				}
+				intents: Intents.NON_PRIVILEGED,
 			})
 			await discordClient.login(discord.token)
+			discordClient.once('ready', onReady.bind(undefined, discord, discordClient))
+			discordClient.on('interaction', onInteraction.bind(undefined))
 			discordClient.on('message', onMessage.bind(undefined, discord))
 			discordClient.on('messageReactionAdd', onReactionAdd.bind(undefined, discord))
 			console.log('Discord bot launched.')
