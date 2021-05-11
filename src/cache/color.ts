@@ -8,7 +8,7 @@ export interface ColorCache {
 }
 
 export namespace ColorCache {
-	export const colorPath = path.join(__dirname, './colors.json')
+	export const colorPath = path.join(__dirname, '../colors.json')
 	export let colors: ColorCache = {}
 
 	export function load() {

@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import { ColorCache } from './color-cache'
+import { ColorCache } from './color'
 
 export interface BugCache {
 	[id: string]: {
@@ -11,7 +11,7 @@ export interface BugCache {
 }
 
 export namespace BugCache {
-	export const bugsPath = path.join(__dirname, './bugs.json')
+	export const bugsPath = path.join(__dirname, '../bugs.json')
 	export let bugs: BugCache = {}
 
 	export function load() {
@@ -42,7 +42,11 @@ export namespace BugCache {
 	}
 
 	export function set(id: string, summary: string, translator?: string, date = new Date().toUTCString()) {
-		bugs[id] = { summary, translator, date }
+		if (summary) {
+			bugs[id] = { summary, translator, date }
+		} else {
+			remove(id)
+		}
 	}
 
 	export function getSummary(id: string): string | undefined {

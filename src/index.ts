@@ -3,8 +3,9 @@ import * as fs from 'fs-extra'
 import * as express from 'express'
 import * as path from 'path'
 import * as rp from 'request-promise-native'
-import { BugCache } from './bug-cache'
-import { ColorCache } from './color-cache'
+import { BugCache } from './cache/bug'
+import { ColorCache } from './cache/color'
+import { ReviewCache } from './cache/review'
 import { DiscordConfig, onInteraction, onMessage, onReactionAdd, onReady } from './discord-bot'
 import { JSDOM } from 'jsdom'
 import { getArticleType, getBeginning, getEnding, getVersionType } from './util'
@@ -42,6 +43,7 @@ let discord: DiscordConfig | undefined
 
 	BugCache.load()
 	ColorCache.load()
+	ReviewCache.load()
 })();
 
 (async function launchDiscordBot() {

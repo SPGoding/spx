@@ -2,12 +2,8 @@ import http = require('http')
 import https = require('https')
 import { imageSize } from 'image-size'
 import { ISizeCalculationResult } from 'image-size/dist/types/interface'
-import { BugCache } from './bug-cache'
-import { ColorCache } from './color-cache'
 
 const nextMainRelease = '1.17'
-
-const AFVersions = ['3D Shareware v1.34']
 
 export type StringStringArrayMap = {
     [key: string]: string[]
@@ -26,9 +22,9 @@ export function getVersionType(url: string): VersionType {
         return VersionType.ReleaseCandidate
     } else if (url.toLowerCase().includes('snapshot')) {
         return VersionType.Snapshot
-    } else if (url.toLowerCase().includes('minecraft java edition')){
+    } else if (url.toLowerCase().includes('minecraft java edition')) {
         return VersionType.Release
-    } else{
+    } else {
         return VersionType.Normal
     }
 }
@@ -229,7 +225,7 @@ export function getEnding(type: VersionType) {
 
         case VersionType.Normal:
         default:
-                return `\n[hr]
+            return `\n[hr]
 
 [align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
 [align=center][table=75%,#FFEBED]

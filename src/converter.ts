@@ -1,5 +1,4 @@
-import * as fs from 'fs-extra'
-import { BugCache } from './bug-cache'
+import { BugCache } from './cache/bug'
 import { getImageDimensions } from './util'
 
 interface Context {

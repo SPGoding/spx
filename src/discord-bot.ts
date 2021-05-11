@@ -1,6 +1,7 @@
-import { ApplicationCommandData, Client as DiscordClient, GuildMember, Interaction, Message, MessageEmbed, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, User, UserResolvable } from 'discord.js'
-import { BugCache } from './bug-cache'
-import { ColorCache } from './color-cache'
+import { ApplicationCommandData, Client as DiscordClient, GuildMember, Interaction, Message, MessageEmbed, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, TextChannel, User, UserResolvable } from 'discord.js'
+import { BugCache } from './cache/bug'
+import { ColorCache } from './cache/color'
+import { ReviewCache } from './cache/review'
 import { Version2Client as JiraClient } from 'jira.js'
 import { IssueBean } from 'jira.js/out/version2/models';
 
@@ -18,70 +19,96 @@ export interface DiscordConfig {
 export async function onReady(config: DiscordConfig, client: DiscordClient) {
 	const data: ApplicationCommandData[] = [
 		{
-			name: 'spx',
-			description: 'SPX Starto!',
+			name: 'approve',
+			description: 'Approve the existing translation of a bug.',
+			options: [{
+				name: 'id',
+				type: 'STRING',
+				description: 'The ticket key.',
+				required: true,
+			}],
+		},
+		{
+			name: 'as',
+			description: 'Translate as someone.',
 			options: [
 				{
-					name: 'backup',
-					type: 'SUB_COMMAND',
-					description: 'Back up the bug cache and color cache.',
+					name: 'user',
+					type: 'USER',
+					description: 'The user.',
+					required: true,
 				},
 				{
-					name: 'color',
-					type: 'SUB_COMMAND_GROUP',
-					description: 'Operate 色图.',
-					options: [
-						{
-							name: 'clear',
-							type: 'SUB_COMMAND',
-							description: 'Clear the color of someone.',
-							options: [{
-								name: 'user',
-								type: 'USER',
-								description: 'The user.',
-								required: true,
-							}],
-						},
-						{
-							name: 'get',
-							type: 'SUB_COMMAND',
-							description: 'Get the color of someone.',
-							options: [{
-								name: 'user',
-								type: 'USER',
-								description: 'The user.',
-								required: true,
-							}],
-						},
-						{
-							name: 'set',
-							type: 'SUB_COMMAND',
-							description: 'Set the color of yourself.',
-							options: [{
-								name: 'value',
-								type: 'STRING',
-								description: 'A hexadecimal representation of the color.',
-								required: true,
-							}],
-						},
-					],
-				},
+					name: 'content',
+					type: 'STRING',
+					description: 'The ticket ID and translated summary with the same format as your translation message.',
+					required: true,
+				}
+			],
+		},
+		{
+			name: 'backup',
+			description: 'Back up the bug cache and color cache.',
+		},
+		{
+			name: 'color',
+			description: 'Operate 色图.',
+			options: [
 				{
-					name: 'ping',
+					name: 'clear',
 					type: 'SUB_COMMAND',
-					description: 'Ping-pong!',
-				},
-				{
-					name: 'query',
-					type: 'SUB_COMMAND',
-					description: 'Query all fixed, untranslated bugs.',
+					description: 'Clear the color of someone.',
 					options: [{
-						name: 'jql',
-						type: 'STRING',
-						description: 'An optional JQL query.',
+						name: 'user',
+						type: 'USER',
+						description: 'The user.',
+						required: true,
 					}],
 				},
+				{
+					name: 'get',
+					type: 'SUB_COMMAND',
+					description: 'Get the color of someone.',
+					options: [{
+						name: 'user',
+						type: 'USER',
+						description: 'The user.',
+						required: true,
+					}],
+				},
+				{
+					name: 'set',
+					type: 'SUB_COMMAND',
+					description: 'Set the color of yourself or someone else.',
+					options: [
+						{
+							name: 'value',
+							type: 'STRING',
+							description: 'A hexadecimal representation of the color.',
+							required: true,
+						},
+						{
+							name: 'user',
+							type: 'USER',
+							description: 'The user. Defaults to yourself.',
+							required: false,
+						}
+					],
+				},
 			],
+		},
+		{
+			name: 'ping',
+			description: 'Ping-pong!',
+		},
+		{
+			name: 'query',
+			description: 'Query all fixed, untranslated bugs.',
+			options: [{
+				name: 'jql',
+				type: 'STRING',
+				description: 'An optional JQL query.',
+			}],
 		},
 	]
 
@@ -92,107 +119,158 @@ export async function onReady(config: DiscordConfig, client: DiscordClient) {
 	}
 }
 
+/**
+ * @param color Starting with `#`.
+ */
+function getColorEmbed(translator: string, color: string) {
+	return new MessageEmbed()
+		.setTitle(`${translator} 的色图！`)
+		.setDescription(`色：\`${color}\``)
+		.setColor(color)
+		.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`)
+}
+
 export async function onInteraction(interaction: Interaction) {
 	try {
 		if (!interaction.isCommand()) {
 			return
 		}
-		if (interaction.commandName === 'spx') {
-			const executor = tagToName(interaction.user.tag)
-			switch (interaction.options[0].name) {
-				case 'backup':
-					await interaction.reply('💾 Backup', {
-						files: [
-							BugCache.bugsPath,
-							ColorCache.colorPath,
-						]
-					})
-					break
-				case 'color':
-					switch (interaction.options[0].options![0].name) {
-						case 'clear': {
-							const target = tagToName(interaction.options[0].options![0].options![0].user!.tag)
-							ColorCache.remove(target)
-							ColorCache.save()
-							await interaction.reply(new MessageEmbed()
-								.setDescription(`已移除 ${target} 的颜色`)
-								.setColor('#000000')
-								.setThumbnail(`https://colorhexa.com/000000.png`)
-							)
-							break
-						}
-						case 'get': {
-							const target = tagToName(interaction.options[0].options![0].options![0].user!.tag)
-							const hex = BugCache.getColorFromTranslator(target)
-							await interaction.reply(new MessageEmbed()
-								.setTitle(`${target} 的色图！`)
-								.setDescription(`色：\`${hex}\``)
-								.setColor(hex)
-								.setThumbnail(`https://colorhexa.com/${hex.slice(1)}.png`)
-							)
-							break
-						}
-						case 'set': {
-							let color = (interaction.options[0].options![0].options![0].value as string).toLowerCase()
-							if (!color.startsWith('#')) {
-								color = `#${color}`
-							}
-							ColorCache.set(executor, color)
-							const locked = executor === 'ff98sha' || executor === 'WuGuangYao'
-							if (locked) {
-								ColorCache.set('ff98sha', color)
-								ColorCache.set('WuGuangYao', color)
-							}
-							ColorCache.save()
-							await interaction.reply(new MessageEmbed()
-								.setDescription(`已设置 ${executor} 的颜色为 ${color}${locked ? '  \n🏳‍🌈 ff98sha 与 WuGuangYao 已锁。' : ''}`)
-								.setColor(color)
-								.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`))
-							break
-						}
-					}
-					break
-				case 'ping':
-					interaction.reply('🏓 Pong!')
-					break
-				case 'query': {
-					await interaction.defer()
-					const jql = (interaction.options[0].options?.[0]?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
-					const issues = await searchIssues(jql)
-					const unknownIssues: IssueBean[] = []
-					const translators = new Map<string, number>()
-					for (const issue of issues) {
-						if (issue.key) {
-							if (BugCache.has(issue.key)) {
-								const translator = BugCache.getTranslator(issue.key)
-								if (translator) {
-									translators.set(translator, (translators.get(translator) ?? 0) + 1)
-								}
-							} else {
-								unknownIssues.push(issue)
-							}
-						}
-					}
-					if (unknownIssues.length) {
-						await interaction.editReply(new MessageEmbed()
-							.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
-							.setDescription(unknownIssues.slice(0, 10).map(
-								i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
-							).join('\n'))
-						)
+		const executor = tagToName(interaction.user.tag)
+		switch (interaction.commandName) {
+			case 'approve': {
+				const key = interaction.options[0].value as string
+				try {
+					ReviewCache.approve(key, executor)
+					if (ReviewCache.isApproved(key)) {
+						ReviewCache.remove(key)
+						interaction.reply(`✅ 漏洞 ${key} 的翻译已被 approved。`)
 					} else {
-						await interaction.editReply(`🎉 ${issues.length} 个漏洞均已翻译。`)
+						interaction.reply(`☑️ 漏洞 ${key} 仍需 ${ReviewCache.ApprovalCountRequired - ReviewCache.currentApprovalCount(key)} 个用户 approve。`)
 					}
+					ReviewCache.save()
+				} catch (e) {
+					interaction.reply(`❌ 无法 approve ${key} 的翻译：${e}。`)
+				}
+				break
+			}
+			case 'as': {
+				const translator = tagToName(interaction.options[0].user!.tag)
+				const content = interaction.options[1].value as string
+				if (ColorCache.has(translator)) {
+					await executeCommand({
+						content,
+						executor: interaction.user,
+						translator,
+						onOverriding: () => (interaction.replied ? interaction.editReply.bind(interaction) : interaction.reply.bind(interaction))
+							(`❓ 以 ${translator} 的身份提交了 \`${content}\`，请确认是否覆盖。`),
+						onTranslated: () => (interaction.replied ? interaction.editReply.bind(interaction) : interaction.reply.bind(interaction))
+							(`✅ 以 ${translator} 的身份提交了 \`${content}\`。`),
+						sendMessage: content => (interaction.channel as TextChannel).send(content),
+					})
+				} else {
+					await interaction.reply(`❌ 名为 ${translator} 的用户从未亲自使用过 SPX`)
+				}
+				break
+			}
+			case 'backup':
+				await interaction.reply('💾 Backup', {
+					files: [
+						BugCache.bugsPath,
+						ColorCache.colorPath,
+					]
+				})
+				break
+			case 'color':
+				switch (interaction.options[0].name) {
+					case 'clear': {
+						const target = tagToName(interaction.options[0].options![0].user!.tag)
+						ColorCache.remove(target)
+						ColorCache.save()
+						await interaction.reply(new MessageEmbed()
+							.setDescription(`已移除 ${target} 的颜色`)
+							.setColor('#000000')
+							.setThumbnail(`https://colorhexa.com/000000.png`)
+						)
+						break
+					}
+					case 'get': {
+						const target = tagToName(interaction.options[0].options![0].user!.tag)
+						const color = BugCache.getColorFromTranslator(target)
+						await interaction.reply(getColorEmbed(target, color))
+						break
+					}
+					case 'set': {
+						let color = (interaction.options[0].options![0].value as string).toLowerCase()
+						let target: User | undefined = interaction.options[0].options![1]?.user
+						const targetName = target ? tagToName(target.tag) : executor
+						if (!color.startsWith('#')) {
+							color = `#${color}`
+						}
+						ColorCache.set(targetName, color)
+						const locked = targetName === 'ff98sha' || targetName === 'WuGuangYao'
+						if (locked) {
+							ColorCache.set('ff98sha', color)
+							ColorCache.set('WuGuangYao', color)
+						}
+						ColorCache.save()
+						await interaction.reply(new MessageEmbed()
+							.setDescription(`已设置 ${targetName} 的颜色为 ${color}${locked ? '  \n🏳‍🌈 Ff98sha 与 WuGuangYao 已锁。' : ''}`)
+							.setColor(color)
+							.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`))
+						break
+					}
+				}
+				break
+			case 'ping':
+				interaction.reply('🏓 Pong!')
+				break
+			case 'query': {
+				await interaction.defer()
+				const jql = (interaction.options?.[0]?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
+				const issues = await searchIssues(jql)
+				const unknownIssues: IssueBean[] = []
+				const translators = new Map<string, number>()
+				for (const issue of issues) {
+					if (issue.key) {
+						if (BugCache.has(issue.key)) {
+							const translator = BugCache.getTranslator(issue.key)
+							if (translator) {
+								translators.set(translator, (translators.get(translator) ?? 0) + 1)
+							}
+						} else {
+							unknownIssues.push(issue)
+						}
+					}
+				}
+				if (unknownIssues.length) {
+					await interaction.editReply(new MessageEmbed()
+						.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
+						.setDescription(unknownIssues.slice(0, 10).map(
+							i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
+						).join('\n'))
+					)
+				} else {
 					const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
-					await interaction.webhook.send(new MessageEmbed()
-						.setTitle('统计')
+					await interaction.editReply(new MessageEmbed()
+						.setTitle(`🎉 ${issues.length} 个漏洞均已翻译。`)
 						.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
 						.addField('打工人', sortedTranslators.map(([translator, _count]) => `**${translator}**`).join('\n'), true)
 						.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
 						.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
 					)
-					break
 				}
+				if (!ReviewCache.isEmpty()) {
+					await interaction.webhook.send(new MessageEmbed()
+						.setTitle('❗ Review Required')
+						.setDescription(
+							Object
+								.entries(ReviewCache.review)
+								.map(([key, { approvers, summary, translator }]) => `[${key}](https://bugs.mojang.com/browse/${key}) 「${summary}」 @${translator} #${approvers.length}`)
+								.join('\n')
+						)
+					)
+				}
+				break
 			}
 		}
 	} catch (e) {
@@ -210,82 +288,79 @@ export async function onMessage(config: DiscordConfig, message: Message | Partia
 
 		const member = await ensureMember(message.member)
 		if (member.roles.cache.has(config.role)) {
-			const translator = tagToName(member.user.tag)
-			await executeCommand(message, translator)
+			await executeCommand({
+				content: message.content,
+				executor: message.member.user,
+				translator: tagToName(message.member.user.tag),
+				onOverriding: () => message.react('❓'),
+				onTranslated: () => message.react('✅'),
+				sendMessage: content => message.channel.send(content),
+			})
 		}
 	} catch (e) {
 		console.error('[Discord#onMessage] ', e)
 	}
 }
 
-const overrideConfirmations = new Map<string, { message: Message, prompt: Message, translator: string }>()
+const overrideConfirmations = new Map<string, { author: User, translator: string, content: string, prompt: Message, onTranslated: () => Promise<unknown> }>()
 
-async function executeCommand(message: Message, translator: string, out = { recursionCount: 12 }): Promise<void> {
-	const content = message.content.trim()
-	const bugRegex = /^(?:!spx bug )?([!！]|)?\s*\[?(MC-\d+)]?\s*(.*)$/i
+async function executeCommand({
+	content,
+	executor,
+	translator,
+	onOverriding,
+	onTranslated,
+	sendMessage,
+}: {
+	content: string,
+	executor: User,
+	translator: string,
+	onOverriding: () => Promise<unknown>,
+	onTranslated: () => Promise<unknown>,
+	sendMessage: (content: string | MessageEmbed) => Promise<Message>,
+}): Promise<void> {
+	content = content.trim()
+
+	const bugRegex = /^([!！?？]*)\s*\[?(MC-\d+)]?\s*(.*)$/i
 	const bugMatchArr = content.match(bugRegex)
-	const executeAsCommand = '!spx execute as '
 	if (bugMatchArr) {
-		const isForce = !!bugMatchArr[1]
+		const isForce = !!bugMatchArr[1]?.match(/[!！]/)
+		const needsReview = !!bugMatchArr[1]?.match(/[?？]/)
 		const id = bugMatchArr[2]
 		const desc = markdownToBbcode(bugMatchArr[3])
 		const existingOne = BugCache.getSummary(id)
 		if (existingOne && !isForce) {
 			const [, prompt] = await Promise.all([
-				message.react('❓'),
-				message.channel.send(`❓ ${id} 已被翻译为「${existingOne}」。确认覆盖？`)
+				onOverriding(),
+				sendMessage(`❓ ${id} 已被翻译为「${existingOne}」。${desc ? '确认覆盖？' : '确认删除？'}`),
 			])
 			await Promise.all([
 				prompt.react('⚪'),
 				prompt.react('❌')
 			])
-			overrideConfirmations.set(prompt.id, { message, prompt, translator })
+			overrideConfirmations.set(prompt.id, { author: executor, translator, content, prompt, onTranslated })
 		} else {
 			BugCache.set(id, desc, translator)
 			BugCache.save()
-			await message.react('✅')
+			await onTranslated()
 			if (!ColorCache.has(translator)) {
-				ColorCache.set(translator, BugCache.getColorFromTranslator(translator))
-				await message.react('🌈')
+				const color = BugCache.getColorFromTranslator(translator)
+				ColorCache.set(translator, color)
+				await sendMessage(getColorEmbed(translator, color).setTitle(`为 ${translator} 自动生成了色图！`))
 			}
-		}
-	} else if (content.toLowerCase().startsWith(executeAsCommand)) {
-		const victim = content.slice(executeAsCommand.length, content.indexOf(' run !spx'))
-		const command = content.slice(content.indexOf(' run !spx') + 5)
-		message.content = command
-		const allTranslators = ColorCache.getTranslators()
-		let actualVictims: string[]
-		switch (victim) {
-			case '@a':
-			case '@e':
-				actualVictims = allTranslators
-				break
-			case '@p':
-			case '@s':
-				actualVictims = [translator]
-				break
-			case '@r':
-				actualVictims = [allTranslators[Math.floor(allTranslators.length * Math.random())]]
-				break
-			default:
-				actualVictims = [victim]
-				break
-		}
-		for (const vic of actualVictims) {
-			out.recursionCount -= 1
-			if (out.recursionCount < 0) {
-				if (out.recursionCount === -1) {
-					await message.channel.send(`📚 StackOverflowException`)
-				}
-				break
-			}
-			if (ColorCache.has(vic)) {
-				await message.channel.send(`💻 正在以 ${vic} 的身份执行 \`${command}\`。`)
-				await executeCommand(message, vic, out)
+			if (needsReview) {
+				ReviewCache.set(id, {
+					approvers: [],
+					summary: desc,
+					translator,
+				})
 			} else {
-				await message.channel.send(`🎃 找不到名为 ${vic} 的用户。您是否是想找「野兽先辈」？`)
+				ReviewCache.remove(id)
 			}
+			ReviewCache.save()
 		}
+	} else if (content.toLowerCase().startsWith('!spx ')) {
+		await sendMessage('给爷用 Slash Command 啦')
 	}
 }
 
@@ -322,13 +397,19 @@ export async function onReactionAdd(_config: DiscordConfig, reaction: MessageRea
 		user = await ensureUser(user)
 		if (overrideConfirmations.has(reaction.message.id)) {
 			console.info(`User ${user.tag} added '${reaction.emoji.name}' reaction to a prompt`);
-			const { message, prompt, translator } = overrideConfirmations.get(reaction.message.id)!
-			if (user.id !== message.author.id) {
-				return await prompt.edit(`${prompt.content}\n不准 ${tagToName(user.tag)} 为 ${tagToName(message.author.tag)} 做决定.spg`)
+			const { author, content, prompt, translator, onTranslated } = overrideConfirmations.get(reaction.message.id)!
+			if (user.id !== author.id) {
+				return await prompt.edit(`${prompt.content}\n不准 ${tagToName(user.tag)} 为 ${tagToName(author.tag)} 做决定.spg`)
 			}
 			if (reaction.emoji.name === '⚪') {
-				message.content = `!${message.content}`
-				await executeCommand(message, translator)
+				await executeCommand({
+					content: `!${content}`,
+					executor: author,
+					translator,
+					onOverriding: async () => { /* This should never get called. */ },
+					onTranslated,
+					sendMessage: content => reaction.message.channel.send(content),
+				})
 			} else if (reaction.emoji.name !== '❌') {
 				return
 			}
