@@ -16,7 +16,7 @@ export interface DiscordConfig {
 	role: string,
 }
 
-const MaxSearchCount = 521
+const MaxSearchCount = 500
 const QueryCooldown = 30_000
 
 let lastQueryTime: Date | undefined
@@ -237,6 +237,7 @@ export async function onInteraction(interaction: Interaction) {
 					interaction.editReply(`❌ /query 冷却剩余 ${remainingCooldown} 毫秒`)
 					break
 				}
+				lastQueryTime = currentTime
 				const jql = (interaction.options?.[0]?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
 				const issues = await searchIssues(jql)
 				const unknownIssues: IssueBean[] = []
