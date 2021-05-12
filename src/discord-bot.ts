@@ -16,6 +16,11 @@ export interface DiscordConfig {
 	role: string,
 }
 
+const MaxSearchCount = 521
+const QueryCooldown = 30_000
+
+let lastQueryTime: Date | undefined
+
 export async function onReady(config: DiscordConfig, client: DiscordClient) {
 	const data: ApplicationCommandData[] = [
 		{
@@ -145,7 +150,7 @@ export async function onInteraction(interaction: Interaction) {
 						ReviewCache.remove(key)
 						interaction.reply(`✅ 漏洞 ${key} 的翻译已被 approved。`)
 					} else {
-						interaction.reply(`☑️ 漏洞 ${key} 仍需 ${ReviewCache.ApprovalCountRequired - ReviewCache.currentApprovalCount(key)} 个用户 approve。`)
+						interaction.reply(`☑️ 漏洞 ${key} 的翻译仍需 ${ReviewCache.ApprovalCountRequired - ReviewCache.currentApprovalCount(key)} 个用户 approve。`)
 					}
 					ReviewCache.save()
 				} catch (e) {
@@ -226,6 +231,12 @@ export async function onInteraction(interaction: Interaction) {
 				break
 			case 'query': {
 				await interaction.defer()
+				const currentTime = new Date()
+				const remainingCooldown = lastQueryTime ? QueryCooldown - currentTime.getTime() - lastQueryTime.getTime() : 0
+				if (remainingCooldown > 0) {
+					interaction.editReply(`❌ /query 冷却剩余 ${remainingCooldown} 毫秒`)
+					break
+				}
 				const jql = (interaction.options?.[0]?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
 				const issues = await searchIssues(jql)
 				const unknownIssues: IssueBean[] = []
@@ -368,8 +379,6 @@ function markdownToBbcode(value: string): string {
 	return value
 		.replace(/`([^`]+)`/g, "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]$1[/font][/backcolor]")
 }
-
-const MaxSearchCount = 200
 
 async function searchIssues(jql: string) {
 	const ans: IssueBean[] = []
