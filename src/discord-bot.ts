@@ -369,6 +369,8 @@ function markdownToBbcode(value: string): string {
 		.replace(/`([^`]+)`/g, "[backcolor=White][font=Monaco,Consolas,'Lucida Console','Courier New',serif]$1[/font][/backcolor]")
 }
 
+const MaxSearchCount = 200
+
 async function searchIssues(jql: string) {
 	const ans: IssueBean[] = []
 	let totalCount = 0
@@ -385,7 +387,7 @@ async function searchIssues(jql: string) {
 		ans.push(...result.issues ?? [])
 		totalCount += result.issues?.length ?? 0
 
-		if (totalCount >= (result.total ?? 0)) {
+		if (totalCount >= Math.min(result.total ?? 0, MaxSearchCount)) {
 			break
 		}
 	}
