@@ -232,7 +232,7 @@ export async function onInteraction(interaction: Interaction) {
 			case 'query': {
 				await interaction.defer()
 				const currentTime = new Date()
-				const remainingCooldown = lastQueryTime ? QueryCooldown - currentTime.getTime() - lastQueryTime.getTime() : 0
+				const remainingCooldown = lastQueryTime ? QueryCooldown - (currentTime.getTime() - lastQueryTime.getTime()) : 0
 				if (remainingCooldown > 0) {
 					interaction.editReply(`❌ /query 冷却剩余 ${remainingCooldown} 毫秒`)
 					break
