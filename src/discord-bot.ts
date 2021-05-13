@@ -16,8 +16,8 @@ export interface DiscordConfig {
 	role: string,
 }
 
-const MaxSearchCount = 500
-const QueryCooldown = 30_000
+const MaxSearchCount = 150
+const QueryCooldown = 15_000
 
 let lastQueryTime: Date | undefined
 
@@ -261,7 +261,7 @@ export async function onInteraction(interaction: Interaction) {
 							i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
 						).join('\n'))
 					)
-				} else {
+				} else if (issues.length) {
 					const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
 					await interaction.editReply(new MessageEmbed()
 						.setTitle(`🎉 ${issues.length} 个漏洞均已翻译。`)
@@ -270,6 +270,13 @@ export async function onInteraction(interaction: Interaction) {
 						.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
 						.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
 					)
+				} else {
+					await interaction.editReply([
+						'什么也没有搜到。',
+						'你来到了没有爱的荒漠。',
+						'肆佰〇肆不能被找到。',
+						'一个漏洞都没有，本该是一切非常快乐的事情，可是为什么会变成这样呢？',
+					][Math.random() * 4])
 				}
 				if (!ReviewCache.isEmpty()) {
 					await interaction.webhook.send(new MessageEmbed()
@@ -391,8 +398,8 @@ async function searchIssues(jql: string) {
 			maxResults: 50,
 			startAt: totalCount,
 		})
-		if (!result.issues) {
-			console.error(`[searchIssues] No issues when totalCount=${totalCount}`)
+		if (!result.issues || result.total === 0) {
+			return []
 		}
 		ans.push(...result.issues ?? [])
 		totalCount += result.issues?.length ?? 0
