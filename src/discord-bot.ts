@@ -271,12 +271,14 @@ export async function onInteraction(interaction: Interaction) {
 						.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
 					)
 				} else {
-					await interaction.editReply([
+					const responses = [
 						'什么也没有搜到。',
 						'你来到了没有爱的荒漠。',
 						'肆佰〇肆不能被找到。',
 						'一个漏洞都没有，本该是一切非常快乐的事情，可是为什么会变成这样呢？',
-					][Math.random() * 4])
+						'Ssssssssssorry!',
+					]
+					await interaction.editReply(responses[Math.ceil(Math.random() * responses.length)])
 				}
 				if (!ReviewCache.isEmpty()) {
 					await interaction.webhook.send(new MessageEmbed()
