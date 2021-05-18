@@ -241,3 +241,50 @@ export const enum VersionType {
     Release,
     Normal
 }
+
+export function getTweet({
+    date,
+    lang,
+    mode,
+    source,
+    text,
+    translator,
+    tweetLink,
+    urls,
+    userName,
+    userTag,
+}: {
+    date: Date,
+    lang: string,
+    mode: 'dark' | 'light',
+    source: string,
+    text: string,
+    translator: string,
+    tweetLink: string,
+    urls: { start: number, end: number, url: string, expanded_url: string, display_url: string }[],
+    userName: string,
+    userTag: string,
+}) {
+    const attributeColor = '#5B7083'
+    const linkColor = '#1B95E0'
+    const backgroundColor = mode === 'dark' ? '#000000' : '#FFFFFF'
+    const foregroundColor = mode === 'dark' ? '#D9D9D9' : '#0F1419'
+    const dateString = `${date.toLocaleTimeString('zh-cn')} · ${date.toLocaleDateString('zh-cn')} · ${source} · SPX`
+    let skippedIndex = 0
+    let content = text
+    for (const url of urls) {
+        const urlBBCode = `[url=${url.expanded_url}][color=${linkColor}]${url.display_url}[/color][/url]`
+        content = content.slice(0, skippedIndex + url.start - 1) + urlBBCode + content.slice(skippedIndex + url.end)
+        skippedIndex += urlBBCode.length - (url.end - url.start)
+    }
+    return `[align=center][table=560,${backgroundColor}]
+[tr][td][font=-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif][indent]
+[float=left][img=44,44]【TODO：头像图片地址】[/img][/float][size=15px][b][color=${foregroundColor}]${userName}[/color][/b]
+[color=${attributeColor}]@${userTag}[/color][/size]
+
+[color=${foregroundColor}][size=23px]${content}[/size]
+[size=15px]由 ${translator} 翻译自${lang.startsWith('en') ? '英语' : ` ${lang}`}[/size]
+[size=23px]【插入：译文】[/size][/color][/indent][align=center][img=451,254]【TODO：配图】[/img][/align][indent][size=15px][url=${tweetLink}][color=${attributeColor}]${dateString}[/color][/url][/size][/indent][/font]
+[/td][/tr]
+[/table][/align]`
+}

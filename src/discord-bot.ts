@@ -3,7 +3,9 @@ import { BugCache } from './cache/bug'
 import { ColorCache } from './cache/color'
 import { ReviewCache } from './cache/review'
 import { Version2Client as JiraClient } from 'jira.js'
-import { IssueBean } from 'jira.js/out/version2/models';
+import type { IssueBean } from 'jira.js/out/version2/models';
+import type Twitter from 'twitter-lite'
+import { getTweet } from './util'
 
 const jira = new JiraClient({
 	host: 'https://bugs.mojang.com',
@@ -115,6 +117,34 @@ export async function onReady(config: DiscordConfig, client: DiscordClient) {
 				description: 'An optional JQL query.',
 			}],
 		},
+		{
+			name: 'tweet',
+			description: 'Get the BBCode of a Tweet.',
+			options: [
+				{
+					name: 'dark',
+					type: 'SUB_COMMAND',
+					description: 'Get the BBCode of a Tweet in Dark Mode.',
+					options: [{
+						name: 'url',
+						type: 'STRING',
+						description: 'The URL to a Tweet.',
+						required: true,
+					}],
+				},
+				{
+					name: 'light',
+					type: 'SUB_COMMAND',
+					description: 'Get the BBCode of a Tweet in Light Mode.',
+					options: [{
+						name: 'url',
+						type: 'STRING',
+						description: 'The URL to a Tweet.',
+						required: true,
+					}],
+				},
+			],
+		},
 	]
 
 	try {
@@ -135,7 +165,7 @@ function getColorEmbed(translator: string, color: string) {
 		.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`)
 }
 
-export async function onInteraction(interaction: Interaction) {
+export async function onInteraction(twitterClient: Twitter | undefined, interaction: Interaction) {
 	try {
 		if (!interaction.isCommand()) {
 			return
@@ -173,7 +203,7 @@ export async function onInteraction(interaction: Interaction) {
 						sendMessage: content => (interaction.channel as TextChannel).send(content),
 					})
 				} else {
-					await interaction.reply(`❌ 名为 ${translator} 的用户从未亲自使用过 SPX`)
+					await interaction.reply(`❌ 名为 ${translator} 的用户从未亲自使用过 SPX。`)
 				}
 				break
 			}
@@ -234,10 +264,11 @@ export async function onInteraction(interaction: Interaction) {
 				const currentTime = new Date()
 				const remainingCooldown = lastQueryTime ? QueryCooldown - (currentTime.getTime() - lastQueryTime.getTime()) : 0
 				if (remainingCooldown > 0) {
-					interaction.editReply(`❌ /query 冷却剩余 ${remainingCooldown} 毫秒`)
+					interaction.editReply(`❌ 冷却剩余 ${remainingCooldown} 毫秒`)
 					break
 				}
 				lastQueryTime = currentTime
+
 				const jql = (interaction.options?.[0]?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
 				const issues = await searchIssues(jql)
 				const unknownIssues: IssueBean[] = []
@@ -290,6 +321,72 @@ export async function onInteraction(interaction: Interaction) {
 								.join('\n')
 						)
 					)
+				}
+				break
+			}
+			case 'tweet': {
+				await interaction.defer()
+				const currentTime = new Date()
+				const remainingCooldown = lastQueryTime ? QueryCooldown - (currentTime.getTime() - lastQueryTime.getTime()) : 0
+				if (remainingCooldown > 0) {
+					interaction.editReply(`❌ 冷却剩余 ${remainingCooldown} 毫秒`)
+					break
+				}
+				lastQueryTime = currentTime
+
+				if (!twitterClient) {
+					await interaction.editReply('❌ Twitter App 未配置。')
+					return
+				}
+				const mode = interaction.options[0].name as 'dark' | 'light'
+				const tweetLink = interaction.options[0].options![0].value as string
+				const tweetLinkRegex = /^https?:\/\/twitter\.com\/([^/]+)\/status\/(\d+)/i
+				const matchResult = tweetLink.match(tweetLinkRegex)
+				if (!matchResult) {
+					await interaction.editReply(`❌ 输入 \`${tweetLink}\` 不是可被接受的 Tweet 链接。`)
+					return
+				}
+				const tweetId = matchResult[2]
+				try {
+					const result: {
+						data: {
+							source: string,
+							created_at: string,
+							text: string,
+							entities: {
+								urls?: { start: number, end: number, url: string, expanded_url: string, display_url: string }[]
+							},
+							id: string,
+							author_id: string,
+							lang: string,
+						},
+						includes: {
+							users: { id: string, name: string, username: string }[],
+						},
+						_headers: {},
+					} = await twitterClient.get(`tweets/${tweetId}`, {
+						expansions: 'attachments.media_keys,author_id',
+						'tweet.fields': 'attachments,author_id,created_at,entities,lang,source,text',
+						'user.fields': 'name,username',
+					})
+					const author = result.includes.users.find(u => u.id === result.data.author_id)!
+					const bbcode = getTweet({
+						date: new Date(result.data.created_at),
+						lang: result.data.lang,
+						mode,
+						source: result.data.source,
+						text: result.data.text,
+						translator: executor,
+						tweetLink,
+						urls: result.data.entities.urls ?? [],
+						userName: author.name,
+						userTag: author.username,
+					})
+					await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
+				} catch (e) {
+					await interaction.editReply(`❌ 与 Twitter API 交互出错：\n\`\`\`\n${JSON.stringify(e).slice(0, 500)}\n\`\`\``)
+					console.error('[Discord#onInteraction#Twitter]', e)
+					return
 				}
 				break
 			}

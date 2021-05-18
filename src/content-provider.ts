@@ -1,4 +1,4 @@
-import * as rp from 'request-promise-native'
+import rp from 'request-promise-native'
 
 export interface ContentProvider {
     getContent(): Promise<Content>

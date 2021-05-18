@@ -1,8 +1,8 @@
 import { Client, Intents } from 'discord.js'
 import * as fs from 'fs-extra'
-import * as express from 'express'
+import express from 'express'
 import * as path from 'path'
-import * as rp from 'request-promise-native'
+import rp from 'request-promise-native'
 import { BugCache } from './cache/bug'
 import { ColorCache } from './cache/color'
 import { ReviewCache } from './cache/review'
@@ -10,6 +10,8 @@ import { DiscordConfig, onInteraction, onMessage, onReactionAdd, onReady } from 
 import { JSDOM } from 'jsdom'
 import { getArticleType, getBeginning, getEnding, getVersionType } from './util'
 import { convertFeedbackArticleToBBCode, convertMCArticleToBBCode } from './converter'
+import { TwitterConfig } from './twitter'
+import Twitter from 'twitter-lite'
 
 const configPath = path.join(__dirname, './config.json')
 let httpPort: number | undefined
@@ -20,6 +22,8 @@ let interval: number | undefined
 
 let discordClient: Client | undefined
 let discord: DiscordConfig | undefined
+let twitterClient: Twitter | undefined
+let twitter: TwitterConfig | undefined
 
 (function loadFiles() {
 	if (fs.existsSync(configPath)) {
@@ -30,6 +34,7 @@ let discord: DiscordConfig | undefined
 		ownerPassword = config.ownerPassword
 		vipPassword = config.vipPassword
 		discord = config.discord
+		twitter = config.twitter
 		if (!ip || !httpPort || !interval || !ownerPassword || !vipPassword) {
 			throw ("Expected 'ip', 'httpPort', 'interval', 'ownerPassword', and 'vipPassword' in './config.json'.")
 		}
@@ -55,13 +60,31 @@ let discord: DiscordConfig | undefined
 			})
 			await discordClient.login(discord.token)
 			discordClient.once('ready', onReady.bind(undefined, discord, discordClient))
-			discordClient.on('interaction', onInteraction.bind(undefined))
+			discordClient.on('interaction', onInteraction.bind(undefined, twitterClient))
 			discordClient.on('message', onMessage.bind(undefined, discord))
 			discordClient.on('messageReactionAdd', onReactionAdd.bind(undefined, discord))
-			console.log('Discord bot launched.')
+			console.log('Discord Bot launched.')
 		}
 	} catch (e) {
 		console.error('[launchDiscordBot]', e)
+		process.exit(1)
+	}
+})();
+
+(async function launchTwitterApp() {
+	try {
+		if (twitter) {
+			twitterClient = new Twitter({
+				version: '2',
+				extension: false,
+				consumer_key: twitter.apiKey,
+				consumer_secret: twitter.apiSecretKey,
+				bearer_token: twitter.bearerToken,
+			})
+			console.log('Twitter App connected.')
+		}
+	} catch (e) {
+		console.error('[launchTwitterApp]', e)
 		process.exit(1)
 	}
 })()
