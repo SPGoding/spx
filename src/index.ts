@@ -60,7 +60,7 @@ let twitter: TwitterConfig | undefined
 			})
 			await discordClient.login(discord.token)
 			discordClient.once('ready', onReady.bind(undefined, discord, discordClient))
-			discordClient.on('interaction', onInteraction.bind(undefined, twitterClient))
+			discordClient.on('interaction', onInteraction.bind(undefined, discord, twitterClient))
 			discordClient.on('message', onMessage.bind(undefined, discord))
 			discordClient.on('messageReactionAdd', onReactionAdd.bind(undefined, discord))
 			console.log('Discord Bot launched.')

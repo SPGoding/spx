@@ -16,6 +16,10 @@ export interface DiscordConfig {
 	guild: string,
 	channel: string,
 	role: string,
+	roles?: {
+		name: string,
+		role: string,
+	}[],
 }
 
 const MaxSearchCount = 150
@@ -147,6 +151,18 @@ export async function onReady(config: DiscordConfig, client: DiscordClient) {
 		},
 	]
 
+	if (config.roles?.length) {
+		data.push({
+			name: 'join',
+			description: 'Join a role.',
+			options: config.roles.map(r => ({
+				name: r.name,
+				type: 'SUB_COMMAND',
+				description: `Join the role ${r.name}`,
+			}))
+		})
+	}
+
 	try {
 		await client.guilds.cache.get(config.guild)?.commands.set(data)
 	} catch (e) {
@@ -165,12 +181,17 @@ function getColorEmbed(translator: string, color: string) {
 		.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`)
 }
 
-export async function onInteraction(twitterClient: Twitter | undefined, interaction: Interaction) {
+export async function onInteraction(config: DiscordConfig, twitterClient: Twitter | undefined, interaction: Interaction) {
 	try {
 		if (!interaction.isCommand()) {
 			return
 		}
 		const executor = tagToName(interaction.user.tag)
+		if (!interaction.member || (
+			interaction.channel?.id !== config.channel && !['join', 'ping'].includes( interaction.commandName)
+		)) {
+			return
+		}
 		switch (interaction.commandName) {
 			case 'approve': {
 				const key = interaction.options[0].value as string
@@ -256,6 +277,26 @@ export async function onInteraction(twitterClient: Twitter | undefined, interact
 					}
 				}
 				break
+			case 'join': {
+				const name = interaction.options[0].name
+				const role = config.roles?.find(v => v.name === name)?.role
+				if (!role) {
+					await interaction.reply(`❌ Unknown role name ${name}.`, { ephemeral: true })
+					break
+				}
+				const rolesManager = interaction.member?.roles
+				if (!rolesManager || Array.isArray(rolesManager)) {
+					await interaction.reply('❌ Cannot manage your roles.', { ephemeral: true })
+					break
+				}
+				if (rolesManager.cache.has(role)) {
+					await interaction.reply(`❌ You already have the role ${name}.`, { ephemeral: true })
+					break
+				}
+				await rolesManager.add(role)
+				await interaction.reply(`✅ Joined role ${name}`, { ephemeral: true })
+				break
+			}
 			case 'ping':
 				interaction.reply('🏓 Pong!')
 				break
