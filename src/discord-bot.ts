@@ -394,7 +394,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 							source: string,
 							created_at: string,
 							text: string,
-							entities: {
+							entities?: {
 								urls?: { start: number, end: number, url: string, expanded_url: string, display_url: string }[]
 							},
 							id: string,
@@ -419,7 +419,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 						text: result.data.text,
 						translator: executor,
 						tweetLink,
-						urls: result.data.entities.urls ?? [],
+						urls: result.data.entities?.urls ?? [],
 						userName: author.name,
 						userTag: author.username,
 					})
