@@ -204,6 +204,10 @@ export const converters = {
      */
     recurse: async (ele: HTMLElement, ctx: Context) => {
         let ans = ''
+        
+        if (!ele) {
+            return ans
+        }
 
         for (const child of Array.from(ele.childNodes)) {
             ans += await converters.convert(child, ctx)

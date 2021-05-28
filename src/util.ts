@@ -58,7 +58,7 @@ export function getImageDimensions(imgUrl: string) {
  */
 export function getArticleType(html: Document): string {
     try {
-        const type = html.getElementsByClassName('article-category__text')[0].textContent as string
+        const type = html.getElementsByClassName('article-category__text')?.[0]?.textContent ?? ''
         return type.toUpperCase()
     } catch (ex) {
         console.log(`Error occurred #getArticleType: ${ex.stack}`)
