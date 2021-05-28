@@ -384,7 +384,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				const tweetLinkRegex = /^https?:\/\/twitter\.com\/([^/]+)\/status\/(\d+)/i
 				const matchResult = tweetLink.match(tweetLinkRegex)
 				if (!matchResult) {
-					await interaction.editReply(`❌ 输入 \`${tweetLink}\` 不是可被接受的 Tweet 链接。`)
+					await interaction.editReply(`❌ 输入 \`${tweetLink}\` 不是可被接受的 Tweet 链接。不可以这样的！`)
 					return
 				}
 				const tweetId = matchResult[2]
@@ -425,7 +425,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 					})
 					await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
 				} catch (e) {
-					await interaction.editReply(`❌ 与 Twitter API 交互出错：\n\`\`\`\n${JSON.stringify(e).slice(0, 500)}\n\`\`\``)
+					await interaction.editReply(`❌ 与 Twitter API 交互出错：\n\`\`\`\n${e?.toString().slice(0, 127)}\n\`\`\``)
 					console.error('[Discord#onInteraction#Twitter]', e)
 					return
 				}
