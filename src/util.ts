@@ -259,7 +259,7 @@ const ProfilePictures = new Map<string, string>([
     ['Marc_IRL', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/28/104919xl2ac5dihxlqxxdf.jpg'],
 ])
 
-export const TweetLinkRegex = /^https?:\/\/twitter\.com\/([^/]+)\/status\/(\d+)/i
+export const TweetLinkRegex = /^https?:\/\/(?:mobile\.)?twitter\.com\/([^/]+)\/status\/(\d+)/i
 
 export async function getTweet(twitterClient: Twitter, mode: 'dark' | 'light', tweetLink: string, translator: string) {
     const matchResult = tweetLink.match(TweetLinkRegex)
