@@ -381,51 +381,11 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				}
 				const mode = interaction.options[0].name as 'dark' | 'light'
 				const tweetLink = interaction.options[0].options![0].value as string
-				const tweetLinkRegex = /^https?:\/\/twitter\.com\/([^/]+)\/status\/(\d+)/i
-				const matchResult = tweetLink.match(tweetLinkRegex)
-				if (!matchResult) {
-					await interaction.editReply(`❌ 输入 \`${tweetLink}\` 不是可被接受的 Tweet 链接。不可以这样的！`)
-					return
-				}
-				const tweetId = matchResult[2]
 				try {
-					const result: {
-						data: {
-							source: string,
-							created_at: string,
-							text: string,
-							entities?: {
-								urls?: { start: number, end: number, url: string, expanded_url: string, display_url: string }[]
-							},
-							id: string,
-							author_id: string,
-							lang: string,
-						},
-						includes: {
-							users: { id: string, name: string, username: string }[],
-						},
-						_headers: {},
-					} = await twitterClient.get(`tweets/${tweetId}`, {
-						expansions: 'attachments.media_keys,author_id',
-						'tweet.fields': 'attachments,author_id,created_at,entities,lang,source,text',
-						'user.fields': 'name,username',
-					})
-					const author = result.includes.users.find(u => u.id === result.data.author_id)!
-					const bbcode = getTweet({
-						date: new Date(result.data.created_at),
-						lang: result.data.lang,
-						mode,
-						source: result.data.source,
-						text: result.data.text,
-						translator: executor,
-						tweetLink,
-						urls: result.data.entities?.urls ?? [],
-						userName: author.name,
-						userTag: author.username,
-					})
-					await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
+					const bbcode = await getTweet(twitterClient, mode, tweetLink, executor)
+				await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
 				} catch (e) {
-					await interaction.editReply(`❌ 与 Twitter API 交互出错：\n\`\`\`\n${e?.toString().slice(0, 127)}\n\`\`\``)
+					await interaction.editReply(e?.toString().slice(0, 127))
 					console.error('[Discord#onInteraction#Twitter]', e)
 					return
 				}

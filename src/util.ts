@@ -2,6 +2,7 @@ import http = require('http')
 import https = require('https')
 import { imageSize } from 'image-size'
 import { ISizeCalculationResult } from 'image-size/dist/types/interface'
+import Twitter from 'twitter-lite'
 
 const nextMainRelease = '1.17'
 
@@ -243,22 +244,71 @@ export const enum VersionType {
 }
 
 const ProfilePictures = new Map<string, string>([
-	['Mojang', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124525b5b85bb8ob8t8o0b.jpg'],
-	['Minecraft', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124524kfu7hzreleueuexh.jpg'],
-	['henrikkniberg', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124519x0r898zl6gc8gna8.jpg'],
-	['_LadyAgnes', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124515qnwcdnz82vyz9ezs.png'],
-	['kingbdogz', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124523da4of54hl7e3fchn.jpg'],
-	['JasperBoerstra', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124522uk3hbr2gx62pbrfh.jpg'],
-	['adrian_ivl', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124513jppdcsu8lsxllxll.jpg'],
-	['slicedlime', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124528na53pu1444w1pdys.jpg'],
-	['Cojomax99', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124516jgwgrzgerr11g9kn.png'],
-	['Mojang_Ined', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124520dpqpa0fufu0fq0l1.jpg'],
-	['SeargeDP', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124527syfrwsstbvxf8jf0.png'],
-	['Dinnerbone', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124517k1n33zuxaumkakam.jpg'],
-	['Marc_IRL', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/28/104919xl2ac5dihxlqxxdf.jpg'],
+    ['Mojang', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124525b5b85bb8ob8t8o0b.jpg'],
+    ['Minecraft', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124524kfu7hzreleueuexh.jpg'],
+    ['henrikkniberg', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124519x0r898zl6gc8gna8.jpg'],
+    ['_LadyAgnes', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124515qnwcdnz82vyz9ezs.png'],
+    ['kingbdogz', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124523da4of54hl7e3fchn.jpg'],
+    ['JasperBoerstra', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124522uk3hbr2gx62pbrfh.jpg'],
+    ['adrian_ivl', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124513jppdcsu8lsxllxll.jpg'],
+    ['slicedlime', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124528na53pu1444w1pdys.jpg'],
+    ['Cojomax99', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124516jgwgrzgerr11g9kn.png'],
+    ['Mojang_Ined', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124520dpqpa0fufu0fq0l1.jpg'],
+    ['SeargeDP', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124527syfrwsstbvxf8jf0.png'],
+    ['Dinnerbone', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124517k1n33zuxaumkakam.jpg'],
+    ['Marc_IRL', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/28/104919xl2ac5dihxlqxxdf.jpg'],
 ])
 
-export function getTweet({
+export const TweetLinkRegex = /^https?:\/\/twitter\.com\/([^/]+)\/status\/(\d+)/i
+
+export async function getTweet(twitterClient: Twitter, mode: 'dark' | 'light', tweetLink: string, translator: string) {
+    const matchResult = tweetLink.match(TweetLinkRegex)
+    if (!matchResult) {
+        throw new Error(`❌ 输入 \`${tweetLink}\` 不是可被接受的 Tweet 链接。不可以这样的！`)
+    }
+    const tweetId = matchResult[2]
+    try {
+        const result: {
+            data: {
+                source: string,
+                created_at: string,
+                text: string,
+                entities?: {
+                    urls?: { start: number, end: number, url: string, expanded_url: string, display_url: string }[]
+                },
+                id: string,
+                author_id: string,
+                lang: string,
+            },
+            includes: {
+                users: { id: string, name: string, username: string }[],
+            },
+            _headers: {},
+        } = await twitterClient.get(`tweets/${tweetId}`, {
+            expansions: 'attachments.media_keys,author_id',
+            'tweet.fields': 'attachments,author_id,created_at,entities,lang,source,text',
+            'user.fields': 'name,username',
+        })
+        const author = result.includes.users.find(u => u.id === result.data.author_id)!
+        const bbcode = getTweetBbcode({
+            date: new Date(result.data.created_at),
+            lang: result.data.lang,
+            mode,
+            source: result.data.source,
+            text: result.data.text,
+            translator,
+            tweetLink,
+            urls: result.data.entities?.urls ?? [],
+            userName: author.name,
+            userTag: author.username,
+        })
+        return bbcode
+    } catch (e) {
+        throw new Error(`❌ 与 Twitter API 交互出错：\n\`\`\`\n${e?.toString().slice(0, 127)}\n\`\`\``)
+    }
+}
+
+function getTweetBbcode({
     date,
     lang,
     mode,

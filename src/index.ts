@@ -8,7 +8,7 @@ import { ColorCache } from './cache/color'
 import { ReviewCache } from './cache/review'
 import { DiscordConfig, onInteraction, onMessage, onReactionAdd, onReady } from './discord-bot'
 import { JSDOM } from 'jsdom'
-import { getArticleType, getBeginning, getEnding, getVersionType } from './util'
+import { getArticleType, getBeginning, getEnding, getTweet, getVersionType, TweetLinkRegex } from './util'
 import { convertFeedbackArticleToBBCode, convertMCArticleToBBCode } from './converter'
 import { TwitterConfig } from './twitter'
 import Twitter from 'twitter-lite'
@@ -100,6 +100,7 @@ const app = express()
 		try {
 			const isMinecraftBlog = url.match(/^https:\/\/www.minecraft.net\/(?:en-us|zh-hans)\/article\//)
 			const isFeedback = url.match(/^https:\/\/feedback.minecraft.net\/hc\/en-us\/articles\//)
+			const isTweet = url.match(TweetLinkRegex)
 			if (isMinecraftBlog) {
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
@@ -121,9 +122,13 @@ const app = express()
 				//fs.writeFile('./output.txt', bbcode)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
+			} else if (twitterClient && isTweet) {
+				const bbcode = await getTweet(twitterClient, 'dark', url, translator)
+				res.setHeader('Content-Type', 'application/json')
+				res.send(JSON.stringify({ bbcode, url }))
 			} else {
 				res.setHeader('Content-Type', 'text/plain')
-				res.status(500).send('Not a Minecraft.net blog URL')
+				res.status(500).send('Neither a Minecraft.net blog URL nor a Tweet link')
 			}
 		} catch (e) {
 			console.error('[convert] ', e)
