@@ -125,7 +125,7 @@ const app = express()
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else if (twitterClient && isTweet && validMode) {
-				const bbcode = await getTweet(twitterClient, mode, url, translator)
+				const bbcode = await getTweet(twitterClient, mode as 'dark' | 'light', url, translator)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else {
