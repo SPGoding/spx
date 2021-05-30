@@ -96,11 +96,13 @@ const app = express()
 		res.send(JSON.stringify(ColorCache.colors))
 	})
 	.get('/convert/:url/:translator', async (req, res) => {
+		const { mode } = req.query
 		const { url, translator } = req.params
 		try {
-			const isMinecraftBlog = url.match(/^https:\/\/www.minecraft.net\/(?:en-us|zh-hans)\/article\//)
-			const isFeedback = url.match(/^https:\/\/feedback.minecraft.net\/hc\/en-us\/articles\//)
+			const isMinecraftBlog = url.match(/^https:\/\/www\.minecraft\.net\/(?:en-us|zh-hans)\/article\//)
+			const isFeedback = url.match(/^https:\/\/feedback\.minecraft\.net\/hc\/en-us\/articles\//)
 			const isTweet = url.match(TweetLinkRegex)
+			const validMode = mode === 'light' || mode === 'dark'
 			if (isMinecraftBlog) {
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
@@ -122,8 +124,8 @@ const app = express()
 				//fs.writeFile('./output.txt', bbcode)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
-			} else if (twitterClient && isTweet) {
-				const bbcode = await getTweet(twitterClient, 'dark', url, translator)
+			} else if (twitterClient && isTweet && validMode) {
+				const bbcode = await getTweet(twitterClient, mode, url, translator)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else {
