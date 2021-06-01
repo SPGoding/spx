@@ -22,7 +22,7 @@ export interface DiscordConfig {
 	}[],
 }
 
-const MaxSearchCount = 150
+const MaxSearchCount = 1_500
 const QueryCooldown = 15_000
 
 let lastQueryTime: Date | undefined
