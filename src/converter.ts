@@ -531,10 +531,10 @@ export function translateMachinely(input: string, ctx: Context) {
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
         [/The Caves & Cliffs Preview/gi, '洞穴与山崖预览数据包'], // to be deprecated
-        [/\[size=6\]New Features in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 的新增特性[/b][/size]'],
-        [/\[size=6\]Changes in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 的修改内容[/b][/size]'],
-        [/\[size=6\]Technical changes in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 的技术性修改[/b][/size]'],
-        [/\[size=6\]Fixed bugs in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 修复的漏洞[/b][/size]'],
+        [/\[size=6\]\[b\]New Features in ([^\r\n]+)\[\/b\]\[\/size\]/gi, '[size=6][b]$1 的新增特性[/b][/size]'],
+        [/\[size=6\]\[b\]Changes in ([^\r\n]+)\[\/b\]\[\/size\]/gi, '[size=6][b]$1 的修改内容[/b][/size]'],
+        [/\[size=6\]\[b\]Technical changes in ([^\r\n]+)\[\/b\]\[\/size\]/gi, '[size=6][b]$1 的技术性修改[/b][/size]'],
+        [/\[size=6\]\[b\]Fixed bugs in ([^\r\n]+)\[\/b\]\[\/size\]/gi, '[size=6][b]$1 修复的漏洞[/b][/size]'],
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
         [/\[\/i\]/g, '[/font]'],
         ...ctx.disablePunctuationConverter ? [] : [
