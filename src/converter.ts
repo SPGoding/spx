@@ -518,8 +518,8 @@ export function translateMachinely(input: string, ctx: Context) {
         [/Taking Inventory: /gi, '背包盘点：'],
         [/Around the Block: /gi, '群系漫游：'],
         [/Minecraft Snapshot /gi, 'Minecraft 快照 '],
-        [/A Minecraft Java Snapshot/gi, 'Minecraft Java版快照'],
-        [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版预发布版'],
+        [/A Minecraft Java Snapshot/gi, 'Minecraft Java版 快照'],
+        [/A Minecraft Java Pre-Release/gi, 'Minecraft Java版 预发布版'],
         [/Image credit:/gi, '图片来源：'],
         [/CC BY:/gi, '知识共享 署名'],
         [/CC BY-NC:/gi, '知识共享 署名-非商业性使用'],
@@ -528,6 +528,11 @@ export function translateMachinely(input: string, ctx: Context) {
         [/CC BY-NC-ND:/gi, '知识共享 署名-非商业性使用-禁止演绎'],
         [/CC BY-NC-SA:/gi, '知识共享 署名-非商业性使用-相同方式共享'],
         [/Public Domain:/gi, '公有领域'],
+        [/The Caves & Cliffs Preview/gi, '洞穴与山崖预览数据包'], // to be deprecated
+        [/\[size=6\]New Features in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 的新增特性[/b][/size]'],
+        [/\[size=6\]Changes in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 的修改内容[/b][/size]'],
+        [/\[size=6\]Technical changes in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 的技术性修改[/b][/size]'],
+        [/\[size=6\]Fixed bugs in ([^\r\n]+)\[\/size\]/gi, '[size=6][b]$1 修复的漏洞[/b][/size]'],
         [/\[i\]/gi, '[font=楷体,楷体_GB2312]'],
         [/\[\/i\]/g, '[/font]'],
         ...ctx.disablePunctuationConverter ? [] : [
