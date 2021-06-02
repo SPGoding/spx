@@ -1,5 +1,4 @@
-import * as fs from 'fs-extra'
-import { BugCache } from './bug-cache'
+import { BugCache } from './cache/bug'
 import { getImageDimensions } from './util'
 
 interface Context {
@@ -205,6 +204,10 @@ export const converters = {
      */
     recurse: async (ele: HTMLElement, ctx: Context) => {
         let ans = ''
+        
+        if (!ele) {
+            return ans
+        }
 
         for (const child of Array.from(ele.childNodes)) {
             ans += await converters.convert(child, ctx)
@@ -289,10 +292,9 @@ export const converters = {
                 }
             }
             await findSlides(ele)
-            if (isAlbum(slides)){
+            if (shouldUseAlbum(slides)) {
                 ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
-            }
-            else {
+            } else {
                 ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
             }
         } else if (ele.classList.contains('video')) {
@@ -602,17 +604,9 @@ function translateBugs(str: string) {
     }
 }
 
-function isAlbum(slides: [string, string][]){
-    const enableAlbum = false
-    if (enableAlbum){
-        return slides.length > 1
-    }
-    else{
-        for (let s of slides){
-            if (s[1] !== " "){
-                return false
-            }
-        }
-        return true
-    }
+function shouldUseAlbum(slides: [string, string][]) {
+    const enableAlbum = true
+    return enableAlbum
+        ? slides.length > 1
+        : slides.every(([_, caption]) => caption === ' ')
 }

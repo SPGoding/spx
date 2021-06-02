@@ -1,14 +1,17 @@
 import { Client, Intents } from 'discord.js'
 import * as fs from 'fs-extra'
-import * as express from 'express'
+import express from 'express'
 import * as path from 'path'
-import * as rp from 'request-promise-native'
-import { BugCache } from './bug-cache'
-import { ColorCache } from './color-cache'
-import { DiscordConfig, onMessage, onReactionAdd } from './discord-bot'
+import rp from 'request-promise-native'
+import { BugCache } from './cache/bug'
+import { ColorCache } from './cache/color'
+import { ReviewCache } from './cache/review'
+import { DiscordConfig, onInteraction, onMessage, onReactionAdd, onReady } from './discord-bot'
 import { JSDOM } from 'jsdom'
-import { getArticleType, getBeginning, getEnding, getVersionType } from './util'
+import { getArticleType, getBeginning, getEnding, getTweet, getVersionType, TweetLinkRegex } from './util'
 import { convertFeedbackArticleToBBCode, convertMCArticleToBBCode } from './converter'
+import { TwitterConfig } from './twitter'
+import Twitter from 'twitter-lite'
 
 const configPath = path.join(__dirname, './config.json')
 let httpPort: number | undefined
@@ -19,6 +22,8 @@ let interval: number | undefined
 
 let discordClient: Client | undefined
 let discord: DiscordConfig | undefined
+let twitterClient: Twitter | undefined
+let twitter: TwitterConfig | undefined
 
 (function loadFiles() {
 	if (fs.existsSync(configPath)) {
@@ -29,6 +34,7 @@ let discord: DiscordConfig | undefined
 		ownerPassword = config.ownerPassword
 		vipPassword = config.vipPassword
 		discord = config.discord
+		twitter = config.twitter
 		if (!ip || !httpPort || !interval || !ownerPassword || !vipPassword) {
 			throw ("Expected 'ip', 'httpPort', 'interval', 'ownerPassword', and 'vipPassword' in './config.json'.")
 		}
@@ -42,6 +48,7 @@ let discord: DiscordConfig | undefined
 
 	BugCache.load()
 	ColorCache.load()
+	ReviewCache.load()
 })();
 
 (async function launchDiscordBot() {
@@ -49,17 +56,35 @@ let discord: DiscordConfig | undefined
 		if (discord) {
 			discordClient = new Client({
 				partials: ['MESSAGE', 'USER'],
-				ws: {
-					intents: Intents.NON_PRIVILEGED
-				}
+				intents: Intents.NON_PRIVILEGED,
 			})
 			await discordClient.login(discord.token)
+			discordClient.once('ready', onReady.bind(undefined, discord, discordClient))
+			discordClient.on('interaction', onInteraction.bind(undefined, discord, twitterClient))
 			discordClient.on('message', onMessage.bind(undefined, discord))
 			discordClient.on('messageReactionAdd', onReactionAdd.bind(undefined, discord))
-			console.log('Discord bot launched.')
+			console.log('Discord Bot launched.')
 		}
 	} catch (e) {
 		console.error('[launchDiscordBot]', e)
+		process.exit(1)
+	}
+})();
+
+(async function launchTwitterApp() {
+	try {
+		if (twitter) {
+			twitterClient = new Twitter({
+				version: '2',
+				extension: false,
+				consumer_key: twitter.apiKey,
+				consumer_secret: twitter.apiSecretKey,
+				bearer_token: twitter.bearerToken,
+			})
+			console.log('Twitter App connected.')
+		}
+	} catch (e) {
+		console.error('[launchTwitterApp]', e)
 		process.exit(1)
 	}
 })()
@@ -71,10 +96,13 @@ const app = express()
 		res.send(JSON.stringify(ColorCache.colors))
 	})
 	.get('/convert/:url/:translator', async (req, res) => {
+		const { mode } = req.query
 		const { url, translator } = req.params
 		try {
-			const isMinecraftBlog = url.match(/^https:\/\/www.minecraft.net\/(?:en-us|zh-hans)\/article\//)
-			const isFeedback = url.match(/^https:\/\/feedback.minecraft.net\/hc\/en-us\/articles\//)
+			const isMinecraftBlog = url.match(/^https:\/\/www\.minecraft\.net\/(?:en-us|zh-hans)\/article\//)
+			const isFeedback = url.match(/^https:\/\/feedback\.minecraft\.net\/hc\/en-us\/articles\//)
+			const isTweet = url.match(TweetLinkRegex)
+			const validMode = mode === 'light' || mode === 'dark'
 			if (isMinecraftBlog) {
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
@@ -96,9 +124,13 @@ const app = express()
 				//fs.writeFile('./output.txt', bbcode)
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
+			} else if (twitterClient && isTweet && validMode) {
+				const bbcode = await getTweet(twitterClient, mode as 'dark' | 'light', url, translator)
+				res.setHeader('Content-Type', 'application/json')
+				res.send(JSON.stringify({ bbcode, url }))
 			} else {
 				res.setHeader('Content-Type', 'text/plain')
-				res.status(500).send('Not a Minecraft.net blog URL')
+				res.status(500).send('Neither a Minecraft.net blog URL nor a Tweet link')
 			}
 		} catch (e) {
 			console.error('[convert] ', e)

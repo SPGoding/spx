@@ -32,24 +32,43 @@
 				<div>
 					<v-card class="ma-3 px-3 my-6">
 						<v-container>
-							<v-row>
-								<v-col md="8" xs="12">
-									<v-text-field v-model="input.url"
-												  prepend-icon="mdi-link"
-												  placeholder="文章 URL"></v-text-field>
-								</v-col>
-								<v-col md="4" xs="12">
-									<v-text-field v-model="input.translator" placeholder="翻译者"
-												  prepend-icon="mdi-account"></v-text-field>
-								</v-col>
-							</v-row>
-							<v-col
-									class="text-center" cols="12"
+							<v-form
+								ref="form"
+								v-model="input.valid"
 							>
-								<v-btn color="primary" @click="request()">
-									请求
-								</v-btn>
-							</v-col>
+								<v-row>
+									<v-col md="8" xs="12">
+										<v-text-field v-model="input.url"
+														:rules="urlRules"
+														prepend-icon="mdi-link"
+														placeholder="URL"
+														clearable
+														persistent-hint
+														hint="要转换到 BBCode 的 URL。仅支持 Minecraft.net 博文、feedback.minecraft.net 文章和 Tweet。"></v-text-field>
+									</v-col>
+									<v-col md="4" xs="12">
+										<v-text-field v-model="input.translator" placeholder="翻译者"
+														:rules="translatorRule"
+														prepend-icon="mdi-account" persistent-hint
+														hint="翻译者的名称。"></v-text-field>
+									</v-col>
+								</v-row>
+								<v-row v-if="isTweet">
+									<v-col md="4" xs="12">
+										<v-select v-model="input.mode" item-text="name"
+											item-value="val" :items="[{val: 'light', name: '浅色模式'}, {val: 'dark', name: '深色模式'}]"
+											persistent-hint hint="Tweet 的深浅色。" :prepend-icon="`mdi-brightness-${input.mode === 'light' ? '7' : '4'}`"></v-select>
+									</v-col>
+									<v-spacer></v-spacer>
+								</v-row>
+								<v-col
+										class="text-center" cols="12"
+								>
+									<v-btn color="primary" @click="request()">
+										请求
+									</v-btn>
+								</v-col>
+							</v-form>
 							<div id="output" class="mt-2">
 								<div class="my-2" v-html="output.message"></div>
 								<v-btn v-if="output.bbcode" color="primary" class="mr-3 mt-3 mb-5"
@@ -195,7 +214,7 @@
 			{{ snackbarText }}
 
 			<template v-slot:action="{ attrs }">
-				<v-btn text v-bind="attrs" @click="requestSucceeded = false">
+				<v-btn text v-bind="attrs" @click="snackbar= false">
 					关闭
 				</v-btn>
 			</template>
@@ -241,6 +260,7 @@
       			localStorage.setItem("spxDarkMode", window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "true" : "false");
     		}
 			this.$vuetify.theme.dark = localStorage.getItem("spxDarkMode") === "true"
+			this.input.mode = localStorage.getItem("spxDarkMode") === "true" ? "dark" : "light"
 			localStorage.setItem("spxInitialized", "true");
 		},
 		mounted() {
@@ -261,6 +281,9 @@
 			}
 		},
 		computed: {
+			isTweet() {
+				return this.input.url.match(/^https?:\/\/(?:mobile\.)?twitter\.com\/([^/]+)\/status\/(\d+)/i)
+			},
 			status() {
 				return {
 					translated: this.statusInput.includes(0),
@@ -305,6 +328,10 @@
 				this.showRead = false
 			},
 			async request(url) {
+				console.log(`${ServerUrl}/convert/${encodeURIComponent(this.input.url)}/${encodeURIComponent(this.input.translator)}${this.input.mode ? '?mode=' + this.input.mode : ''}`)
+				if (!this.$refs.form.validate()) {
+					return null
+				}
 				this.loading.xhrrequest = true
 				/** @type {string} */
 				const val = url || this.input.url
@@ -315,7 +342,7 @@
 						} else if (val.startsWith('MC-')) {
 							this.snackbarText = 'SPX 已经一条漏洞都撑不下去了。'
 						} else {
-							const { bbcode, url } = JSON.parse(await sendXhr('GET', `${ServerUrl}/convert/${encodeURIComponent(val)}/${encodeURIComponent(this.input.translator)}`))
+							const { bbcode, url } = JSON.parse(await sendXhr('GET', `${ServerUrl}/convert/${encodeURIComponent(val)}/${encodeURIComponent(this.input.translator)}${this.input.mode ? '?' + this.input.mode : ''}`))
 							this.output.message = `BBCode - <a href="${url}" target="_blank">${url}</a>`
 							this.output.bbcode = bbcode
 							this.snackbarText = 'BBCode 转换成功。'
@@ -330,9 +357,6 @@
 					this.snackbarText = `错误：${e}`
 					console.error(`[SPX] [request('${val}')] `, e)
 				} finally {
-					if (!this.input.translator){
-						this.snackbarText = '请输入翻译者。'
-					}
 					this.snackbar = true
 					this.loading.xhrrequest = false
 					localStorage.setItem('translator', this.input.translator)
@@ -402,7 +426,9 @@
 				},
 				input: {
 					url: '',
-					translator: ''
+					translator: '',
+					mode: 'light',
+					valid: true
 				},
 				checkboxes: [],
 				artCheckboxes: [],
@@ -415,6 +441,14 @@
 				showRead: false,
 				snackbar: false,
 				snackbarText: '',
+				urlRules: [
+					v => !!v || '必填。',
+					v => /^(?:https?:\/\/(?:mobile\.)?twitter\.com\/([^/]+)\/status\/(\d+)|https:\/\/(?:www\.)?minecraft.net\/(?:en-us|zh-hans)\/article\/|https:\/\/feedback\.minecraft\.net\/hc\/en-us\/articles\/)/i.test(v)
+						|| '不是正确的 Minecraft.net 博文、feedback.minecraft.net 文章或 Tweet 链接。'
+				],
+				translatorRule: [
+					v => !!v || '必填。',
+				]
 			}
 		}
 	})

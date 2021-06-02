@@ -38,7 +38,8 @@
     },
     "dependencies": {
         "clipboard": "^2.0.4",
-        "discord.js": "^12.5.1",
+        "discord-api-types": "^0.18.1",
+        "discord.js": "github:discordjs/discord.js",
         "express": "^4.17.1",
         "fs-extra": "^9.0.1",
         "image-size": "^1.0.0",
@@ -49,6 +50,7 @@
         "request": "^2.88.0",
         "request-promise-native": "^1.0.7",
         "say": "^0.16.0",
+        "twitter-lite": "^1.1.0",
         "websocket": "^1.0.28"
     }
 }
