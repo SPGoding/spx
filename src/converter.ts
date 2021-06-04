@@ -65,6 +65,9 @@ export async function getContent(html: Document) {
     if (index === -1) {
         index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the release[/color][/b][/size]')
     }
+    if (index === -1) {
+        index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the release candidate[/color][/b][/size]')
+    }
     if (index !== -1) {
         ans = ans.slice(0, index)
     }
