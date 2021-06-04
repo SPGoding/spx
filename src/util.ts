@@ -115,7 +115,7 @@ export function getBeginning(type: VersionType) {
 [tr][td][align=center][color=red]候选版[/color]是Minecraft Java版正式版的候选版本，如果发现重大漏洞，该候选版会被新的候选版代替。如果一切正常，该版本将会作为正式版发布。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
-[tr][td][align=center]候选版已可供普通玩家进行抢鲜体验，但仍需当心可能存在的漏洞。[/color]。[/align][/td][/tr]
+[tr][td][align=center]候选版已可供普通玩家进行抢鲜体验，但仍需当心可能存在的漏洞。[/align][/td][/tr]
 [/table][/align]
 [align=center][table=80%,#FFEBED]
 [tr][td][align=center][color=Red][b]Minecraft ${nextMainRelease} 仍未发布，<版本>为其第<计数器>个候选版，第<计数器>个预览版。[/b][/color][/align][/td][/tr]
