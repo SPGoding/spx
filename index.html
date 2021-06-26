@@ -328,7 +328,6 @@
 				this.showRead = false
 			},
 			async request(url) {
-				console.log(`${ServerUrl}/convert/${encodeURIComponent(this.input.url)}/${encodeURIComponent(this.input.translator)}${this.input.mode ? '?mode=' + this.input.mode : ''}`)
 				if (!this.$refs.form.validate()) {
 					return null
 				}
