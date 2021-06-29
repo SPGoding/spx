@@ -218,9 +218,9 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 						executor: interaction.user,
 						translator,
 						onOverriding: () => (interaction.replied ? interaction.editReply.bind(interaction) : interaction.reply.bind(interaction))
-							(`❓ 以 ${translator} 的身份提交了 \`${content}\`，请确认是否覆盖。`),
+							(`❓ 以 ${translator} 的身份提交了「${content}」，请确认是否覆盖。`),
 						onTranslated: () => (interaction.replied ? interaction.editReply.bind(interaction) : interaction.reply.bind(interaction))
-							(`✅ 以 ${translator} 的身份提交了 \`${content}\`。`),
+							(`✅ 以 ${translator} 的身份提交了「${content}」。`),
 						sendMessage: content => (interaction.channel as TextChannel).send(content),
 					})
 				} else {
