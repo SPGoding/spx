@@ -33,24 +33,28 @@ export function getVersionType(url: string): VersionType {
 export function getImageDimensions(imgUrl: string) {
     return new Promise<ISizeCalculationResult>((resolve, reject) => {
         const lib = imgUrl.startsWith('https://') ? https : http
-        lib.get(imgUrl, response => {
-            const chunks: any[] = []
-            response
-                .on('data', chunk => {
-                    chunks.push(chunk)
-                })
-                .on('end', () => {
-                    try {
-                        const buffer = Buffer.concat(chunks)
-                        resolve(imageSize(buffer))
-                    } catch (e) {
-                        console.log('#getImageDimensions', e)
-                    }
-                })
-                .on('error', e => {
-                    reject(e)
-                })
-        })
+        try {
+            lib.get(imgUrl, response => {
+                const chunks: any[] = []
+                response
+                    .on('data', chunk => {
+                        chunks.push(chunk)
+                    })
+                    .on('end', () => {
+                        try {
+                            const buffer = Buffer.concat(chunks)
+                            resolve(imageSize(buffer))
+                        } catch (e) {
+                            reject(e)
+                        }
+                    })
+                    .on('error', e => {
+                        reject(e)
+                    })
+            })
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 

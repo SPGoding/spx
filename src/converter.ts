@@ -57,7 +57,7 @@ export async function getContent(html: Document) {
     }
     // Remove the text after '】'
     ans = ans.slice(0, ans.lastIndexOf('】') + 1)
-    // Remove 'GET THE SNAPSHOT/PRE-RELEASE/RELEASE' for releasing
+    // Remove 'GET THE SNAPSHOT/PRE-RELEASE/RELEASE-CANDIDATE/RELEASE' for releasing
     let index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the snapshot[/color][/b][/size]')
     if (index === -1) {
         index = ans.toLowerCase().lastIndexOf('[size=6][b][color=silver]get the pre-release[/color][/b][/size]')
@@ -207,7 +207,7 @@ export const converters = {
      */
     recurse: async (ele: HTMLElement, ctx: Context) => {
         let ans = ''
-        
+
         if (!ele) {
             return ans
         }
@@ -388,46 +388,37 @@ export const converters = {
 
         return ans
     },
-    img: async (img: HTMLImageElement, ctx: Context) => {
+    img: async (img: HTMLImageElement, _ctx: Context) => {
         if (img.alt === 'Author image') {
             return ''
         }
 
-        let prefix: string | undefined
         const imgUrl = resolveUrl(img.src)
+        let w: number | undefined
+        let h: number | undefined
 
-        try {
-            const result = await getImageDimensions(imgUrl)
-            let w: number | undefined
-            let h: number | undefined
-            if (result && result.height && result.width) {
-                w = result.width
-                h = result.height
-            } else if (result && result.images && result.images[0].height && result.images[0].width) {
-                w = result.images[0].width
-                h = result.images[0].height
-            }
-
-            if (w && h) {
-                if (img.classList.contains('attributed-quote__image')) { // for in-quote avatar image
-                    h = 92
-                    w = 53
+        if (img.classList.contains('attributed-quote__image')) { // for in-quote avatar image
+            h = 92
+            w = 53
+        } else if (img.classList.contains('mr-3')) { // for attributor avatar image
+            h = 121
+            w = 82
+        } else {
+            try {
+                const result = await getImageDimensions(imgUrl)
+                if (result?.height && result.width) {
+                    w = result.width
+                    h = result.height
+                } else if (result?.images?.[0]?.height && result.images[0].width) {
+                    w = result.images[0].width
+                    h = result.images[0].height
                 }
-                else if (img.classList.contains('mr-3')) { // for attributor avatar image
-                    h = 121
-                    w = 82
-                }
+            } catch (e) {
+                console.error(`[img] ${imgUrl}`, e)
             }
-
-            prefix = w && h ? `[img=${w},${h}]` : '[img]'
-        } catch (e) {
-            console.error(e)
-            console.error(imgUrl)
         }
 
-        if (prefix === undefined) {
-            prefix = '[img]'
-        }
+        const prefix = w && h ? `[img=${w},${h}]` : '[img]'
 
         let ans: string
         if (img.classList.contains('attributed-quote__image') || img.classList.contains('mr-3')) {
@@ -437,7 +428,7 @@ export const converters = {
             ans = `\n\n[/indent][/indent][align=center]${prefix}${imgUrl}[/img][/align][indent][indent]\n`
         }
 
-        return `${ans}`
+        return ans
     },
     li: async (ele: HTMLElement, ctx: Context) => {
         const inner = await converters.recurse(ele, ctx)

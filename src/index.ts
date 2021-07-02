@@ -104,6 +104,7 @@ const app = express()
 			const isTweet = url.match(TweetLinkRegex)
 			const validMode = mode === 'light' || mode === 'dark'
 			if (isMinecraftBlog) {
+				console.log(url)
 				const src = await rp(url)
 				const html = new JSDOM(src).window.document
 				const articleType = getArticleType(html)

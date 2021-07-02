@@ -341,7 +341,7 @@
 						} else if (val.startsWith('MC-')) {
 							this.snackbarText = 'SPX 已经一条漏洞都撑不下去了。'
 						} else {
-							const { bbcode, url } = JSON.parse(await sendXhr('GET', `${ServerUrl}/convert/${encodeURIComponent(val)}/${encodeURIComponent(this.input.translator)}${this.input.mode ? '?' + this.input.mode : ''}`))
+							const { bbcode, url } = JSON.parse(await sendXhr('GET', `${ServerUrl}/convert/${encodeURIComponent(val)}/${encodeURIComponent(this.input.translator)}${this.input.mode ? '?mode=' + this.input.mode : ''}`))
 							this.output.message = `BBCode - <a href="${url}" target="_blank">${url}</a>`
 							this.output.bbcode = bbcode
 							this.snackbarText = 'BBCode 转换成功。'

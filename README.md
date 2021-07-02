@@ -13,3 +13,13 @@ A powerful tool for SPGoding's personal use.
 ## Special Thanks To
 
 - [RicoloveFeng](https://github.com/RicoloveFeng) - maintains [minecraft.net-translations](https://github.com/RicoloveFeng/minecraft.net-translations/blob/master/rawtable.csv).
+
+## Contributing
+
+Develop environment: [Node.js LTS][node]
+
+- `npm i` to install dependencies.
+- `npm run build` to compile the TypeScript code.
+- `npm start` to start the compiled server.
+
+[node]: https://nodejs.org/
