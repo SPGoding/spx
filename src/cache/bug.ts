@@ -10,6 +10,13 @@ export interface BugCache {
 	}
 }
 
+export interface ResolvedBugCache {
+	[id: string]: {
+		summary: string,
+		color: string,
+	}
+}
+
 export namespace BugCache {
 	export const bugsPath = path.join(__dirname, '../bugs.json')
 	export let bugs: BugCache = {}
@@ -72,6 +79,14 @@ export namespace BugCache {
 			const hexColor = `#${'00000'.slice(0, 6 - color.length)}${color}`
 			return hexColor
 		}
+	}
+
+	export function getResolvedBugCache(): ResolvedBugCache {
+		const ans: ResolvedBugCache = {}
+		for (const [id, { summary, translator }] of Object.entries(bugs)) {
+			ans[id] = { summary, color: getColorFromTranslator(translator) }
+		}
+		return ans
 	}
 
 	// https://stackoverflow.com/a/3426956
