@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="zh">
+
+<head>
+	<title>SPX Client</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" name="viewport">
+	<meta charset="UTF-8">
+</head>
+
+<body>
+<div id="root">
+	<v-app>
+		<v-main>
+			<v-app-bar :color="$vuetify.theme.dark ? 'dark' : 'white'">
+				<v-toolbar-title>SPX Client</v-toolbar-title>
+				<v-spacer></v-spacer>
+				<v-tooltip bottom>
+					<template v-slot:activator="{ on, attrs }">
+					  	<v-btn icon v-bind="attrs" v-on="on" text @click="$vuetify.theme.dark = !$vuetify.theme.dark">
+							<v-icon v-if="$vuetify.theme.dark">mdi-brightness-7</v-icon>
+							<v-icon v-else>mdi-brightness-4</v-icon>
+					  	</v-btn>
+					</template>
+					<span>夜间模式切换</span>
+				</v-tooltip>
+			</v-app-bar>
+			<v-container>
+				<div>
+					<v-card class="ma-3 px-3 my-6">
+						<v-container>
+							<h5 class="text-h5 text-center my-3">指示</h5>
+							<p>由于 Mojang 加强了对 <a href="https://www.minecraft.net">Minecraft.net</a> 的防护措施，
+								旧有服务端 SPX 已光荣去世。请使用 <a href="https://www.tampermonkey.net/">Tampermonkey®</a> 等类似
+								插件加载全新的 <a href="./user-script">SPX 用户脚本</a>，并在相应博文页面中点击「Copy BBCode」。</p>
+						</v-container>
+					</v-card>
+					<v-card class="ma-3 px-3 my-4 pb-4">
+						<v-container>
+							<h5 class="text-h5 text-center my-3">漏洞翻译者</h5>
+							<div v-if="loading.color" class="text-center">
+								<div v-if="loading.colorFailed" class="text-center">
+									<p>加载失败。请尝试刷新。</p>
+								</div>
+								<v-progress-circular
+										v-else
+										:size="40"
+										:width="7"
+										color="indigo"
+										indeterminate
+								></v-progress-circular>
+							</div>
+							<div id="colorsPreview" v-else>
+								<p>
+									SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者根据 <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0
+									1.0</a>
+									协议提供支持：
+								</p>
+								<p>
+									<v-chip v-for="item in colorsPreview" :color="item.c" class="mr-1 mb-1"
+											style="color: #fff;">{{ item.u }}
+									</v-chip>
+								</p>
+								<p>
+									虽然这不是必要的，但 SPX 仍然鼓励您署名他们的贡献：
+								</p>
+								<v-row>
+									<v-col md="11" xs="12">
+											<pre style="overflow-x: scroll;"><code>{{
+													'SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join("、")
+												}}</code></pre>
+									</v-col>
+									<v-col class="text-center" md="1" xs="12">
+										<v-btn color="primary" small
+											@click="navigator.clipboard.writeText('SPX 大数据区块链深度学习人工智能响应式自动翻译™ 由以下志愿者提供支持：' + colorsPreview.map(v => `[color=${v.c}]${v.u}[/color]`).join('、'))">
+											复制
+										</v-btn>
+									</v-col>
+								</v-row>
+							</div>
+						</v-container>
+					</v-card>
+				</div>
+				<v-card class="ma-3 px-3 my-6 pb-4">
+					<v-container>
+						<h5 class="text-h5 text-center my-3">文章</h5>
+						<div v-if="loading.filters" class="text-center">
+							<v-progress-circular
+									:size="40"
+									:width="7"
+									color="indigo"
+									indeterminate
+							></v-progress-circular>
+						</div>
+						<div v-else>
+							<div class="mx-3 mb-3" id="filters">
+								<v-chip-group v-model="checkboxes" active-class="primary--text" column multiple>
+									<legend class="v-label pr-2"
+											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+										<div>一般分类</div>
+									</legend>
+									<v-chip v-for="item in categories">{{ item.toUpperCase().replace('-', ' ') || '无' }}
+									</v-chip>
+								</v-chip-group>
+
+								<v-chip-group v-model="artCheckboxes" active-class="primary--text" column multiple>
+									<legend class="v-label pr-2"
+											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+										<div>创作分类</div>
+									</legend>
+									<v-chip v-for="item in artCategories">{{ item.toUpperCase().replace('-', ' ') || '无'
+										}}
+									</v-chip>
+								</v-chip-group>
+								<v-chip-group v-model="statusInput" active-class="primary--text" multiple column>
+									<legend class="v-label pr-2"
+											style="left: 0px; right: auto; position: relative; line-height: 2.38;">
+										<div>文章状态</div>
+									</legend>
+									<v-chip>已翻译</v-chip>
+									<v-chip>未翻译</v-chip>
+								</v-chip-group>
+							</div>
+							<v-card class="mx-3">
+								<v-simple-table height="500px" fixed-header>
+									<template v-slot:default>
+										<thead>
+										<tr>
+											<th>时间</th>
+											<th>分类</th>
+											<th>原文</th>
+											<th>译文</th>
+										</tr>
+										</thead>
+										<tbody>
+										<tr v-for="item in filteredArticles">
+											<td>{{ item.published }}</td>
+											<td>{{ item.category || "无" }}</td>
+											<td><a :href="item.link" target="_blank">{{ item.title }}</a></td>
+											<td><a v-if="item.isTranslated" :href="item.trLink" target="_blank">by @{{
+													item.translator
+												}}</a>
+												<span v-else>N/A</span></td>
+										</tr>
+										</tbody>
+									</template>
+								</v-simple-table>
+							</v-card>
+						</div>
+					</v-container>
+				</v-card>
+			</v-container>
+		</v-main>
+		<v-footer>
+			<v-col
+					class="text-center"
+					cols="12"
+			>
+				<p style="text-align: center;">
+					<a href="https://github.com/SPGoding/spx">GitHub</a> |
+					<a href="https://github.com/SPGoding/spx/blob/master/PRIVACY_POLICY.md">Privacy Policy</a>
+				</p>
+			</v-col>
+		</v-footer>
+		<v-snackbar v-model="snackbar">
+			{{ snackbarText }}
+
+			<template v-slot:action="{ attrs }">
+				<v-btn text v-bind="attrs" @click="snackbar= false">
+					关闭
+				</v-btn>
+			</template>
+		</v-snackbar>
+	</v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+<script type="text/javascript">
+	"use strict"
+	const ServerUrl = '//%replace_as_server_url%'
+	const MiscArtCategory = '其他'
+
+	/**
+	 * @param method {'GET' | 'POST'}
+	 * @param url {string}
+	 * @returns {Promise<string>}
+	 */
+	async function sendXhr(method, url) {
+		return new Promise((resolve, reject) => {
+			const xhr = new XMLHttpRequest()
+			xhr.open(method, url, true)
+			xhr.onreadystatechange = () => {
+				if (xhr.readyState === XMLHttpRequest.DONE) {
+					if (xhr.status === 200) {
+						resolve(xhr.responseText)
+					} else {
+						reject(xhr.status + xhr.responseText ? ` ${xhr.responseText}` : '')
+					}
+				}
+			}
+			xhr.send()
+		})
+	}
+
+	Vue.config.devtools = true
+	new Vue({
+		el: '#root',
+		vuetify: new Vuetify(),
+		created() {
+			if (localStorage.getItem("spxInitialized") !== "true") {
+      			localStorage.setItem("spxDarkMode", window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "true" : "false");
+    		}
+			this.$vuetify.theme.dark = localStorage.getItem("spxDarkMode") === "true"
+			this.input.mode = localStorage.getItem("spxDarkMode") === "true" ? "dark" : "light"
+			localStorage.setItem("spxInitialized", "true");
+		},
+		mounted() {
+			this.getArticles()
+			this.getColors()
+		},
+		computed: {
+			status() {
+				return {
+					translated: this.statusInput.includes(0),
+					untranslated: this.statusInput.includes(1)
+				}
+			},
+			filteredArticles() {
+				let categories = this.checkboxes.map(v => this.categories[v])
+				let artCategories = this.artCheckboxes.map(v => this.artCategories[v])
+				let result = this.articles.map(v => {
+					// published, title, link, cat, tr_link, tr_name
+					const [published, title, link, cat, trLink, translator] = v
+					const isTranslated = trLink !== '-'
+
+					const [category, artCategory] = cat.split(':')
+					let translatedMatch = isTranslated ? this.status.translated : this.status.untranslated
+					if (!(categories.includes(category) && artCategories.includes(artCategory || MiscArtCategory) && translatedMatch)) {
+						return null
+					}
+
+					return {
+						published,
+						category: cat.toUpperCase(),
+						link,
+						title,
+						trLink,
+						translator,
+						isTranslated
+					}
+				}).filter(v => v != null)
+				console.log(result)
+				return result
+			}
+		},
+		methods: {
+			clear() {
+				this.showRead = false
+			},
+			async getColors() {
+				try {
+					const colors = JSON.parse(await sendXhr('GET', `${ServerUrl}/colors`))
+					const usernames = Object.keys(colors).sort()
+					const resultPreviewArr = []
+					for (const u of usernames) {
+						resultPreviewArr.push({
+							c: colors[u].color,
+							u
+						})
+					}
+					this.colorsPreview = resultPreviewArr
+					console.log('[SPX] [getColors] DONE')
+					this.loading.color = false
+				} catch (e) {
+					this.loading.colorFailed = true
+					console.error('[SPX] [getColors] ', e)
+				}
+			},
+			async getArticles() {
+				try {
+					const table = await sendXhr('GET', 'https://raw.githubusercontent.com/RicoloveFeng/minecraft.net-translations/master/articles.csv')
+					let articles = [], categories = [], artCategories = []
+					const rows = table.split(/\r?\n/).slice(1, -1)
+					for (const row of rows) {
+						// published, title, link, cat, tr_link, tr_name
+						// https://stackoverflow.com/questions/21105360/regex-find-comma-not-inside-quotes/21106122
+						const cols = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/)
+						const [category, artCategory] = cols[3].split(':')
+						if (!categories.includes(category)) {
+							categories.push(category)
+						}
+						if (!artCategories.includes(artCategory || MiscArtCategory)) {
+							artCategories.push(artCategory || MiscArtCategory)
+						}
+						articles.push(cols)
+					}
+					this.articles = articles
+					this.categories = categories
+					this.artCategories = artCategories
+					this.checkboxes = [...new Array(categories.length).keys()]
+					this.artCheckboxes = [...new Array(artCategories.length).keys()]
+					this.loading.filters = false
+					console.log('[SPX] Article table loaded.')
+				} catch (status) {
+					this.snackbarText = `博文录加载失败，错误代码：${status}`
+					this.snackbar = true
+					console.error('[SPX] Article table failed loading.')
+				}
+			},
+		},
+		data() {
+			return {
+				articles: [],
+				categories: [],
+				artCategories: [],
+				loading: {
+					filters: true,
+					xhrrequest: false,
+					color: true,
+					colorFailed: false,
+				},
+				checkboxes: [],
+				artCheckboxes: [],
+				statusInput: [0, 1, 2, 3],
+				colorsPreview: [],
+				showRead: false,
+				snackbar: false,
+				snackbarText: '',
+			}
+		}
+	})
+</script>
+
+</body>
+
+</html>

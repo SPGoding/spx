@@ -85,6 +85,7 @@ let twitter: TwitterConfig | undefined
 	}
 })()
 
+const index = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf-8').replace('%replace_as_server_url%', `${ip}`)
 const app = express()
 	.get('/bugs', (_req, res) => {
 		res.setHeader('Content-Type', 'application/json')
@@ -94,9 +95,12 @@ const app = express()
 		res.setHeader('Content-Type', 'application/json')
 		res.send(JSON.stringify(ColorCache.colors))
 	})
-	.get('/*', (_req, res) => {
-		res.setHeader('Content-Type', 'text/plain')
+	.get('/user-script', (_req, res) => {
 		res.redirect(302, 'https://raw.githubusercontent.com/SPGoding/spx/main/out/user_script.js')
+	})
+	.get('/*', (_req, res) => {
+		res.setHeader('Content-Type', 'text/html; charset=utf-8')
+		res.send(index)
 	})
 
 app
