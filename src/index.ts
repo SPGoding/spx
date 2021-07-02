@@ -96,7 +96,7 @@ const app = express()
 	})
 	.get('/*', (_req, res) => {
 		res.setHeader('Content-Type', 'text/plain')
-		res.status(404).send('呜呜呜，这都是个啥啊')
+		res.redirect(302, 'https://raw.githubusercontent.com/SPGoding/spx/main/out/user_script.js')
 	})
 
 app
