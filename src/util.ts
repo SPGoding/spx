@@ -1,8 +1,6 @@
-import http = require('http')
-import https = require('https')
 import { imageSize } from 'image-size'
-import { ISizeCalculationResult } from 'image-size/dist/types/interface'
 import Twitter from 'twitter-lite'
+import nodeFetch from 'node-fetch'
 
 const nextMainRelease = '1.17'
 
@@ -30,32 +28,8 @@ export function getVersionType(url: string): VersionType {
     }
 }
 
-export function getImageDimensions(imgUrl: string) {
-    return new Promise<ISizeCalculationResult>((resolve, reject) => {
-        const lib = imgUrl.startsWith('https://') ? https : http
-        try {
-            lib.get(imgUrl, response => {
-                const chunks: any[] = []
-                response
-                    .on('data', chunk => {
-                        chunks.push(chunk)
-                    })
-                    .on('end', () => {
-                        try {
-                            const buffer = Buffer.concat(chunks)
-                            resolve(imageSize(buffer))
-                        } catch (e) {
-                            reject(e)
-                        }
-                    })
-                    .on('error', e => {
-                        reject(e)
-                    })
-            })
-        } catch (e) {
-            reject(e)
-        }
-    })
+export async function getImageDimensions(imgUrl: string) {
+    return imageSize(await (await fetch(imgUrl)).buffer())
 }
 
 /**
@@ -312,6 +286,25 @@ export async function getTweet(twitterClient: Twitter, mode: 'dark' | 'light', t
     } catch (e) {
         throw new Error(`❌ 与 Twitter API 交互出错：\n\`\`\`\n${e?.toString().slice(0, 127)}\n\`\`\``)
     }
+}
+
+export async function fetch(url: string) {
+    return nodeFetch(url, {
+        headers: [
+            ['Host', 'www.minecraft.net'],
+            ['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0 SPX/1.0'],
+            ['Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'],
+            ['Accept-Language', 'en-US,en;q=0.5'],
+            ['Accept-Encoding', 'gzip, deflate, br'],
+            ['Referer', 'https://www.minecraft.net/en-us'],
+            ['Connection', 'close'],
+            ['Upgrade-Insecure-Requests', '1'],
+            ['Pragma', 'no-cache'],
+            ['Cache-Control', 'no-cache'],
+            ['TE', 'Trailers'],
+        ],
+        timeout: 6_000
+    })
 }
 
 function getTweetBbcode({

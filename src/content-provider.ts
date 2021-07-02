@@ -1,4 +1,4 @@
-import rp from 'request-promise-native'
+import { fetch } from './util'
 
 export interface ContentProvider {
     getContent(): Promise<Content>
@@ -20,8 +20,7 @@ export class JsonContentProvider implements ContentProvider {
 
     async getContent() {
         try {
-            const webCode = await rp(this.url)
-            const json = JSON.parse(webCode)
+            const json = await (await fetch(this.url)).json()
             return {
                 id: await this.idGetter(json),
                 text: await this.textGetter(json),
@@ -43,7 +42,7 @@ export class HtmlContentProvider implements ContentProvider {
 
     async getContent() {
         try {
-            const webCode = await rp(this.url)
+            const webCode = await (await fetch(this.url)).text()
             return {
                 id: await this.idGetter(webCode),
                 text: await this.textGetter(webCode),
@@ -73,7 +72,7 @@ export class McbbsContentProvider extends HtmlContentProvider {
 
     async getContent() {
         try {
-            const webCode = await rp(this.url)
+            const webCode = await (await fetch(this.url)).text()
             return {
                 id: await this.idGetter(webCode),
                 text: await this.textGetter(webCode),

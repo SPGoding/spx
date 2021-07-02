@@ -2,13 +2,13 @@ import { Client, Intents } from 'discord.js'
 import * as fs from 'fs-extra'
 import express from 'express'
 import * as path from 'path'
-import rp from 'request-promise-native'
+import * as util from 'util'
 import { BugCache } from './cache/bug'
 import { ColorCache } from './cache/color'
 import { ReviewCache } from './cache/review'
 import { DiscordConfig, onInteraction, onMessage, onReactionAdd, onReady } from './discord-bot'
 import { JSDOM } from 'jsdom'
-import { getArticleType, getBeginning, getEnding, getTweet, getVersionType, TweetLinkRegex } from './util'
+import { fetch, getArticleType, getBeginning, getEnding, getTweet, getVersionType, TweetLinkRegex } from './util'
 import { convertFeedbackArticleToBBCode, convertMCArticleToBBCode } from './converter'
 import { TwitterConfig } from './twitter'
 import Twitter from 'twitter-lite'
@@ -104,8 +104,8 @@ const app = express()
 			const isTweet = url.match(TweetLinkRegex)
 			const validMode = mode === 'light' || mode === 'dark'
 			if (isMinecraftBlog) {
-				console.log(url)
-				const src = await rp(url)
+				const blog = await fetch(url)
+				const src = await blog.text()
 				const html = new JSDOM(src).window.document
 				const articleType = getArticleType(html)
 				let bbcode = await convertMCArticleToBBCode(html, url, translator, articleType)
@@ -119,7 +119,7 @@ const app = express()
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify({ bbcode, url }))
 			} else if (isFeedback) {
-				const src = await rp(url)
+				const src = await (await fetch(url)).text()
 				const html = new JSDOM(src).window.document
 				let bbcode = await convertFeedbackArticleToBBCode(html, url, translator)
 				//fs.writeFile('./output.txt', bbcode)
@@ -134,9 +134,9 @@ const app = express()
 				res.status(500).send('Neither a Minecraft.net blog URL nor a Tweet link')
 			}
 		} catch (e) {
-			console.error('[convert] ', e)
+			console.error('[convert]', e)
 			res.setHeader('Content-Type', 'text/plain')
-			res.status(500).send(e)
+			res.status(500).send(util.format(e))
 		}
 	})
 	.get('/*', (_req, res) => {
