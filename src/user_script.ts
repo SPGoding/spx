@@ -10,7 +10,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-cn/article/*
 // @name          SPX
-// @version       1.0.0
+// @version       1.0.1
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">

@@ -11,7 +11,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-cn/article/*
 // @name          SPX
-// @version       1.0.0
+// @version       1.0.1
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -216,6 +216,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     return converters.ol(node, ctx);
                 case 'P':
                     return converters.p(node, ctx);
+                case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
+                    return converters.picture(node, ctx);
                 case 'SPAN':
                     return converters.span(node, ctx);
                 case 'TABLE':
@@ -240,7 +242,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 case 'BUTTON':
                 case 'H5':
                 case 'NAV':
-                case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
                 case 'svg':
                 case 'SCRIPT':
                     if (node) {
@@ -347,8 +348,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 if (shouldUseAlbum(slides)) {
                     ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`;
                 }
-                else {
+                else if (slides.length > 0) {
                     ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`;
+                }
+                else {
+                    ans = '';
                 }
             }
             else if (ele.classList.contains('video')) {
@@ -360,6 +364,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
             else if (ele.classList.contains('article-social')) {
                 // End of the content.
+                ans = '';
+            }
+            else if (ele.classList.contains('modal')) {
+                // Unknown useless content
                 ans = '';
             }
             // else if (ele.classList.contains('end-with-block')) {
@@ -478,6 +486,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             else {
                 ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner, ctx)}\n\n`;
             }
+            return ans;
+        }),
+        picture: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+            const ans = yield converters.recurse(ele, ctx);
             return ans;
         }),
         span: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
