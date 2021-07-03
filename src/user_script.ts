@@ -226,6 +226,8 @@ interface Context {
 					return converters.ol(node as HTMLElement, ctx)
 				case 'P':
 					return converters.p(node as HTMLElement, ctx)
+				case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
+					return converters.picture(node as HTMLElement, ctx)
 				case 'SPAN':
 					return converters.span(node as HTMLElement, ctx)
 				case 'TABLE':
@@ -249,7 +251,6 @@ interface Context {
 				case 'BUTTON':
 				case 'H5':
 				case 'NAV':
-				case 'PICTURE': // TODO: If picture contains important img in the future. Then just attain the last <img> element in the <picture> element.
 				case 'svg':
 				case 'SCRIPT':
 					if (node) {
@@ -361,8 +362,10 @@ interface Context {
 				await findSlides(ele)
 				if (shouldUseAlbum(slides)) {
 					ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
-				} else {
+				} else if (slides.length > 0){
 					ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
+				} else{
+					ans = ''
 				}
 			} else if (ele.classList.contains('video')) {
 				// Video.
@@ -372,7 +375,10 @@ interface Context {
 			} else if (ele.classList.contains('article-social')) {
 				// End of the content.
 				ans = ''
-			}
+			} else if (ele.classList.contains('modal')){
+				// Unknown useless content
+				ans = ''
+			} 
 			// else if (ele.classList.contains('end-with-block')) {
 			//     ans = ans.trimRight() + '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
 			// }
@@ -479,6 +485,8 @@ interface Context {
 				ans = `\n\n[/indent][/indent][align=center]${prefix}${imgUrl}[/img][/align][indent][indent]\n`
 			}
 
+			
+
 			return ans
 		},
 		li: async (ele: HTMLElement, ctx: Context) => {
@@ -504,6 +512,10 @@ interface Context {
 				ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner, ctx)}\n\n`
 			}
 
+			return ans
+		},
+		picture: async (ele: HTMLElement, ctx: Context) => {
+			const ans = await converters.recurse(ele, ctx)
 			return ans
 		},
 		span: async (ele: HTMLElement, ctx: Context) => {
