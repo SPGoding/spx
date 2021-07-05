@@ -3,14 +3,14 @@
 // @connect       minecraft.net
 // @connect       spgoding.com
 // @description   Minecraft.net blog article to BBCode converter
-// @downloadURL   https://raw.githubusercontent.com/SPGoding/spx/main/out/user_script.js
+// @downloadURL   https://spx.spgoding.com/user-script
 // @grant         GM_setClipboard
 // @grant         GM_xmlhttpRequest
 // @homepage      https://github.com/SPGoding/spx
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-cn/article/*
 // @name          SPX
-// @version       1.0.1
+// @version       1.0.2
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -345,9 +345,12 @@ interface Context {
 				const suffix = `\n[/album][indent][indent]\n`
 				const slides: [string, string][] = []
 				const findSlides = async (ele: HTMLDivElement | HTMLImageElement): Promise<void> => {
-					if (ele.classList.contains('article-image-carousel__image')) {
+					if (ele.classList.contains('slick-cloned')) {
+						return
+					}
+					if (ele.nodeName === 'IMG' && ele.classList.contains('article-image-carousel__image')) {
 						slides.push([resolveUrl((ele as HTMLImageElement).src), ' '])
-					} else if (ele.classList.contains('article-image-carousel__caption')) {
+					} else if (ele.nodeName === 'DIV' && ele.classList.contains('article-image-carousel__caption')) {
 						if (slides.length > 0) {
 							slides[slides.length - 1][1] = `[b]${(await converters.recurse(ele, ctx))}[/b]`
 						}
