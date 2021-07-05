@@ -10,12 +10,12 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.3
+// @version       1.0.4
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
 
-type ResolvedBugs = Partial<Record<string, { summary: string, color: string }>>
+type ResolvedBugs = Partial<import('./cache/bug').ResolvedBugCache>
 
 interface Context {
 	author?: string,
@@ -32,7 +32,7 @@ interface Context {
 
 	async function main() {
 		const url = document.location.toString()
-		if (url.match(/^https:\/\/www\.minecraft\.net\/(?:en-us|zh-cn)\/article\//)) {
+		if (url.match(/^https:\/\/www\.minecraft\.net\/(?:[a-z-]+)\/article\//)) {
 			console.info('[SPX] Activated')
 			const button = document.createElement('button')
 			button.innerText = 'Copy BBCode'
