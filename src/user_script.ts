@@ -8,9 +8,9 @@
 // @grant         GM_xmlhttpRequest
 // @homepage      https://github.com/SPGoding/spx
 // @include       https://www.minecraft.net/en-us/article/*
-// @include       https://www.minecraft.net/zh-cn/article/*
+// @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.2
+// @version       1.0.3
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">

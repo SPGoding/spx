@@ -9,9 +9,9 @@
 // @grant         GM_xmlhttpRequest
 // @homepage      https://github.com/SPGoding/spx
 // @include       https://www.minecraft.net/en-us/article/*
-// @include       https://www.minecraft.net/zh-cn/article/*
+// @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.2
+// @version       1.0.3
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
