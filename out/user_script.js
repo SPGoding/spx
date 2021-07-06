@@ -11,7 +11,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.4
+// @version       1.0.5
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -23,6 +23,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => {
+    // 看不惯，别看。看美国人的脚本去。
     const BugsCenter = 'https://spx.spgoding.com/bugs';
     const NextMainRelease = '1.17.1';
     function main() {
@@ -31,6 +32,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             if (url.match(/^https:\/\/www\.minecraft\.net\/(?:[a-z-]+)\/article\//)) {
                 console.info('[SPX] Activated');
                 const button = document.createElement('button');
+                button.classList.add('btn', 'btn-primary', 'btn-lg', 'btn-primary--grow');
+                button.style.position = 'fixed';
+                button.style.top = '150px';
+                button.style.left = '20px';
                 button.innerText = 'Copy BBCode';
                 button.onclick = () => __awaiter(this, void 0, void 0, function* () {
                     const bbcode = yield convertMCArticleToBBCode(document, url, '// TODO //');

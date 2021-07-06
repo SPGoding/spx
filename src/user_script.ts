@@ -10,7 +10,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.4
+// @version       1.0.5
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -27,6 +27,8 @@ interface Context {
 }
 
 (() => {
+	// 看不惯，别看。看美国人的脚本去。
+
 	const BugsCenter = 'https://spx.spgoding.com/bugs'
 	const NextMainRelease = '1.17.1'
 
@@ -35,6 +37,10 @@ interface Context {
 		if (url.match(/^https:\/\/www\.minecraft\.net\/(?:[a-z-]+)\/article\//)) {
 			console.info('[SPX] Activated')
 			const button = document.createElement('button')
+			button.classList.add('btn', 'btn-primary', 'btn-lg', 'btn-primary--grow')
+			button.style.position = 'fixed'
+			button.style.top = '150px'
+			button.style.left = '20px'
 			button.innerText = 'Copy BBCode'
 			button.onclick = async () => {
 				const bbcode = await convertMCArticleToBBCode(document, url, '// TODO //')
