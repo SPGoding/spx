@@ -3,7 +3,7 @@ import * as path from 'path'
 
 export interface ColorCache {
 	[id: string]: {
-		color: string,
+		color: `#${string}`,
 	}
 }
 
@@ -39,10 +39,13 @@ export namespace ColorCache {
 	}
 
 	export function set(id: string, color: string) {
-		colors[id] = { color }
+		if (!color.startsWith('#')) {
+			color = `#${color}`
+		}
+		colors[id] = { color: color as `#${string}` }
 	}
 
-	export function getColor(id: string): string {
+	export function getColor(id: string): `#${string}` {
 		return colors[id].color
 	}
 

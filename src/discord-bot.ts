@@ -1,4 +1,4 @@
-import { ApplicationCommandData, Client as DiscordClient, GuildMember, Interaction, Message, MessageEmbed, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, TextChannel, User, UserResolvable } from 'discord.js'
+import { ApplicationCommandData, Client as DiscordClient, GuildMember, Interaction, Message, MessageEmbed, MessageOptions, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, TextChannel, User, UserResolvable } from 'discord.js'
 import { BugCache } from './cache/bug'
 import { ColorCache } from './cache/color'
 import { ReviewCache } from './cache/review'
@@ -13,12 +13,12 @@ const jira = new JiraClient({
 
 export interface DiscordConfig {
 	token: string,
-	guild: string,
-	channel: string,
-	role: string,
+	guild: `${bigint}`,
+	channel: `${bigint}`,
+	role: `${bigint}`,
 	roles?: {
 		name: string,
-		role: string,
+		role: `${bigint}`,
 	}[],
 }
 
@@ -151,17 +151,17 @@ export async function onReady(config: DiscordConfig, client: DiscordClient) {
 		},
 	]
 
-	if (config.roles?.length) {
-		data.push({
-			name: 'join',
-			description: 'Join a role.',
-			options: config.roles.map(r => ({
-				name: r.name,
-				type: 'SUB_COMMAND',
-				description: `Join the role ${r.name}`,
-			}))
-		})
-	}
+	// if (config.roles?.length) {
+	// 	data.push({
+	// 		name: 'join',
+	// 		description: 'Join a role.',
+	// 		options: config.roles.map(r => ({
+	// 			name: r.name,
+	// 			type: 'SUB_COMMAND',
+	// 			description: `Join the role ${r.name}`,
+	// 		}))
+	// 	})
+	// }
 
 	try {
 		await client.guilds.cache.get(config.guild)?.commands.set(data)
@@ -173,7 +173,7 @@ export async function onReady(config: DiscordConfig, client: DiscordClient) {
 /**
  * @param color Starting with `#`.
  */
-function getColorEmbed(translator: string, color: string) {
+function getColorEmbed(translator: string, color: `#${string}`) {
 	return new MessageEmbed()
 		.setTitle(`${translator} 的色图！`)
 		.setDescription(`色：\`${color}\``)
@@ -187,14 +187,16 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 			return
 		}
 		const executor = tagToName(interaction.user.tag)
+
 		if (!interaction.member || (
-			interaction.channel?.id !== config.channel && !['join', 'ping'].includes( interaction.commandName)
+			interaction.channelId !== config.channel && !['join', 'ping'].includes(interaction.commandName)
 		)) {
 			return
 		}
+
 		switch (interaction.commandName) {
 			case 'approve': {
-				const key = interaction.options[0].value as string
+				const key = interaction.options.get('id')!.value as string
 				try {
 					ReviewCache.approve(key, executor)
 					if (ReviewCache.isApproved(key)) {
@@ -210,8 +212,8 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				break
 			}
 			case 'as': {
-				const translator = tagToName(interaction.options[0].user!.tag)
-				const content = interaction.options[1].value as string
+				const translator = tagToName(interaction.options.get('user')!.user!.tag)
+				const content = interaction.options.get('content')!.value as string
 				if (ColorCache.has(translator)) {
 					await executeCommand({
 						content,
@@ -229,7 +231,8 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				break
 			}
 			case 'backup':
-				await interaction.reply('💾 Backup', {
+				await interaction.reply({
+					content: '💾 Backup',
 					files: [
 						BugCache.bugsPath,
 						ColorCache.colorPath,
@@ -237,27 +240,29 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				})
 				break
 			case 'color':
-				switch (interaction.options[0].name) {
+				switch (interaction.options.first()!.name) {
 					case 'clear': {
-						const target = tagToName(interaction.options[0].options![0].user!.tag)
+						const target = tagToName(interaction.options.first()!.options!.first()!.user!.tag)
 						ColorCache.remove(target)
 						ColorCache.save()
-						await interaction.reply(new MessageEmbed()
-							.setDescription(`已移除 ${target} 的颜色`)
-							.setColor('#000000')
-							.setThumbnail(`https://colorhexa.com/000000.png`)
-						)
+						await interaction.reply({
+							embeds: [new MessageEmbed()
+								.setDescription(`已移除 ${target} 的颜色`)
+								.setColor('#000000')
+								.setThumbnail(`https://colorhexa.com/000000.png`)
+							]
+						})
 						break
 					}
 					case 'get': {
-						const target = tagToName(interaction.options[0].options![0].user!.tag)
+						const target = tagToName(interaction.options.first()!.options!.first()!.user!.tag)
 						const color = BugCache.getColorFromTranslator(target)
-						await interaction.reply(getColorEmbed(target, color))
+						await interaction.reply({ embeds: [getColorEmbed(target, color)] })
 						break
 					}
 					case 'set': {
-						let color = (interaction.options[0].options![0].value as string).toLowerCase()
-						let target: User | undefined = interaction.options[0].options![1]?.user
+						let color = (interaction.options.first()!.options!.get('value')!.value as string).toLowerCase()
+						let target: User | undefined = interaction.options.first()!.options!.get('user')?.user
 						const targetName = target ? tagToName(target.tag) : executor
 						if (!color.startsWith('#')) {
 							color = `#${color}`
@@ -269,32 +274,34 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 							ColorCache.set('WuGuangYao', color)
 						}
 						ColorCache.save()
-						await interaction.reply(new MessageEmbed()
-							.setDescription(`已设置 ${targetName} 的颜色为 ${color}${locked ? '  \n🏳‍🌈 Ff98sha 与 WuGuangYao 已锁。' : ''}`)
-							.setColor(color)
-							.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`))
+						await interaction.reply({
+							embeds: [new MessageEmbed()
+								.setDescription(`已设置 ${targetName} 的颜色为 ${color}${locked ? '  \n🏳‍🌈 Ff98sha 与 WuGuangYao 已锁。' : ''}`)
+								.setColor(color as `#${string}`)
+								.setThumbnail(`https://colorhexa.com/${color.slice(1)}.png`)]
+						})
 						break
 					}
 				}
 				break
 			case 'join': {
-				const name = interaction.options[0].name
-				const role = config.roles?.find(v => v.name === name)?.role
-				if (!role) {
-					await interaction.reply(`❌ Unknown role name ${name}.`, { ephemeral: true })
-					break
-				}
-				const rolesManager = interaction.member?.roles
-				if (!rolesManager || Array.isArray(rolesManager)) {
-					await interaction.reply('❌ Cannot manage your roles.', { ephemeral: true })
-					break
-				}
-				if (rolesManager.cache.has(role)) {
-					await interaction.reply(`❌ You already have the role ${name}.`, { ephemeral: true })
-					break
-				}
-				await rolesManager.add(role)
-				await interaction.reply(`✅ Joined role ${name}`, { ephemeral: true })
+				// const name = interaction.options.first()!.name
+				// const role = config.roles?.find(v => v.name === name)?.role
+				// if (!role) {
+				// 	await interaction.reply({ content: `❌ Unknown role name ${name}.`, ephemeral: true })
+				// 	break
+				// }
+				// const rolesManager = interaction.member?.roles
+				// if (!rolesManager || Array.isArray(rolesManager)) {
+				// 	await interaction.reply({ content: `❌ Cannot manage your roles.`, ephemeral: true })
+				// 	break
+				// }
+				// if (rolesManager.cache.has(role)) {
+				// 	await interaction.reply({ content: `❌ You already have the role ${name}.`, ephemeral: true })
+				// 	break
+				// }
+				// await rolesManager.add(role)
+				// await interaction.reply({ content: `✅ Joined role ${name}.`, ephemeral: true })
 				break
 			}
 			case 'ping':
@@ -310,7 +317,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				}
 				lastQueryTime = currentTime
 
-				const jql = (interaction.options?.[0]?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
+				const jql = (interaction.options.get('jql')?.value as string | undefined) || 'project = MC AND fixVersion in unreleasedVersions()'
 				const issues = await searchIssues(jql)
 				const unknownIssues: IssueBean[] = []
 				const translators = new Map<string, number>()
@@ -327,21 +334,25 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 					}
 				}
 				if (unknownIssues.length) {
-					await interaction.editReply(new MessageEmbed()
-						.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
-						.setDescription(unknownIssues.slice(0, 10).map(
-							i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
-						).join('\n'))
-					)
+					await interaction.editReply({
+						embeds: [new MessageEmbed()
+							.setTitle(`共 ${unknownIssues.length} / ${issues.length} 个未翻译漏洞`)
+							.setDescription(unknownIssues.slice(0, 10).map(
+								i => `[${i.key}](https://bugs.mojang.com/browse/${i.key}) ${(i.fields as any)?.['summary'] ?? 'N/A'}`
+							).join('\n'))
+						]
+					})
 				} else if (issues.length) {
 					const sortedTranslators = Array.from(translators.entries()).sort((a, b) => b[1] - a[1])
-					await interaction.editReply(new MessageEmbed()
-						.setTitle(`🎉 ${issues.length} 个漏洞均已翻译。`)
-						.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
-						.addField('打工人', sortedTranslators.map(([translator, _count]) => `**${translator}**`).join('\n'), true)
-						.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
-						.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
-					)
+					await interaction.editReply({
+						embeds: [new MessageEmbed()
+							.setTitle(`🎉 ${issues.length} 个漏洞均已翻译。`)
+							.setColor(BugCache.getColorFromTranslator(sortedTranslators[0]?.[0]))
+							.addField('打工人', sortedTranslators.map(([translator, _count]) => `**${translator}**`).join('\n'), true)
+							.addField('#', sortedTranslators.map(([_translator, count]) => count).join('\n'), true)
+							.addField('%', sortedTranslators.map(([_translator, count]) => `${(count / issues.length * 100).toFixed(2)}%`).join('\n'), true)
+						]
+					})
 				} else {
 					const responses = [
 						'什么也没有搜到。',
@@ -353,15 +364,17 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 					await interaction.editReply(responses[Math.ceil(Math.random() * responses.length)])
 				}
 				if (!ReviewCache.isEmpty()) {
-					await interaction.webhook.send(new MessageEmbed()
-						.setTitle('❗ Review Required')
-						.setDescription(
-							Object
-								.entries(ReviewCache.review)
-								.map(([key, { approvers, summary, translator }]) => `[${key}](https://bugs.mojang.com/browse/${key}) 「${summary}」 @${translator} #${approvers.length}`)
-								.join('\n')
-						)
-					)
+					await interaction.webhook.send({
+						embeds: [new MessageEmbed()
+							.setTitle('❗ Review Required')
+							.setDescription(
+								Object
+									.entries(ReviewCache.review)
+									.map(([key, { approvers, summary, translator }]) => `[${key}](https://bugs.mojang.com/browse/${key}) 「${summary}」 @${translator} #${approvers.length}`)
+									.join('\n')
+							)
+						]
+					})
 				}
 				break
 			}
@@ -379,11 +392,11 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 					await interaction.editReply('❌ Twitter App 未配置。')
 					return
 				}
-				const mode = interaction.options[0].name as 'dark' | 'light'
-				const tweetLink = interaction.options[0].options![0].value as string
+				const mode = interaction.options.first()!.value as 'dark' | 'light'
+				const tweetLink = interaction.options.first()!.options!.get('url')!.value as string
 				try {
 					const bbcode = await getTweet(twitterClient, mode, tweetLink, executor)
-				await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
+					await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
 				} catch (e) {
 					await interaction.editReply(e?.toString().slice(0, 127))
 					console.error('[Discord#onInteraction#Twitter]', e)
@@ -436,7 +449,7 @@ async function executeCommand({
 	translator: string,
 	onOverriding: () => Promise<unknown>,
 	onTranslated: () => Promise<unknown>,
-	sendMessage: (content: string | MessageEmbed) => Promise<Message>,
+	sendMessage: (content: string | MessageOptions) => Promise<Message>,
 }): Promise<void> {
 	content = content.trim()
 
@@ -465,7 +478,7 @@ async function executeCommand({
 			if (!ColorCache.has(translator)) {
 				const color = BugCache.getColorFromTranslator(translator)
 				ColorCache.set(translator, color)
-				await sendMessage(getColorEmbed(translator, color).setTitle(`为 ${translator} 自动生成了色图！`))
+				await sendMessage({ embeds: [getColorEmbed(translator, color).setTitle(`为 ${translator} 自动生成了色图！`)] })
 			}
 			if (needsReview) {
 				ReviewCache.set(id, {
@@ -518,7 +531,7 @@ export async function onReactionAdd(_config: DiscordConfig, reaction: MessageRea
 			console.info(`User ${user.tag} added '${reaction.emoji.name}' reaction to a prompt`);
 			const { author, content, prompt, translator, onTranslated } = overrideConfirmations.get(reaction.message.id)!
 			if (user.id !== author.id) {
-				return await prompt.edit(`${prompt.content}\n不准 ${tagToName(user.tag)} 为 ${tagToName(author.tag)} 做决定.spg`)
+				return void await prompt.edit(`${prompt.content}\n不准 ${tagToName(user.tag)} 为 ${tagToName(author.tag)} 做决定.spg`)
 			}
 			if (reaction.emoji.name === '⚪') {
 				await executeCommand({

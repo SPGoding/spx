@@ -11,7 +11,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.5
+// @version       1.0.6
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -31,18 +31,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             const url = document.location.toString();
             if (url.match(/^https:\/\/www\.minecraft\.net\/(?:[a-z-]+)\/article\//)) {
                 console.info('[SPX] Activated');
+                const pointerModifier = document.getElementsByClassName('article-attribution-container').item(0);
+                pointerModifier.style.pointerEvents = 'inherit';
                 const button = document.createElement('button');
-                button.classList.add('btn', 'btn-primary', 'btn-lg', 'btn-primary--grow');
-                button.style.position = 'fixed';
-                button.style.top = '150px';
-                button.style.left = '20px';
+                button.classList.add('btn', 'btn-primary', 'btn-sm', 'btn-primary--grow', 'spx-converter-ignored');
                 button.innerText = 'Copy BBCode';
                 button.onclick = () => __awaiter(this, void 0, void 0, function* () {
+                    button.innerText = 'Processing...';
                     const bbcode = yield convertMCArticleToBBCode(document, url, '// TODO //');
                     GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' });
-                    alert('Done!');
+                    button.innerText = 'Copied BBCode!';
+                    setTimeout(() => button.innerText = 'Copy BBCode', 5000);
                 });
-                document.body.prepend(button);
+                const container = document.getElementsByClassName('attribution').item(0);
+                container.append(button);
             }
         });
     }
@@ -55,7 +57,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     fetch: true,
                     nocache: true,
                     timeout: 7000,
-                    onload: r => rs(JSON.parse(r.responseText)),
+                    onload: r => {
+                        try {
+                            rs(JSON.parse(r.responseText));
+                        }
+                        catch (e) {
+                            rj(e);
+                        }
+                    },
                     onabort: () => rj(new Error('Aborted')),
                     onerror: e => rj(e),
                     ontimeout: () => rj(new Error('Time out')),
@@ -178,6 +187,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
          * Converts a ChildNode to a BBCode string according to the type of the node.
          */
         convert: (node, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a;
+            if ((_a = node.classList) === null || _a === void 0 ? void 0 : _a.contains('spx-converter-ignored')) {
+                return '';
+            }
             switch (node.nodeName) {
                 case 'A':
                     return converters.a(node, ctx);

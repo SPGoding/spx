@@ -10,7 +10,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.5
+// @version       1.0.6
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -36,18 +36,23 @@ interface Context {
 		const url = document.location.toString()
 		if (url.match(/^https:\/\/www\.minecraft\.net\/(?:[a-z-]+)\/article\//)) {
 			console.info('[SPX] Activated')
+
+			const pointerModifier = document.getElementsByClassName('article-attribution-container').item(0) as HTMLDivElement
+			pointerModifier.style.pointerEvents = 'inherit'
+
 			const button = document.createElement('button')
-			button.classList.add('btn', 'btn-primary', 'btn-lg', 'btn-primary--grow')
-			button.style.position = 'fixed'
-			button.style.top = '150px'
-			button.style.left = '20px'
+			button.classList.add('btn', 'btn-primary', 'btn-sm', 'btn-primary--grow', 'spx-converter-ignored')
 			button.innerText = 'Copy BBCode'
 			button.onclick = async () => {
+				button.innerText = 'Processing...'
 				const bbcode = await convertMCArticleToBBCode(document, url, '// TODO //')
 				GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' })
-				alert('Done!')
+				button.innerText = 'Copied BBCode!'
+				setTimeout(() => button.innerText = 'Copy BBCode', 5_000)
 			}
-			document.body.prepend(button)
+
+			const container = document.getElementsByClassName('attribution').item(0) as HTMLDivElement
+			container.append(button)
 		}
 	}
 
@@ -59,7 +64,13 @@ interface Context {
 				fetch: true,
 				nocache: true,
 				timeout: 7_000,
-				onload: r => rs(JSON.parse(r.responseText)),
+				onload: r => {
+					try {
+						rs(JSON.parse(r.responseText))
+					} catch (e) {
+						rj(e)
+					}
+				},
 				onabort: () => rj(new Error('Aborted')),
 				onerror: e => rj(e),
 				ontimeout: () => rj(new Error('Time out')),
@@ -189,6 +200,9 @@ interface Context {
 		 * Converts a ChildNode to a BBCode string according to the type of the node.
 		 */
 		convert: async (node: ChildNode, ctx: Context): Promise<string> => {
+			if ((node as HTMLElement).classList?.contains('spx-converter-ignored')) {
+				return ''
+			}
 			switch (node.nodeName) {
 				case 'A':
 					return converters.a(node as HTMLAnchorElement, ctx)
@@ -371,9 +385,9 @@ interface Context {
 				await findSlides(ele)
 				if (shouldUseAlbum(slides)) {
 					ans = `${prefix}${slides.map(([url, caption]) => `[aimg=${url}]${caption}[/aimg]`).join('\n')}${suffix}`
-				} else if (slides.length > 0){
+				} else if (slides.length > 0) {
 					ans = `${slides.map(([url, caption]) => `[/indent][/indent][align=center][img]${url}[/img]\n${caption}`).join('\n')}[/align][indent][indent]\n`
-				} else{
+				} else {
 					ans = ''
 				}
 			} else if (ele.classList.contains('video')) {
@@ -384,10 +398,10 @@ interface Context {
 			} else if (ele.classList.contains('article-social')) {
 				// End of the content.
 				ans = ''
-			} else if (ele.classList.contains('modal')){
+			} else if (ele.classList.contains('modal')) {
 				// Unknown useless content
 				ans = ''
-			} 
+			}
 			// else if (ele.classList.contains('end-with-block')) {
 			//     ans = ans.trimRight() + '[img=16,16]https://ooo.0o0.ooo/2017/01/30/588f60bbaaf78.png[/img]'
 			// }
@@ -494,7 +508,7 @@ interface Context {
 				ans = `\n\n[/indent][/indent][align=center]${prefix}${imgUrl}[/img][/align][indent][indent]\n`
 			}
 
-			
+
 
 			return ans
 		},

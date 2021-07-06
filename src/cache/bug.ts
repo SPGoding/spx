@@ -69,14 +69,14 @@ export namespace BugCache {
 	}
 
 	// https://stackoverflow.com/a/3426956
-	export function getColorFromTranslator(translator: string | undefined): string {
+	export function getColorFromTranslator(translator: string | undefined): `#${string}` {
 		if (!translator) {
 			return '#388d40'
 		} else if (ColorCache.has(translator)) {
 			return ColorCache.getColor(translator)
 		} else {
 			const color = (hashCode(translator) & 0x00FFFFFF).toString(16)
-			const hexColor = `#${'00000'.slice(0, 6 - color.length)}${color}`
+			const hexColor: `#${string}` = `#${'00000'.slice(0, 6 - color.length)}${color}`
 			return hexColor
 		}
 	}

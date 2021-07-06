@@ -14,7 +14,6 @@ let httpPort: number | undefined
 let ip: string | undefined
 let ownerPassword: string | undefined
 let vipPassword: string | undefined
-let interval: number | undefined
 
 let discordClient: Client | undefined
 let discord: DiscordConfig | undefined
@@ -26,19 +25,17 @@ let twitter: TwitterConfig | undefined
 		const config = fs.readJsonSync(configPath)
 		ip = config.ip
 		httpPort = config.httpPort
-		interval = config.interval
 		ownerPassword = config.ownerPassword
 		vipPassword = config.vipPassword
 		discord = config.discord
 		twitter = config.twitter
-		if (!ip || !httpPort || !interval || !ownerPassword || !vipPassword) {
-			throw ("Expected 'ip', 'httpPort', 'interval', 'ownerPassword', and 'vipPassword' in './config.json'.")
+		if (!ip || !httpPort || !ownerPassword || !vipPassword) {
+			throw ("Expected 'ip', 'httpPort', 'ownerPassword', and 'vipPassword' in './config.json'.")
 		}
 	} else {
 		ip = 'localhost'
 		httpPort = 80
-		interval = 20000
-		fs.writeJsonSync(configPath, { ip, httpPort, interval, keyFile: null, certFile: null, password: null }, { encoding: 'utf8' })
+		fs.writeJsonSync(configPath, { ip, httpPort, keyFile: null, certFile: null, password: null }, { encoding: 'utf8' })
 		throw 'Please complete the config file.'
 	}
 
@@ -52,12 +49,22 @@ let twitter: TwitterConfig | undefined
 		if (discord) {
 			discordClient = new Client({
 				partials: ['MESSAGE', 'USER'],
-				intents: Intents.NON_PRIVILEGED,
+				intents: [
+					Intents.FLAGS.GUILDS,
+					Intents.FLAGS.GUILD_BANS,
+					Intents.FLAGS.GUILD_EMOJIS,
+					Intents.FLAGS.GUILD_INTEGRATIONS,
+					Intents.FLAGS.GUILD_INVITES,
+					Intents.FLAGS.GUILD_MESSAGES,
+					Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+					Intents.FLAGS.GUILD_MESSAGE_TYPING,
+					Intents.FLAGS.GUILD_WEBHOOKS,
+				],
 			})
 			await discordClient.login(discord.token)
 			discordClient.once('ready', onReady.bind(undefined, discord, discordClient))
-			discordClient.on('interaction', onInteraction.bind(undefined, discord, twitterClient))
-			discordClient.on('message', onMessage.bind(undefined, discord))
+			discordClient.on('interactionCreate', onInteraction.bind(undefined, discord, twitterClient))
+			discordClient.on('messageCreate', onMessage.bind(undefined, discord))
 			discordClient.on('messageReactionAdd', onReactionAdd.bind(undefined, discord))
 			console.info('Discord Bot launched.')
 		}
