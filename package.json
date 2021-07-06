@@ -40,7 +40,7 @@
     "dependencies": {
         "clipboard": "^2.0.4",
         "discord-api-types": "^0.18.1",
-        "discord.js": "13.0.0-dev.2e078e4.1625529824",
+        "discord.js": "13.0.0-dev.fe6cc0c.1625227356",
         "express": "^4.17.1",
         "fs-extra": "^9.0.1",
         "image-size": "^1.0.0",
