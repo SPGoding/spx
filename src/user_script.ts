@@ -10,7 +10,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.7
+// @version       1.0.8
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -449,7 +449,7 @@ interface Context {
 			const prefix = '[size=6][b]'
 			const suffix = '[/b][/size]'
 			const inner = await converters.recurse(ele, ctx)
-			const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
+			const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`
 
 			return ans
 		},
@@ -457,7 +457,7 @@ interface Context {
 			const prefix = '[size=5][b]'
 			const suffix = '[/b][/size]'
 			const inner = await converters.recurse(ele, ctx)
-			const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
+			const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`
 
 			return ans
 		},
@@ -465,7 +465,7 @@ interface Context {
 			const prefix = '[size=4][b]'
 			const suffix = '[/b][/size]'
 			const inner = await converters.recurse(ele, ctx)
-			const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
+			const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`
 
 			return ans
 		},
@@ -473,7 +473,7 @@ interface Context {
 			const prefix = '[size=3][b]'
 			const suffix = '[/b][/size]'
 			const inner = await converters.recurse(ele, ctx)
-			const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`
+			const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`
 
 			return ans
 		},
@@ -509,13 +509,17 @@ interface Context {
 				ans = `\n\n[/indent][/indent][align=center]${prefix}${imgUrl}[/img][/align][indent][indent]\n`
 			}
 
-
-
 			return ans
 		},
 		li: async (ele: HTMLElement, ctx: Context) => {
 			const inner = await converters.recurse(ele, { ...ctx, inList: true })
-			const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`
+			let ans: string
+			if (ele.childNodes.length === 1 && (ele.childNodes[0].nodeName === 'OL' || ele.childNodes[0].nodeName === 'UL')) {
+				// Nested lists.
+				ans = `[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`
+			} else {
+				ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`
+			}
 
 			return ans
 		},

@@ -11,7 +11,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.7
+// @version       1.0.8
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -434,28 +434,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             const prefix = '[size=6][b]';
             const suffix = '[/b][/size]';
             const inner = yield converters.recurse(ele, ctx);
-            const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`;
+            const ans = `${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`;
             return ans;
         }),
         h2: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
             const prefix = '[size=5][b]';
             const suffix = '[/b][/size]';
             const inner = yield converters.recurse(ele, ctx);
-            const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`;
+            const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`;
             return ans;
         }),
         h3: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
             const prefix = '[size=4][b]';
             const suffix = '[/b][/size]';
             const inner = yield converters.recurse(ele, ctx);
-            const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`;
+            const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`;
             return ans;
         }),
         h4: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
             const prefix = '[size=3][b]';
             const suffix = '[/b][/size]';
             const inner = yield converters.recurse(ele, ctx);
-            const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx)}\n\n`;
+            const ans = `\n${prefix}[color=Silver]${inner.replace(/#388d40/g, 'Silver').replace(/[\n\r]+/g, ' ')}[/color]${suffix}\n${translateMachinely(`${prefix}${inner}${suffix}`, ctx).replace(/[\n\r]+/g, ' ')}\n\n`;
             return ans;
         }),
         i: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
@@ -490,7 +490,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }),
         li: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
             const inner = yield converters.recurse(ele, Object.assign(Object.assign({}, ctx), { inList: true }));
-            const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`;
+            let ans;
+            if (ele.childNodes.length === 1 && (ele.childNodes[0].nodeName === 'OL' || ele.childNodes[0].nodeName === 'UL')) {
+                // Nested lists.
+                ans = `[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`;
+            }
+            else {
+                ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`;
+            }
             return ans;
         }),
         ol: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
