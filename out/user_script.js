@@ -11,7 +11,7 @@
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @name          SPX
-// @version       1.0.6
+// @version       1.0.7
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -489,7 +489,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return ans;
         }),
         li: (ele, ctx) => __awaiter(void 0, void 0, void 0, function* () {
-            const inner = yield converters.recurse(ele, ctx);
+            const inner = yield converters.recurse(ele, Object.assign(Object.assign({}, ctx), { inList: true }));
             const ans = `[*][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color]\n[*]${translateMachinely(translateBugs(inner, ctx), ctx)}\n`;
             return ans;
         }),
@@ -505,7 +505,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 ans = `[size=4][b][size=2][color=Silver]${inner}[/color][/size][/b][/size]\n[size=4][b]${translateMachinely(inner, ctx)}[/b][/size]\n\n`;
             }
             else {
-                ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner, ctx)}\n\n`;
+                if (ctx.inList) {
+                    ans = inner;
+                }
+                else {
+                    ans = `[size=2][color=Silver]${inner.replace(/#388d40/g, 'Silver')}[/color][/size]\n${translateMachinely(inner, ctx)}\n\n`;
+                }
             }
             return ans;
         }),
@@ -585,8 +590,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             [/\[i\]/gi, '[font=楷体]'],
             [/\[\/i\]/g, '[/font]'],
             ...ctx.disablePunctuationConverter ? [] : [
-                [/“/g, '[font=楷体]“[/font]'],
-                [/”/g, '[font=楷体]”[/font]'],
                 [/,( |$)/g, '，'],
                 [/!( |$)/g, '！'],
                 [/\.\.\.( |$)/g, '…'],
@@ -599,7 +602,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             input = input.replace(mapping[0], mapping[1]);
         }
         const quoteArrays = [
-            ['[font=楷体]“[/font]', '[font=楷体]”[/font]', /"/]
+            ['“', '”', /"/]
             // ['『', '』', "'"]
         ];
         for (const quoteArray of quoteArrays) {
