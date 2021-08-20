@@ -8,7 +8,8 @@
 		"rootDir": "./src",
 		"lib": [
 			"es6",
-			"DOM"
+			"DOM",
+			"DOM.Iterable"
 		],
 		"sourceMap": true,
 		"strict": true,

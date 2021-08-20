@@ -9,8 +9,10 @@
 // @homepage      https://github.com/SPGoding/spx
 // @include       https://www.minecraft.net/en-us/article/*
 // @include       https://www.minecraft.net/zh-hans/article/*
+// @include       https://twitter.com/*/status/*
+// @include       https://mobile.twitter.com/*/status/*
 // @name          SPX
-// @version       1.0.8
+// @version       1.1.0
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -27,13 +29,25 @@ interface Context {
 	url: string,
 }
 
+interface Tweet {
+	date: string,
+	source: string,
+	text: string,
+	tweetLink: string,
+	urls: string,
+	userName: string,
+	userTag: string,
+	lang: string
+}
+
 (() => {
 	// 看不惯，别看。看美国人的脚本去。
 
+	// Minecraft.net START
 	const BugsCenter = 'https://spx.spgoding.com/bugs'
 	const NextMainRelease = '1.17.1'
 
-	async function main() {
+	async function minecraftNet() {
 		const url = document.location.toString()
 		if (url.match(/^https:\/\/www\.minecraft\.net\/(?:[a-z-]+)\/article\//)) {
 			console.info('[SPX] Activated')
@@ -904,5 +918,117 @@ interface Context {
 		Normal
 	}
 
-	main()
+	// Minecraft.net END
+	// Twitter START
+
+	const ProfilePictures = new Map<string, string>([
+    ['Mojang', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124525b5b85bb8ob8t8o0b.jpg'],
+    ['MojangSupport', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124525b5b85bb8ob8t8o0b.jpg'],
+    ['MojangStatus', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124525b5b85bb8ob8t8o0b.jpg'],
+    ['Minecraft', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124524kfu7hzreleueuexh.jpg'],
+    ['henrikkniberg', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124519x0r898zl6gc8gna8.jpg'],
+    ['_LadyAgnes', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124515qnwcdnz82vyz9ezs.png'],
+    ['kingbdogz', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124523da4of54hl7e3fchn.jpg'],
+    ['JasperBoerstra', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124522uk3hbr2gx62pbrfh.jpg'],
+    ['adrian_ivl', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124513jppdcsu8lsxllxll.jpg'],
+    ['slicedlime', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124528na53pu1444w1pdys.jpg'],
+    ['Cojomax99', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124516jgwgrzgerr11g9kn.png'],
+    ['Mojang_Ined', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124520dpqpa0fufu0fq0l1.jpg'],
+    ['SeargeDP', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124527syfrwsstbvxf8jf0.png'],
+    ['Dinnerbone', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/18/124517k1n33zuxaumkakam.jpg'],
+    ['Marc_IRL', 'https://attachment.mcbbs.net/data/myattachment/forum/202105/28/104919xl2ac5dihxlqxxdf.jpg'],
+    ['Mega_Spud', 'https://attachment.mcbbs.net/data/myattachment/forum/202107/07/230046homkfqlhwvkfqkbh.jpg'],
+	])
+
+	function getTweetMetadata(): Tweet {
+		const tweetMetadata: Tweet = {
+			date: '',
+			source: '',
+			text: '',
+			tweetLink: '',
+			urls: '',
+			userName: '',
+			userTag: '',
+			lang: '',
+		}
+		tweetMetadata.userTag = document.querySelector('div[data-testid=tweet] > div:nth-child(2) a div:nth-child(2) span')!.innerHTML.replace('@', '')
+		tweetMetadata.userName = document.querySelector('div[data-testid=tweet] > div:nth-child(2) a span span')!.innerHTML
+		tweetMetadata.lang = document.querySelector('article div[lang]')!.getAttribute('lang')!
+
+		let texts: string[] = []
+		for (const i of document.querySelector('article div[lang]')!.querySelectorAll('span')!) {
+			texts.push(i.innerHTML)
+		}
+		tweetMetadata.text = texts.join('【这里可能有一个链接，请自行检查】')
+		tweetMetadata.date = document.querySelector('article div:nth-child(3) div:nth-child(3) div span')!.innerHTML
+		tweetMetadata.source = document.querySelector('article div:nth-child(3) div:nth-child(3) a:nth-child(3) span')!.innerHTML
+		tweetMetadata.tweetLink = document.querySelector('article div:nth-child(3) div:nth-child(3) div span')!.getAttribute('href')!
+
+		return tweetMetadata
+	}
+
+	function getTweetBbcode(
+    tweet: Tweet,
+		mode: 'dark' | 'light') {
+    const attributeColor = '#5B7083'
+    const backgroundColor = mode === 'dark' ? '#000000' : '#FFFFFF'
+    const foregroundColor = mode === 'dark' ? '#D9D9D9' : '#0F1419'
+    const dateString = `${tweet.date} · ${tweet.source} · SPX`
+    let content = tweet.text
+    return `[align=center][table=560,${backgroundColor}]
+[tr][td][font=-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif][indent]
+[float=left][img=44,44]${ProfilePictures.get(tweet.userTag) ?? '【TODO：头像】'}[/img][/float][size=15px][b][color=${foregroundColor}]${tweet.userName}[/color][/b]
+[color=${attributeColor}]@${tweet.userTag}[/color][/size]
+
+[color=${foregroundColor}][size=23px]${content}[/size]
+[size=15px]由 【请填写你的用户名】 翻译自${tweet.lang.startsWith('en') ? '英语' : ` ${tweet.lang}`}[/size]
+[size=23px]【插入：译文】[/size][/color][/indent][align=center][img=451,254]【TODO：配图】[/img][/align][indent][size=15px][url=${tweet.tweetLink}][color=${attributeColor}]${dateString}[/color][/url][/size][/indent][/font]
+[/td][/tr]
+[/table][/align]`
+	}
+
+	function twitter() {
+		console.info('[SPX] Activated')
+
+		const buttonLight = document.createElement('button')
+		buttonLight.innerText = 'Copy BBCode (Light)'
+		buttonLight.style.width = '100%'
+		buttonLight.onclick = async () => {
+			buttonLight.innerText = 'Processing...'
+			const bbcode = getTweetBbcode(getTweetMetadata(), 'light')
+			GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' })
+			buttonLight.innerText = 'Copied BBCode!'
+			setTimeout(() => buttonLight.innerText = 'Copy BBCode', 5_000)
+		}
+
+		const buttonDark = document.createElement('button')
+		buttonDark.innerText = 'Copy BBCode (Dark)'
+		buttonDark.style.width = '100%'
+		buttonDark.onclick = async () => {
+			buttonDark.innerText = 'Processing...'
+			const bbcode = getTweetBbcode(getTweetMetadata(), 'dark')
+			GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' })
+			buttonDark.innerText = 'Copied BBCode!'
+			setTimeout(() => buttonDark.innerText = 'Copy BBCode', 5_000)
+		}
+
+		const checkLoaded = setInterval(() => {
+			if (document.querySelector('article div[lang]')! !== null) {
+				document.querySelector('article div > div > div > div')!.append(buttonLight)
+				document.querySelector('article div > div > div > div')!.append(buttonDark)
+				clearInterval(checkLoaded)
+			}
+		}, 300)
+	}
+
+	console.log('[SPX] Current site: ' + location.host)
+	switch (location.host) {
+		case 'www.minecraft.net':
+			minecraftNet()
+		break
+		case 'twitter.com':
+		case 'moble.twitter.com':
+			twitter()
+		break
+	}
 })()
