@@ -11,8 +11,10 @@
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @include       https://twitter.com/*/status/*
 // @include       https://mobile.twitter.com/*/status/*
+// @include       https://feedback.minecraft.net/hc/en-us/articles/*
+// @include       https://help.minecraft.net/hc/en-us/articles/*
 // @name          SPX
-// @version       1.1.0
+// @version       1.2.0
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -69,6 +71,44 @@ interface Tweet {
 			const container = document.getElementsByClassName('attribution').item(0) as HTMLDivElement
 			container.append(button)
 		}
+	}
+
+	function feedback() {
+		console.info('[SPX] Activated')
+
+		const button = document.createElement('a')
+		button.classList.add('navLink')
+		button.innerText = 'Copy BBCode'
+		button.onclick = async () => {
+			button.innerText = 'Processing...'
+			const bbcode = await convertFeedbackArticleToBBCode(document, location.href)
+			GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' })
+			button.innerText = 'Copied BBCode!'
+			setTimeout(() => button.innerText = 'Copy BBCode', 5_000)
+		}
+
+		document.querySelector('.topNavbar nav')!.append(button)
+	}
+
+	function help() {
+		console.info('[SPX] Activated')
+
+		const button = document.createElement('a')
+		button.classList.add('navLink')
+		button.innerText = 'Copy BBCode'
+		button.onclick = async () => {
+			button.innerText = 'Processing...'
+			const bbcode = await convertHelpArticleToBBCode(document, location.href)
+			GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' })
+			button.innerText = 'Copied BBCode!'
+			setTimeout(() => button.innerText = 'Copy BBCode', 5_000)
+		}
+
+		const nav = document.createElement('nav')
+		nav.classList.add('my-0')
+		nav.append(button)
+
+		document.querySelector('.topNavbar .d-flex')!.append(nav)
 	}
 
 	async function getBugs(): Promise<ResolvedBugs> {
@@ -194,12 +234,41 @@ interface Tweet {
 		return ans
 	}
 
+	async function convertHelpArticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
+		const content = await getHelpContent(html, {
+			bugs: {},
+			title: html.title.slice(0, html.title.lastIndexOf(' &ndash; Home')),
+			translator,
+			url: articleUrl,
+		})
+
+		const ans = `${content}[/indent][/indent]`
+
+		return ans
+	}
+
 	/**
 	 * Get the content of an article as the form of a BBCode string.
 	 * @param html An HTML Document.
 	 */
 	async function getFeedbackContent(html: Document, ctx: Context) {
 		const rootSection = html.getElementsByClassName('article-info')[0] as HTMLElement
+		let ans = await converters.recurse(rootSection, ctx)
+
+		// Add spaces between texts and '[x'.
+		ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2')
+		// Add spaces between '[/x]' and texts.
+		ans = ans.replace(/(\[\/[^\]]+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2')
+
+		return ans
+	}
+
+	/**
+	 * Get the content of an article as the form of a BBCode string.
+	 * @param html An HTML Document.
+	 */
+	 async function getHelpContent(html: Document, ctx: Context) {
+		const rootSection = html.getElementsByClassName('article-body')[0] as HTMLElement // Yep, this is the only difference.
 		let ans = await converters.recurse(rootSection, ctx)
 
 		// Add spaces between texts and '[x'.
@@ -1030,5 +1099,10 @@ interface Tweet {
 		case 'moble.twitter.com':
 			twitter()
 		break
+		case 'feedback.minecraft.net':
+			feedback()
+		break
+		case 'help.minecraft.net':
+			help()
 	}
 })()

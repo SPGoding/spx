@@ -12,8 +12,10 @@
 // @include       https://www.minecraft.net/zh-hans/article/*
 // @include       https://twitter.com/*/status/*
 // @include       https://mobile.twitter.com/*/status/*
+// @include       https://feedback.minecraft.net/hc/en-us/articles/*
+// @include       https://help.minecraft.net/hc/en-us/articles/*
 // @name          SPX
-// @version       1.1.0
+// @version       1.2.0
 // ==/UserScript==
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -50,6 +52,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 container.append(button);
             }
         });
+    }
+    function feedback() {
+        console.info('[SPX] Activated');
+        const button = document.createElement('a');
+        button.classList.add('navLink');
+        button.innerText = 'Copy BBCode';
+        button.onclick = () => __awaiter(this, void 0, void 0, function* () {
+            button.innerText = 'Processing...';
+            const bbcode = yield convertFeedbackArticleToBBCode(document, location.href);
+            GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' });
+            button.innerText = 'Copied BBCode!';
+            setTimeout(() => button.innerText = 'Copy BBCode', 5000);
+        });
+        document.querySelector('.topNavbar nav').append(button);
+    }
+    function help() {
+        console.info('[SPX] Activated');
+        const button = document.createElement('a');
+        button.classList.add('navLink');
+        button.innerText = 'Copy BBCode';
+        button.onclick = () => __awaiter(this, void 0, void 0, function* () {
+            button.innerText = 'Processing...';
+            const bbcode = yield convertHelpArticleToBBCode(document, location.href);
+            GM_setClipboard(bbcode, { type: 'text', mimetype: 'text/plain' });
+            button.innerText = 'Copied BBCode!';
+            setTimeout(() => button.innerText = 'Copy BBCode', 5000);
+        });
+        const nav = document.createElement('nav');
+        nav.classList.add('my-0');
+        nav.append(button);
+        document.querySelector('.topNavbar .d-flex').append(nav);
     }
     function getBugs() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -170,6 +203,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return ans;
         });
     }
+    function convertHelpArticleToBBCode(html, articleUrl, translator = '？？？') {
+        return __awaiter(this, void 0, void 0, function* () {
+            const content = yield getHelpContent(html, {
+                bugs: {},
+                title: html.title.slice(0, html.title.lastIndexOf(' &ndash; Home')),
+                translator,
+                url: articleUrl,
+            });
+            const ans = `${content}[/indent][/indent]`;
+            return ans;
+        });
+    }
     /**
      * Get the content of an article as the form of a BBCode string.
      * @param html An HTML Document.
@@ -177,6 +222,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     function getFeedbackContent(html, ctx) {
         return __awaiter(this, void 0, void 0, function* () {
             const rootSection = html.getElementsByClassName('article-info')[0];
+            let ans = yield converters.recurse(rootSection, ctx);
+            // Add spaces between texts and '[x'.
+            ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2');
+            // Add spaces between '[/x]' and texts.
+            ans = ans.replace(/(\[\/[^\]]+?\])([a-zA-Z0-9\-\.\_])/g, '$1 $2');
+            return ans;
+        });
+    }
+    /**
+     * Get the content of an article as the form of a BBCode string.
+     * @param html An HTML Document.
+     */
+    function getHelpContent(html, ctx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const rootSection = html.getElementsByClassName('article-body')[0]; // Yep, this is the only difference.
             let ans = yield converters.recurse(rootSection, ctx);
             // Add spaces between texts and '[x'.
             ans = ans.replace(/([a-zA-Z0-9\-\.\_])(\[[A-Za-z])/g, '$1 $2');
@@ -957,6 +1017,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         case 'moble.twitter.com':
             twitter();
             break;
+        case 'feedback.minecraft.net':
+            feedback();
+            break;
+        case 'help.minecraft.net':
+            help();
     }
 })();
 //# sourceMappingURL=user_script.js.map
