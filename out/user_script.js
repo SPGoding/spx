@@ -1044,7 +1044,7 @@ ${translateMachinely(`[size=6][b]${title}[/b][/size]`, ctx)}\n\n${content}[/inde
         tweetMetadata.text = texts.join('【这里可能有一个链接，请自行检查】');
         tweetMetadata.date = document.querySelector('article div:nth-child(3) div:nth-child(3) div span').innerHTML;
         tweetMetadata.source = document.querySelector('article div:nth-child(3) div:nth-child(3) a:nth-child(3) span').innerHTML;
-        tweetMetadata.tweetLink = document.querySelector('article div:nth-child(3) div:nth-child(3) div span').getAttribute('href');
+        tweetMetadata.tweetLink = location.href;
         return tweetMetadata;
     }
     function getTweetBbcode(tweet, mode) {
