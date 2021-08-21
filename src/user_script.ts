@@ -14,7 +14,7 @@
 // @include       https://feedback.minecraft.net/hc/en-us/articles/*
 // @include       https://help.minecraft.net/hc/en-us/articles/*
 // @name          SPX
-// @version       1.2.1
+// @version       1.2.2
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
