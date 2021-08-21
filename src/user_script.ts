@@ -14,7 +14,7 @@
 // @include       https://feedback.minecraft.net/hc/en-us/articles/*
 // @include       https://help.minecraft.net/hc/en-us/articles/*
 // @name          SPX
-// @version       1.2.0
+// @version       1.2.1
 // ==/UserScript==
 
 /// <reference types="@types/tampermonkey">
@@ -222,27 +222,48 @@ interface Tweet {
 	}
 
 	async function convertFeedbackArticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
-		const content = await getFeedbackContent(html, {
+		const title = html.title.slice(0, html.title.lastIndexOf(' – Minecraft Feedback'))
+		const ctx = {
 			bugs: {},
-			title: html.title.slice(0, html.title.lastIndexOf(' &ndash; Minecraft Feedback')),
+			title: title,
 			translator,
 			url: articleUrl,
-		})
+		}
 
-		const ans = `${content}[/indent][/indent]`
+		let versionType = VersionType.Normal
+
+		if (document.querySelector('[title="Beta Information and Changelogs"]')) {
+			versionType = VersionType.BedrockBeta
+		} else if (document.querySelector('[title="Release Changelogs"]')) {
+			versionType = VersionType.BedrockRelease
+		}
+
+		const content = await getFeedbackContent(html, ctx)
+
+		const ans = `${getBeginning('news', versionType)}[size=6][b][color=Silver]${title}[/color][/b][/size]
+${translateMachinely(`[size=6][b]${title}[/b][/size]`, ctx)}\n\n${content.replace(
+	/\[size=2\]\[color=Silver\]\[b\]PLEASE READ before participating in the Minecraft Beta: \[\/b\]\[\/color\]\[\/size\].*?\[\/list\]/msi,
+	'')}[/indent][/indent]\n
+[b]【${ctx.translator} 译自[url=${ctx.url}][color=#388d40][u]feedback.minecraft.net 哪 年 哪 月 哪 日发布的 ${ctx.title}[/u][/color][/url]】[/b]
+【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n\n${getEnding('news', versionType)}`
 
 		return ans
 	}
 
 	async function convertHelpArticleToBBCode(html: Document, articleUrl: string, translator: string = '？？？') {
-		const content = await getHelpContent(html, {
+		const title = html.title.slice(0, html.title.lastIndexOf(' – Home'))
+		const ctx = {
 			bugs: {},
-			title: html.title.slice(0, html.title.lastIndexOf(' &ndash; Home')),
+			title: title,
 			translator,
 			url: articleUrl,
-		})
+		}
+		const content = await getHelpContent(html, ctx)
 
-		const ans = `${content}[/indent][/indent]`
+		const ans = `[size=6][b][color=Silver]${title}[/color][/b][/size]
+${translateMachinely(`[size=6][b]${title}[/b][/size]`, ctx)}\n\n${content}[/indent][/indent]\n
+[b]【${ctx.translator} 译自[url=${ctx.url}][color=#388d40][u]help.minecraft.net 哪 年 哪 月 哪 日发布的 ${ctx.title}[/u][/color][/url]】[/b]
+【本文排版借助了：[url=https://spx.spgoding.com][color=#388d40][u]SPX[/u][/color][/url]】\n\n`
 
 		return ans
 	}
@@ -694,6 +715,23 @@ interface Tweet {
 			[/A Minecraft Java Snapshot/gi, 'Minecraft Java版 快照'],
 			[/A Minecraft Java Pre-Release/gi, 'Minecraft Java版 预发布版'],
 			[/A Minecraft Java Release Candidate/gi, 'Minecraft Java版 候选版本'],
+			[/Minecraft Beta (?:-|——) (.*?) \((.*?)\)/gi, 'Minecarft 基岩版 Beta $1（$2）'],
+			[/Minecraft (?:-|——) (.*?) \(Bedrock\)/gi, 'Minecraft 基岩版 $1'],
+			[/Minecraft (?:-|——) (.*?) \((.*?) Only\)/gi, 'Minecraft 基岩版 $1（仅$2）'],
+			[/Minecraft (?:-|——) (.*?) \((.*?)\)/gi, 'Minecraft 基岩版 $1（仅$2）'],
+			[/Experimental Features/gi, '实验性特性'],
+			[/Mobs/gi, '生物'],
+			[/Features and Bug Fixes/gi, '特性和漏洞修复'],
+			[/Stability and Performance/gi, '稳定性和性能'],
+			[/Accessibility/gi, '辅助功能'],
+			[/Gameplay/gi, '玩法'],
+			[/Items/gi, '物品'],
+			[/Blocks/gi, '方块'],
+			[/User Interface/gi, '用户界面'],
+			[/Commands/gi, '命令'],
+			[/Technical Updates/gi, '技术性更新'],
+			[/Vanilla Parity/gi, '待同步特性'],
+			[/Character Creator/gi, '角色创建器'],
 			[/Minecraft Snapshot /gi, 'Minecraft 快照 '],
 			[/Pre-Release /gi, '预发布版 '],
 			[/Release Candidate /gi, '候选版本 '],
@@ -882,6 +920,39 @@ interface Tweet {
 
 [hr]\n`
 
+			case VersionType.BedrockRelease:
+				return `[align=center][table=80%,#EDFBFF]
+[tr][td][align=center][b][color=Red]Minecraft基岩版[/color]是指包括Minecraft手机版（Android、IOS）、Win10版（VR）、主机版（XboxOne、NS、PS4）在内，使用“基岩引擎”（C++语言）开发的Minecraft统一版本。[/b][/align][/td][/tr]
+[/table][/align]
+[align=center][table=90%,#FFEBED]
+[tr][td][align=center][b][color=red]正式版是[color=DarkRed]Minecraft基岩版[/color]经过一段时间的测试版测试之后得到的稳定版本，也是众多材质、Addon和官方领域服会逐渐跟进的版本。与此同时Google Play、Win10 Store等官方软件商店也会推送此次更新。[/color][/b][/align][/td][/tr]
+[/table][/align]
+[align=center][table=50%,#FFEBED]
+[tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr][/table][/align]
+
+[hr]\n
+`
+
+			case VersionType.BedrockBeta:
+				return `[align=center][table=80%,#EDFBFF]
+[tr][td][align=center][b][color=Red]测试版[/color]是Minecraft基岩版的测试机制，主要用于下一个正式版的特性预览。[/b][/align][/td][/tr]
+[/table][/align]
+[align=center][table=90%,#FFEBED]
+[tr][td][align=center][b]然而，测试版主要用于新特性展示，通常存在大量漏洞。因此对于普通玩家建议仅做[color=red]测试尝鲜[/color]用。使用测试版打开存档前请[color=red]务必备份[/color]。适用于正式版的领域服务器与测试版不兼容。[/b][/align][/td][/tr]
+[/table][/align]
+[align=center][table=90%,#FFEBED]
+[tr][td][align=center][b]如果在测试版中遇到旧版存档无法使用的问题，测试版将允许你将存档上传以供开发团队查找问题。[/b][/align][/td][/tr]
+[/table][/align]
+[align=center][table=80%,#FFEBED]
+[tr][td][align=center][color=Red][b]Minecraft基岩版 <正式版版本号> 仍未发布，<当前版本号>为其第<计数器>个测试版。[/b][/color][/align][/td][/tr]
+[/table][/align]
+[align=center][table=50%,#EDFBFF]
+[tr][td][align=center]转载本贴时须要注明[b]原作者[/b]以及[b]本帖地址[/b]。[/align][/td][/tr]
+[/table][/align]
+
+[hr]\n
+`
+
 			case VersionType.Normal:
 			default:
 				return `\n[align=center][table=50%,#FFEBED]
@@ -968,6 +1039,30 @@ interface Tweet {
 [tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
 [/table][/align]`
 
+			case VersionType.BedrockRelease:
+				return `\n[hr]
+[align=center][table=70%,#EDFBFF]
+[tr][td=2,1][align=center][size=3][color=#D6D604][b]正版地址[/b][/color][/size][/align][/td][/tr]
+[tr][td][color=#D10A0A][align=center]Google Play[/align][/color][/td][td][align=center][url=https://play.google.com/store/apps/details?id=com.mojang.minecraftpe]https://play.google.com/store/apps/details?id=com.mojang.minecraftpe[/url][/align][/td][/tr]
+[tr][td][color=#D10A0A][align=center]Win10 Store[/align][/color][/td][td][align=center][url=https://www.microsoft.com/zh-cn/store/p/minecraft-for-windows-10/9nblggh2jhxj]https://www.microsoft.com/zh-cn/store/p/minecraft-for-windows-10/9nblggh2jhxj[/url][/align][/td][/tr]
+[/table][/align]
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][table=75%,#FFEBED]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
+[/table][/align]`
+
+			case VersionType.BedrockBeta:
+				return `\n[hr]
+[align=center][table=70%,#EDFBFF]
+[tr][td=2,1][align=center][size=3][color=#D6D604][b]相关地址[/b][/color][/size][/align][/td][/tr]
+[tr][td][color=#D10A0A][align=center]谷歌正版[/align][/color][/td][td][align=center][url=https://play.google.com/store/apps/details?id=com.mojang.minecraftpe]https://play.google.com/store/apps/details?id=com.mojang.minecraftpe[/url][/align][/td][/tr]
+[tr][td][color=#D10A0A][align=center]基岩版测试组[/align][/color][/td][td][align=center]安卓Google Play：[url=https://play.google.com/apps/testing/com.mojang.minecraftpe]https://play.google.com/apps/testing/com.mojang.minecraftpe[/url][/align][align=center]Win10 Store：[url=https://www.microsoft.com/zh-cn/store/p/xbox-insider-hub/9nblggh68vsk]https://www.microsoft.com/zh-cn/store/p/xbox-insider-hub/9nblggh68vsk[/url][/align][/td][/tr]
+[/table][/align]
+[align=center][img=416,132]https://attachment.mcbbs.net/data/myattachment/forum/201905/10/183113w1yyttpjz8epq60s.jpg[/img][/align]
+[align=center][table=75%,#FFEBED]
+[tr][td][align=center][url=https://www.mcbbs.net/thread-874677-1-1.html]外部来源以及详细的更新条目追踪[/url][/align][/td][/tr]
+[/table][/align]`
+
 			case VersionType.Normal:
 			default:
 				return `\n[hr]
@@ -984,7 +1079,9 @@ interface Tweet {
 		PreRelease,
 		ReleaseCandidate,
 		Release,
-		Normal
+		Normal,
+		BedrockBeta,
+		BedrockRelease
 	}
 
 	// Minecraft.net END
