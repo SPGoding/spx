@@ -1,4 +1,4 @@
-import { ApplicationCommandData, Client as DiscordClient, GuildMember, Interaction, Message, MessageEmbed, MessageOptions, MessageReaction, PartialGuildMember, PartialMessage, PartialUser, TextChannel, User, UserResolvable } from 'discord.js'
+import { ApplicationCommandData, Client as DiscordClient, GuildMember, Interaction, Message, MessageEmbed, MessageOptions, MessageReaction, PartialGuildMember, PartialMessage, PartialMessageReaction, PartialUser, TextChannel, User, UserResolvable } from 'discord.js'
 import { BugCache } from './cache/bug'
 import { ColorCache } from './cache/color'
 import { ReviewCache } from './cache/review'
@@ -240,9 +240,9 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				})
 				break
 			case 'color':
-				switch (interaction.options.first()!.name) {
+				switch (interaction.options.getSubcommand()) {
 					case 'clear': {
-						const target = tagToName(interaction.options.first()!.options!.first()!.user!.tag)
+						const target = tagToName(interaction.options.getUser('user', true).tag)
 						ColorCache.remove(target)
 						ColorCache.save()
 						await interaction.reply({
@@ -255,14 +255,14 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 						break
 					}
 					case 'get': {
-						const target = tagToName(interaction.options.first()!.options!.first()!.user!.tag)
+						const target = tagToName(interaction.options.getUser('user', true).tag)
 						const color = BugCache.getColorFromTranslator(target)
 						await interaction.reply({ embeds: [getColorEmbed(target, color)] })
 						break
 					}
 					case 'set': {
-						let color = (interaction.options.first()!.options!.get('value')!.value as string).toLowerCase()
-						let target: User | undefined = interaction.options.first()!.options!.get('user')?.user
+						let color = interaction.options.getString('value', true).toLowerCase()
+						let target: User | null = interaction.options.getUser('user')
 						const targetName = target ? tagToName(target.tag) : executor
 						if (!color.startsWith('#')) {
 							color = `#${color}`
@@ -308,7 +308,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				interaction.reply('🏓 Pong!')
 				break
 			case 'query': {
-				await interaction.defer()
+				await interaction.deferReply()
 				const currentTime = new Date()
 				const remainingCooldown = lastQueryTime ? QueryCooldown - (currentTime.getTime() - lastQueryTime.getTime()) : 0
 				if (remainingCooldown > 0) {
@@ -379,7 +379,7 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 				break
 			}
 			case 'tweet': {
-				await interaction.defer()
+				await interaction.deferReply()
 				const currentTime = new Date()
 				const remainingCooldown = lastQueryTime ? QueryCooldown - (currentTime.getTime() - lastQueryTime.getTime()) : 0
 				if (remainingCooldown > 0) {
@@ -392,12 +392,12 @@ export async function onInteraction(config: DiscordConfig, twitterClient: Twitte
 					await interaction.editReply('❌ Twitter App 未配置。')
 					return
 				}
-				const mode = interaction.options.first()!.value as 'dark' | 'light'
-				const tweetLink = interaction.options.first()!.options!.get('url')!.value as string
+				const mode = interaction.options.getSubcommand(true) as 'dark' | 'light'
+				const tweetLink = interaction.options.getString('url', true)
 				try {
 					const bbcode = await getTweet(twitterClient, mode, tweetLink, executor)
 					await interaction.editReply(`\`\`\`\n${bbcode}\n\`\`\``)
-				} catch (e) {
+				} catch (e: any) {
 					await interaction.editReply(e?.toString().slice(0, 127))
 					console.error('[Discord#onInteraction#Twitter]', e)
 					return
@@ -524,9 +524,10 @@ async function searchIssues(jql: string) {
 	return ans
 }
 
-export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction, user: User | PartialUser) {
+export async function onReactionAdd(_config: DiscordConfig, reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
 	try {
 		user = await ensureUser(user)
+		reaction = await ensureMessageReaction(reaction)
 		if (overrideConfirmations.has(reaction.message.id)) {
 			console.info(`User ${user.tag} added '${reaction.emoji.name}' reaction to a prompt`);
 			const { author, content, prompt, translator, onTranslated } = overrideConfirmations.get(reaction.message.id)!
@@ -572,6 +573,13 @@ async function ensureUser(user: User | PartialUser): Promise<User> {
 		return user.fetch()
 	}
 	return user
+}
+
+async function ensureMessageReaction(reaction: MessageReaction | PartialMessageReaction): Promise<MessageReaction> {
+	if (reaction.partial) {
+		return reaction.fetch()
+	}
+	return reaction
 }
 
 function tagToName(tag: string): string {
